@@ -1,13 +1,13 @@
 # Flow — explicit SQLite migration
 
-The installed `harness-local migrate` command upgrades an existing database after a verified snapshot
+The installed `my-harness migrate` command upgrades an existing database after a verified snapshot
 ([D150](../DECISIONS.md#d150--explicit-migration-from-the-installed-cli)). `init-db` creates a database; `serve`
 checks the revision and never migrates ([D043](../DECISIONS.md#d043--local-distribution-with-assets-and-migrations-explicit-start-on-loopback)).
 
 ```mermaid
 sequenceDiagram
     actor U as Operator
-    participant CLI as harness-local migrate
+    participant CLI as my-harness migrate
     participant DB as Existing SQLite
     participant C as Snapshot folder
     U->>U: Stop the service and the writers, install the wheel

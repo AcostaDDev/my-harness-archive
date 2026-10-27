@@ -6,14 +6,14 @@ import sys
 
 import pytest
 
-from harness_local import i18n
-from harness_local.adapters.cli_agents import CLIConfig, CLIProcessAdapter
-from harness_local.adapters.cli_compatibility import CompatibilityError, MINIMUM, discover, launch_identity
-from harness_local.adapters.cli_diagnostics import preflight_config
-from harness_local.core.engine.journal import JournalError
-from harness_local.services.local_config import load_local_config
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import ManagedRuntime
+from my_harness import i18n
+from my_harness.adapters.cli_agents import CLIConfig, CLIProcessAdapter
+from my_harness.adapters.cli_compatibility import CompatibilityError, MINIMUM, discover, launch_identity
+from my_harness.adapters.cli_diagnostics import preflight_config
+from my_harness.core.engine.journal import JournalError
+from my_harness.services.local_config import load_local_config
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import ManagedRuntime
 from test_agent_roles import PAIRS, journey
 from test_cli_agents import setup_invocation
 from test_local_config import PROBE, launches, setup, write  # noqa: F401 (fixture)
@@ -86,8 +86,8 @@ def test_loading_is_data_only_and_unresolved_versions_cannot_be_queued(setup, re
 def test_automatic_clients_all_pairings_and_languages(setup, repository, reviewer, executor, ui, work, fmt):
     _, data, folder, tmp_path = setup
     config, _ = automatic(data, folder, tmp_path, reviewer=reviewer, executor=executor, work=work, fmt=fmt)
-    from harness_local.storage.preferences import PreferencesRepository
-    from harness_local.storage.work_language import associate
+    from my_harness.storage.preferences import PreferencesRepository
+    from my_harness.storage.work_language import associate
     preferences = PreferencesRepository(repository)
     preferences.update(expected_version=preferences.read()['version'], ui_language=ui, default_work_language=work, key='languages')
     with repository._write() as session:

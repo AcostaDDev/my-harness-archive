@@ -12,10 +12,10 @@ import time
 from alembic import command
 import pytest
 
-from harness_local.adapters.processes import identity
-from harness_local.storage.backup import RESTORED_USER_VERSION
-from harness_local.storage.migrate import MigrationRefused, _config, prepare_database
-from harness_local.storage.schema import SCHEMA_REVISION
+from my_harness.adapters.processes import identity
+from my_harness.storage.backup import RESTORED_USER_VERSION
+from my_harness.storage.migrate import MigrationRefused, _config, prepare_database
+from my_harness.storage.schema import SCHEMA_REVISION
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
 import dev  # noqa: E402

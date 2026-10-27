@@ -8,16 +8,16 @@ B="$1"
 P="$2"
 A="$B/$P"
 HERE=$(cd "$(dirname "$0")" && pwd)
-H="$B/venv/bin/harness-local"
+H="$B/venv/bin/my-harness"
 PY="$B/venv/bin/python"
 cd "$B"
-"$H" check-config "$A/operator/harness-local.toml" --preflight > "$A/preflight-run.json" || { echo PREFLIGHT-FAILED; exit 3; }
+"$H" check-config "$A/operator/my-harness.toml" --preflight > "$A/preflight-run.json" || { echo PREFLIGHT-FAILED; exit 3; }
 "$PY" -I -c 'import json, sys
 checks = json.load(open(sys.argv[1]))["preflight"]
 sys.exit(any(c["status"] != "version_help_match" or c["missing_flags"] for c in checks.values()))' \
   "$A/preflight-run.json" || { echo PREFLIGHT-MISMATCH; exit 3; }
 "$H" init-db --database "$A/state/harness.sqlite3" || { echo INIT-DB-FAILED; exit 4; }
-"$H" serve --database "$A/state/harness.sqlite3" --config "$A/operator/harness-local.toml" > "$A/serve.log" 2>&1 &
+"$H" serve --database "$A/state/harness.sqlite3" --config "$A/operator/my-harness.toml" > "$A/serve.log" 2>&1 &
 S=$!
 echo "$S" > "$A/serve.pid"
 KEY=""

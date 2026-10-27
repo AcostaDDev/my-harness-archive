@@ -1,5 +1,5 @@
 [project]
-name = "harness-local"
+name = "my-harness"
 version = "0.1.0"
 description = "Local application that orchestrates Codex and Claude Code agents to plan, implement, review and commit tasks in Git repositories"
 readme = "README.md"
@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.scripts]
-harness-local = "harness_local.cli:main"
+my-harness = "my_harness.cli:main"
 
 [dependency-groups]
 dev = ["pytest==9.1.1", "httpx==0.28.1", "pytest-xdist==3.8.0"]

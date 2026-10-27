@@ -8,8 +8,8 @@ import json
 
 import pytest
 
-from harness_local.core.engine.contracts import ContractError, freeze, task_contract
-from harness_local.core.engine.evidence import ContentEvidence, check_paths
+from my_harness.core.engine.contracts import ContractError, freeze, task_contract
+from my_harness.core.engine.evidence import ContentEvidence, check_paths
 from test_contract_shapes import agent_plan
 from test_engine import PHASE_ID, PLAN, TASK_ID, context, edit, harness, review  # noqa: F401 (fixture)
 from test_git import make_context

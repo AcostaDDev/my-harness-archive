@@ -8,12 +8,12 @@ import tomllib
 
 import pytest
 
-from harness_local.adapters.cli_agents import VERSION, CLIConfig, argv_for
-from harness_local.core.engine.contracts import ContractError
-from harness_local.core.engine.documents import (
+from my_harness.adapters.cli_agents import VERSION, CLIConfig, argv_for
+from my_harness.core.engine.contracts import ContractError
+from my_harness.core.engine.documents import (
     DOCUMENT_LAYOUT, LEGACY_INSTRUCTIONS, MAX_INSTRUCTIONS_BYTES, project_instructions,
 )
-from harness_local.core.engine.prompts import (
+from my_harness.core.engine.prompts import (
     PROJECT_INSTRUCTIONS, VARIABLES, builtin_catalog, digest, dump_catalog, load_catalog, render_attempt,
 )
 from test_agent_roles import request

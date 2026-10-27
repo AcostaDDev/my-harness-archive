@@ -12,26 +12,26 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
-from harness_local.adapters.git import GitWorkspace
-from harness_local.core.engine.chat import task_text
-from harness_local.core.engine.contracts import ContractError
-from harness_local.core.engine.document_text import work_language as document_language
-from harness_local.core.engine.documents import (
+from my_harness.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
+from my_harness.adapters.git import GitWorkspace
+from my_harness.core.engine.chat import task_text
+from my_harness.core.engine.contracts import ContractError
+from my_harness.core.engine.document_text import work_language as document_language
+from my_harness.core.engine.documents import (
     Layout, base_section, blocks, decision_index, parse_roadmap, plan_tasks, render_decisions, render_next_steps,
     render_review, render_roadmap, render_state, render_summary, skeleton, _fields,
 )
-from harness_local.core.engine.import_commit import _state
-from harness_local.core.engine.language import FIELDS, NAMES, directive
-from harness_local.core.engine.planning import FIELD_NAMES
-from harness_local.core.engine.prompts import (
+from my_harness.core.engine.import_commit import _state
+from my_harness.core.engine.language import FIELDS, NAMES, directive
+from my_harness.core.engine.planning import FIELD_NAMES
+from my_harness.core.engine.prompts import (
     PROJECT_INSTRUCTIONS, VARIABLES, Template, builtin_catalog, digest, output_schema, render_attempt,
 )
-from harness_local.core.engine.workflow import OfflineEngine
-from harness_local.services.managed import LocalSupervisor
-from harness_local.storage import work_language
-from harness_local.storage.models import ManagedAttemptRow
-from harness_local.storage.preferences import PreferencesRepository
+from my_harness.core.engine.workflow import OfflineEngine
+from my_harness.services.managed import LocalSupervisor
+from my_harness.storage import work_language
+from my_harness.storage.models import ManagedAttemptRow
+from my_harness.storage.preferences import PreferencesRepository
 from test_chat import Chat, PROPOSAL, answer as chat_answer
 from test_definition import World as DefinitionWorld, answer as definition_answer
 from test_documents import V2World, v2checkout  # noqa: F401  (fixture)
@@ -381,8 +381,8 @@ def test_both_providers_receive_the_directive_in_the_stdin_prompt(tmp_path, cont
 
 @pytest.mark.parametrize('ui, work', [('es', 'en'), ('en', 'es')])
 def test_onboarding_documents_and_prompt_follow_the_frozen_pair(migrated_database, tmp_path, ui, work):
-    from harness_local.storage.database import make_engine
-    from harness_local.storage.managed import SQLiteManagedRepository
+    from my_harness.storage.database import make_engine
+    from my_harness.storage.managed import SQLiteManagedRepository
     from test_onboarding_commit import confirm, ready
     from test_onboarding_conversation import World as OnboardingWorld
     from test_project_onboarding import DJANGO, checkout

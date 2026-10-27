@@ -14,22 +14,22 @@ import pytest
 from sqlalchemy import func, inspect, select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
-from harness_local.adapters.fake import FakeSimulationAdapter
-from harness_local.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
-from harness_local.core.engine.contracts import AgentResult, freeze, stop_history
-from harness_local.core.engine.journal import JournalError
-from harness_local.core.engine.serialization import dump_history, load_history, restore_context
-from harness_local.core.engine.validation import CommandResult
-from harness_local.core.simulation import SimulationService
-from harness_local.services.managed import LocalSupervisor
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict, OwnershipLost, SQLiteManagedRepository
-from harness_local.storage.models import (
+from my_harness.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
+from my_harness.adapters.fake import FakeSimulationAdapter
+from my_harness.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
+from my_harness.core.engine.contracts import AgentResult, freeze, stop_history
+from my_harness.core.engine.journal import JournalError
+from my_harness.core.engine.serialization import dump_history, load_history, restore_context
+from my_harness.core.engine.validation import CommandResult
+from my_harness.core.simulation import SimulationService
+from my_harness.services.managed import LocalSupervisor
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict, OwnershipLost, SQLiteManagedRepository
+from my_harness.storage.models import (
     CheckoutLockRow, ManagedAttemptRow, ManagedEventRow, ManagedJobRow, ManagedRunRow,
 )
-from harness_local.storage.repository import SQLiteSimulationRepository
-from harness_local.storage.schema import require_schema
+from my_harness.storage.repository import SQLiteSimulationRepository
+from my_harness.storage.schema import require_schema
 
 
 VERSIONS = {"engine": "h2.2", "agent_adapter": "synthetic-1", "commands": "synthetic-1",

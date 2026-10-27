@@ -12,13 +12,13 @@ import sys
 
 import pytest
 
-from harness_local.adapters import cli_agents
-from harness_local.adapters.cli_agents import CLIConfig, argv_for, reader_schema
-from harness_local.core.engine.contracts import AgentRequest, Selection, freeze
-from harness_local.core.engine.journal import JournalError
-from harness_local.core.engine.prompts import builtin_catalog, output_schema, render_attempt
-from harness_local.services.local_config import load_local_config
-from harness_local.services.managed import LocalSupervisor
+from my_harness.adapters import cli_agents
+from my_harness.adapters.cli_agents import CLIConfig, argv_for, reader_schema
+from my_harness.core.engine.contracts import AgentRequest, Selection, freeze
+from my_harness.core.engine.journal import JournalError
+from my_harness.core.engine.prompts import builtin_catalog, output_schema, render_attempt
+from my_harness.services.local_config import load_local_config
+from my_harness.services.managed import LocalSupervisor
 from test_agent_roles import journey, v2
 from test_local_config import PROBE, launches, setup, write  # noqa: F401 (fixture)
 from test_typescript_profile import PHASE, PLAN, TASK, repository, web  # noqa: F401 (fixtures)

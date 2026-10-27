@@ -1,6 +1,6 @@
-# Harness Local (español)
+# My Harness (español)
 
-Harness Local es una aplicación local que ejecuta un harness de desarrollo con agentes de IA sobre tus propios
+My Harness es una aplicación local que ejecuta un harness de desarrollo con agentes de IA sobre tus propios
 repositorios Git. Un agente **revisor** planifica y revisa en solo lectura; un agente **ejecutor** es el único que
 escribe. El harness valida cada cambio con los comandos de tu proyecto, liga la revisión al contenido exacto y hace él
 mismo el commit. El trabajo se organiza en fases y tareas acotadas, con documentación del proyecto, chat, métricas y
@@ -39,7 +39,7 @@ configuración de tu shell, de Git ni de los proveedores.
 
 | | Desde el código fuente (clon Git) | Desde un paquete publicado |
 |---|---|---|
-| Qué descargas | Este repositorio | `harness-local-<versión>-distribution.tar.gz` de la página **Releases** del repositorio en GitHub |
+| Qué descargas | Este repositorio | `my-harness-<versión>-distribution.tar.gz` de la página **Releases** del repositorio en GitHub |
 | Herramientas | Python 3.14, uv 0.12.19, Git, Node 24.15.0 y npm 11.12.1 | Python 3.14, uv 0.12.19 y Git |
 | Qué hace el instalador | Construye el paquete (un wheel con la UI compilada), lo verifica y lo instala | Comprueba los checksums del paquete ya construido y lo instala |
 
@@ -60,20 +60,22 @@ fijadas. Si `python3.14` o `uv` no están en tu `PATH`, añade `--python /ruta/a
 ### 2a. Instalar desde el código fuente
 
 ```sh
-git clone <url-del-repositorio> harness-local
-cd harness-local
+git clone https://github.com/AcostaDDev/my-harness.git
+cd my-harness
 scripts/install --allow-network
 ```
 
 ### 2b. Instalar desde un paquete publicado
 
-En la página **Releases** del repositorio, descarga `harness-local-0.1.0-distribution.tar.gz` y
-`harness-local-0.1.0-distribution.tar.gz.sha256` en la misma carpeta y ejecuta:
+Descarga `my-harness-0.1.0-distribution.tar.gz` y su `.sha256` de la
+[página Releases](https://github.com/AcostaDDev/my-harness/releases) (o con `curl` como abajo) en la misma carpeta y ejecuta:
 
 ```sh
-shasum -a 256 -c harness-local-0.1.0-distribution.tar.gz.sha256
-tar -xzf harness-local-0.1.0-distribution.tar.gz
-cd harness-local-0.1.0
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.0/my-harness-0.1.0-distribution.tar.gz
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.0/my-harness-0.1.0-distribution.tar.gz.sha256
+shasum -a 256 -c my-harness-0.1.0-distribution.tar.gz.sha256
+tar -xzf my-harness-0.1.0-distribution.tar.gz
+cd my-harness-0.1.0
 scripts/install --dist "$PWD" --allow-network
 ```
 
@@ -88,8 +90,8 @@ Después, `scripts/install` sin opciones funciona sin red: verifica y reutiliza 
 `--allow-network`, una primera instalación falla porque la caché todavía está vacía.
 
 Publica la instalación solo tras una comprobación aislada con agentes falsos (no llama a ningún modelo). Por
-defecto usa `~/Library/Application Support/Harness Local/` (`installation`, `data` y `configuration`) y la caché
-`~/Library/Caches/Harness Local`. Para elegir otras ubicaciones usa `--install-dir`, `--data-dir`, `--config-dir`
+defecto usa `~/Library/Application Support/My Harness/` (`installation`, `data` y `configuration`) y la caché
+`~/Library/Caches/My Harness`. Para elegir otras ubicaciones usa `--install-dir`, `--data-dir`, `--config-dir`
 y `--cache-dir` con rutas absolutas fuera de todo checkout (entre comillas si tienen espacios), y el mismo
 `--install-dir` después en `scripts/start`. Si una instalación falla queda como FAILED con su diagnóstico y no se
 publica: consérvala y reintenta con directorios nuevos, sin borrar locks ni datos a mano.
@@ -105,7 +107,7 @@ publica: consérvala y reintenta con directorios nuevos, sin borrar locks ni dat
 
    Añade `--install-dir` si elegiste otro directorio de instalación, o `--port` para usar un puerto distinto de 8013.
    Verifica la instalación, crea la base de datos solo si no existe y sirve la UI/API, sin Node/Vite.
-2. **Copia la clave de acceso.** El servicio muestra `Harness Local: access key at <ruta>`. En otra terminal:
+2. **Copia la clave de acceso.** El servicio muestra `My Harness: access key at <ruta>`. En otra terminal:
 
    ```sh
    pbcopy < '<ruta mostrada por el servicio>'

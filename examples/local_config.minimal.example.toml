@@ -1,12 +1,12 @@
-# Harness Local — minimal single-provider configuration (local-config-7). Template, not valid as is.
+# My Harness — minimal single-provider configuration (local-config-7). Template, not valid as is.
 # One provider (Claude Code) for both roles and one declared profile for a small Python project tested with unittest.
 # For Codex, set provider = "codex" in both roles and drop the Claude-only `tools`/`allowed_tools` keys.
 # Keep it OUTSIDE any checkout, owned by the service user, chmod 600. No secrets: each CLI keeps its own login.
 # Replace every /ABSOLUTE/PATH, USER and REVIEWER-MODEL placeholder with canonical absolute paths and real values.
 # Clients are discovered on each role's explicit PATH; no CLI version is required (minimums: Codex 0.163.0,
 # Claude Code 2.1.304). The complete template with every option: local_config.example.toml.
-# Validate: harness-local check-config /path/harness-local.toml --preflight
-# Start:    harness-local serve --database /path/state/harness.sqlite3 --config /path/harness-local.toml
+# Validate: my-harness check-config /path/my-harness.toml --preflight
+# Start:    my-harness serve --database /path/state/harness.sqlite3 --config /path/my-harness.toml
 format = "local-config-7"
 
 [service]

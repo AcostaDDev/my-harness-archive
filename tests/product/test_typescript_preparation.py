@@ -14,16 +14,16 @@ import sys
 import pytest
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.preparation import verify_receipt
-from harness_local.core.engine.journal import JournalError
-from harness_local.recipes import django, typescript_web
-from harness_local.services.local_config import LocalConfigError, load_local_config
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import ManagedRuntime
-from harness_local.services.project_registry import RegistryError, digest
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict
-from harness_local.storage.models import RegisteredProjectRow
+from my_harness.adapters.preparation import verify_receipt
+from my_harness.core.engine.journal import JournalError
+from my_harness.recipes import django, typescript_web
+from my_harness.services.local_config import LocalConfigError, load_local_config
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import ManagedRuntime
+from my_harness.services.project_registry import RegistryError, digest
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict
+from my_harness.storage.models import RegisteredProjectRow
 from test_definition import World, ready, DRAFTS, answer
 import test_definition
 from test_project_creation import select_root, request
@@ -510,7 +510,7 @@ def test_npm_cache_inside_the_checkout_is_refused_at_composition(operator):
 def test_both_recipes_coexist_and_django_keeps_its_fingerprint_and_hash(operator):
     """The Django recipe module is byte-identical, so its fingerprint and composition hashes are unchanged."""
     _, data, folder, tmp_path = operator
-    assert django.fingerprint() == 'f511c00a2e099d8320d813cc6200e56ef96087b9c5ee56f96ef22d0b5a80e191'
+    assert django.fingerprint() == 'd2b89bcaa647d659dac7417c4af53e7cb532cfbaef1fd7346cb29d440eb35ff2'
     only = load_local_config(write(folder, django_data(data, folder)))
     raw = django_data(data, folder)
     both = typescript_data(data, folder, synthetic_cache(tmp_path))
@@ -551,7 +551,7 @@ def journey(request, operator, migrated_database, monkeypatch):
     value['agent_presets'] = presets
     config = load_local_config(write(folder, value))
     captured = []
-    app = importlib.import_module('harness_local.api.app')
+    app = importlib.import_module('my_harness.api.app')
     runtime_class = app.ManagedRuntime
     def runtime(*args, **kwargs):
         instance = runtime_class(*args, **kwargs)

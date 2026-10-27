@@ -6,9 +6,9 @@ import os
 
 import pytest
 
-from harness_local.core.engine.document_ops import BaseChanged, text_hash
-from harness_local.core.engine.journal import JournalError
-from harness_local.storage.managed import Conflict
+from my_harness.core.engine.document_ops import BaseChanged, text_hash
+from my_harness.core.engine.journal import JournalError
+from my_harness.storage.managed import Conflict
 from test_documents import (  # noqa: F401  (fixtures)
     PLAN_P001, STATE, STATE_BEGIN, STATE_END, confirm, edit_view, editor, queue_edit, text, v2, v2checkout,
 )
@@ -106,7 +106,7 @@ def test_regenerate_never_overwrites_bytes_changed_after_the_preview(v2):
 
 
 def test_regenerate_recovers_after_a_crash_between_document_write_and_commit(v2, monkeypatch):
-    from harness_local.adapters.git import GitWorkspace
+    from my_harness.adapters.git import GitWorkspace
     v2.create_v2()
     forge_block(v2)
     view = editor(v2).preview(v2.context, v2.ports.writer(v2.context, VERSIONS), source='worktree', changes=None,
@@ -163,7 +163,7 @@ def test_tree_lists_markdown_without_links_hidden_folders_or_other_files(v2):
 
 
 def test_http_tree_image_and_cas_conflict(v2, tmp_path):
-    from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+    from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
     v2.create_v2()
     root = v2.context.root
     (root / 'docs/img').mkdir()
@@ -210,7 +210,7 @@ def test_http_tree_image_and_cas_conflict(v2, tmp_path):
 def test_http_unified_document_classes_instructions_and_decision_register(v2, tmp_path, docs):
     """The API projects D088 also with a different configured documents folder."""
     from dataclasses import replace
-    from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+    from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
 
     root = v2.context.root
     if docs != 'docs':
@@ -265,7 +265,7 @@ def test_http_unified_document_classes_instructions_and_decision_register(v2, tm
 
 @pytest.mark.parametrize('path', ['AGENTS.md', 'CLAUDE.md', 'GEMINI.md'])
 def test_http_instruction_edit_uses_confirmed_diff_and_cas(v2, tmp_path, path):
-    from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+    from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
 
     v2.context.path(path).write_text('# Instrucciones sintéticas\n', encoding='utf-8')
     git(v2.context.root, 'add', '-A')

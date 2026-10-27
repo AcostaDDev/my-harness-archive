@@ -3,12 +3,12 @@ import json
 from pathlib import Path
 import sys
 
-from harness_local.adapters.cli_agents import CLIConfig, CLIProcessAdapter
-from harness_local.adapters.engine_fake import ScriptedCommandRunner, SyntheticWorkspace
-from harness_local.core.engine.serialization import restore_context
-from harness_local.services.managed import LocalSupervisor
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import SQLiteManagedRepository
+from my_harness.adapters.cli_agents import CLIConfig, CLIProcessAdapter
+from my_harness.adapters.engine_fake import ScriptedCommandRunner, SyntheticWorkspace
+from my_harness.core.engine.serialization import restore_context
+from my_harness.services.managed import LocalSupervisor
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import SQLiteManagedRepository
 
 
 def main():

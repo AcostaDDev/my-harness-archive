@@ -74,7 +74,7 @@ def main():
         for relative in sources:
             (stage / 'src' / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / 'src' / relative, stage / 'src' / relative)
-        shutil.copytree(ROOT / 'frontend/dist', stage / 'src/harness_local/web')
+        shutil.copytree(ROOT / 'frontend/dist', stage / 'src/my_harness/web')
         subprocess.run([args.uv, 'build', *mode, '--no-create-gitignore', '--no-python-downloads', '--python', args.python, '--out-dir', str(output), str(stage)],
                        cwd=ROOT, check=True)
     # PEP 751 lock with the URL and hash of every wheel: it installs offline from the cache filled by `uv sync`, which

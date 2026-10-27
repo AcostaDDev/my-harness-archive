@@ -65,7 +65,7 @@ export function StatsPage({ project, refresh = 0 }: { project?: string; refresh?
       : !s ? summary.error ? <p role="alert" className="state state-error">{t("stats.read_failed", { error: summary.error })}</p> : <Loading />
         : <Headline summary={s} />}
     {s && s.attempts_without_metrics > 0 && <p className="state state-attention" role="status">
-      {n("stats.without_metrics", s.attempts_without_metrics)} {!archive && rich("stats.backfill", { command: <code>harness-local metrics-backfill --database PATH</code> })}</p>}
+      {n("stats.without_metrics", s.attempts_without_metrics)} {!archive && rich("stats.backfill", { command: <code>my-harness metrics-backfill --database PATH</code> })}</p>}
     {s && <>
       <Consumption scope={scope} projects={list} refresh={refresh} />
       <Favorites scope={scope} refresh={refresh} />

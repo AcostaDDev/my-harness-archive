@@ -264,7 +264,7 @@ def test_detached_wrapper_forwards_signals_and_holds_lock_until_child_exits(inst
 def test_preflight_checks_schema_but_leaves_invalid_toml_for_protected_setup(migrated_database, tmp_path):
     # Direct installed-runtime boundary check on synthetic SQLite; no serve/init/provider invocation.
     from sqlalchemy import text
-    from harness_local.storage.database import make_engine
+    from my_harness.storage.database import make_engine
     url, _ = migrated_database
     from sqlalchemy.engine import make_url
     database = Path(make_url(url).database)
@@ -291,8 +291,8 @@ def test_preflight_checks_schema_but_leaves_invalid_toml_for_protected_setup(mig
     finally:
         engine.dispose()
     import sqlite3
-    from harness_local.storage.backup import RESTORED_USER_VERSION
-    from harness_local.storage.schema import SCHEMA_REVISION
+    from my_harness.storage.backup import RESTORED_USER_VERSION
+    from my_harness.storage.schema import SCHEMA_REVISION
     with sqlite3.connect(database) as connection:
         connection.execute('UPDATE alembic_version SET version_num = ?', (SCHEMA_REVISION,))
         connection.execute(f'PRAGMA user_version={RESTORED_USER_VERSION}')

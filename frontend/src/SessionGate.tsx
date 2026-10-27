@@ -66,7 +66,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
     setKey("");
     try {
       const response = await fetch("/api/session", { method: "POST",
-        headers: { "Content-Type": "application/json", "X-Harness-Local": "1" }, body: JSON.stringify(submitted) });
+        headers: { "Content-Type": "application/json", "X-My-Harness": "1" }, body: JSON.stringify(submitted) });
       if (!response.ok) { setError(response.status === 429 ? "session.rate_limited" : "session.login_failed"); return; }
       setSession(await response.json() as Session);
       void refresh();
@@ -78,7 +78,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
     epoch.current++;
     setBusy(true);
     try {
-      const response = await fetch("/api/session", { method: "DELETE", headers: { "X-Harness-Local": "1" } });
+      const response = await fetch("/api/session", { method: "DELETE", headers: { "X-My-Harness": "1" } });
       if (!response.ok && response.status !== 401) throw new Error();
       setSession(undefined); setError("session.closed");
     } catch { setError("session.logout_failed"); }
@@ -88,7 +88,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
   if (session) return <SessionContext.Provider value={{ logout, busy, notice: error, expiresAt }}>{children}</SessionContext.Provider>;
   return <main className="gate">
     <div className="gate-card">
-      <p className="brand"><span className="brand-mark" aria-hidden="true" />Harness Local</p>
+      <p className="brand"><span className="brand-mark" aria-hidden="true" />My Harness</p>
       <h1>{t("session.title")}</h1>
       <p>{t("session.instructions")}</p>
       <form onSubmit={login}><label htmlFor="login-key">{t("session.key_label")}</label><input id="login-key" type="password" autoComplete="off" value={key} onChange={e => setKey(e.target.value)} maxLength={128} required disabled={busy} />

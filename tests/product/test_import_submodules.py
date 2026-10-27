@@ -8,15 +8,15 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.git import Git
-from harness_local.adapters.local_git import LocalGit
-from harness_local.adapters.import_git import check_submodules
-from harness_local.adapters.project_onboarding import read_inventory as onboarding_inventory
-from harness_local.core.engine.commit import CommitIntent
-from harness_local.core.tree import ImportInventoryError
-from harness_local.storage.managed import Conflict
-from harness_local.storage.models import PlanningConversationRow, ProjectImportRow
-from harness_local.storage.phases import PhaseRepository
+from my_harness.adapters.git import Git
+from my_harness.adapters.local_git import LocalGit
+from my_harness.adapters.import_git import check_submodules
+from my_harness.adapters.project_onboarding import read_inventory as onboarding_inventory
+from my_harness.core.engine.commit import CommitIntent
+from my_harness.core.tree import ImportInventoryError
+from my_harness.storage.managed import Conflict
+from my_harness.storage.models import PlanningConversationRow, ProjectImportRow
+from my_harness.storage.phases import PhaseRepository
 from onboarding_helpers import operation
 from onboarding_helpers import tree_state
 from test_import_git_boundary import job_count

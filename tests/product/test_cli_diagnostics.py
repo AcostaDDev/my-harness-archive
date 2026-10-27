@@ -8,9 +8,9 @@ import time
 
 import pytest
 
-from harness_local.adapters.cli_agents import CLIConfig, CLIProcessAdapter
-from harness_local.adapters.cli_diagnostics import diagnose, diagnose_file, preflight_config, unsupported_values
-from harness_local.cli import main
+from my_harness.adapters.cli_agents import CLIConfig, CLIProcessAdapter
+from my_harness.adapters.cli_diagnostics import diagnose, diagnose_file, preflight_config, unsupported_values
+from my_harness.cli import main
 
 
 @pytest.fixture
@@ -293,7 +293,7 @@ def test_environment_values_not_reported(config, tmp_path):
 
 
 def test_probe_setup_failure_is_sanitized(config, monkeypatch):
-    import harness_local.adapters.cli_diagnostics as module
+    import my_harness.adapters.cli_diagnostics as module
     def denied(**kwargs):
         raise PermissionError('SECRET-PATH')
     monkeypatch.setattr(module.tempfile, 'TemporaryDirectory', denied)
@@ -304,7 +304,7 @@ def test_probe_setup_failure_is_sanitized(config, monkeypatch):
 
 
 def test_uncertain_cleanup_never_certifies_success(config, monkeypatch):
-    import harness_local.adapters.cli_diagnostics as module
+    import my_harness.adapters.cli_diagnostics as module
     def denied(*args):
         raise PermissionError('SECRET-PROCESS')
     monkeypatch.setattr(module.os, 'killpg', denied)

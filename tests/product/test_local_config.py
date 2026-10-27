@@ -11,15 +11,15 @@ import sys
 
 import pytest
 
-from harness_local.adapters.cli_agents import CLIProcessAdapter
-from harness_local.adapters.commands import ManagedCommandRunner
-from harness_local.adapters.git import GitWorkspace
-from harness_local.core.engine.journal import JournalError
-from harness_local.services.local_config import (CONFIG_ENV, LocalConfigError, build, from_environment,
+from my_harness.adapters.cli_agents import CLIProcessAdapter
+from my_harness.adapters.commands import ManagedCommandRunner
+from my_harness.adapters.git import GitWorkspace
+from my_harness.core.engine.journal import JournalError
+from my_harness.services.local_config import (CONFIG_ENV, LocalConfigError, build, from_environment,
                                                  load_local_config)
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import ManagedRuntime
-from harness_local.storage.managed import SQLiteManagedRepository
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import ManagedRuntime
+from my_harness.storage.managed import SQLiteManagedRepository
 from test_typescript_profile import PHASE, PLAN, TASK, task_checkout, web  # noqa: F401 (fixture)
 from test_typescript_profile import repository  # noqa: F401 (fixture)
 
@@ -74,7 +74,7 @@ def setup(web, tmp_path):
     return context, data, folder, tmp_path
 
 
-def write(folder, data, name='harness-local.toml', mode=0o600):
+def write(folder, data, name='my-harness.toml', mode=0o600):
     path = folder / name
     path.write_text(dumps(data))
     path.chmod(mode)
@@ -192,14 +192,14 @@ def mutate(data, change):
 def test_invalid_configuration_rejected_without_effects(setup, change):
     context, data, folder, tmp_path = setup
     with pytest.raises(LocalConfigError):
-        build(mutate(data, change), folder / 'harness-local.toml')
+        build(mutate(data, change), folder / 'my-harness.toml')
     assert not launches(tmp_path)
 
 
 def test_exact_extra_authorization_is_added_not_substituted(setup):
     context, data, folder, _ = setup
     data['projects'][0]['commands']['authorized'] = [{'argv': ['npm', 'run', 'test'], 'timeout_seconds': 1800}]
-    config = build(data, folder / 'harness-local.toml')
+    config = build(data, folder / 'my-harness.toml')
     runner = config.ports_factory(config.projects[0].context, config.projects[0].versions)[1]
     authorized = runner.config.authorized_commands
     assert len(authorized) == len(context.profile.preparation + context.profile.validations) + 1
@@ -295,7 +295,7 @@ def test_offline_typescript_journey_through_local_configuration(setup, repositor
 
 
 def test_check_config_summary_without_environment_values_and_preflight(setup, capsys):
-    from harness_local.cli import main
+    from my_harness.cli import main
     context, data, folder, tmp_path = setup
     path = write(folder, data)
     assert main(['check-config', str(path)]) == 0
@@ -313,8 +313,8 @@ def test_check_config_summary_without_environment_values_and_preflight(setup, ca
 
 
 def test_entry_points_require_one_explicit_composition(setup, monkeypatch, tmp_path):
-    from harness_local.launcher import serve
-    from harness_local.services.managed_runtime import CONFIG_ENV as MANAGED_ENV
+    from my_harness.launcher import serve
+    from my_harness.services.managed_runtime import CONFIG_ENV as MANAGED_ENV
     context, data, folder, _ = setup
     path = write(folder, data)
     monkeypatch.setenv(MANAGED_ENV, 'examples.managed_demo:build')

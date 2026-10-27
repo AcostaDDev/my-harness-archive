@@ -1,6 +1,6 @@
 # Diagrama de datos — my_harness
 
-Esquema SQLite del servicio local (Alembic `0027_profile_proposals`, 54 tablas). Generado en P008-T001 desde el metadata de `src/harness_local/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos, en P010-T003 con la proyección de runs, en P011-T007 con las preferencias de idioma y en P011-T008 con el idioma de trabajo por proyecto y en P013-T004 con configuración versionada y P013-T007 con altas sin perfil); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
+Esquema SQLite del servicio local (Alembic `0027_profile_proposals`, 54 tablas). Generado en P008-T001 desde el metadata de `src/my_harness/storage/models.py` (actualizado en P009-T004 con preparación y propietarios compartidos, en P010-T003 con la proyección de runs, en P011-T007 con las preferencias de idioma y en P011-T008 con el idioma de trabajo por proyecto y en P013-T004 con configuración versionada y P013-T007 con altas sin perfil); cualquier cambio de modelos o migraciones actualiza este documento en la misma tarea (regla de paridad, D088).
 
 P009-T002 implementa autoridad y creación de hijos (D117); T004 implementa preparación/pasos/journal y amplía
 locks/procesos compartidos (D119). [Diseño de partida](archive/phase-009/P009-T001_CONTRATO_CREACION.md#6-persistencia-propuesta-y-migraciones).

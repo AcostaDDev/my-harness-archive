@@ -14,19 +14,19 @@ import time
 
 import pytest
 
-from harness_local.adapters.engine_fake import ScriptedAgentAdapter
-from harness_local.adapters.git import GitWorkspace, GitWorktrees
-from harness_local.core.engine.commit import GitIdentity
-from harness_local.core.engine.context import EnginePolicy, ProjectContext
-from harness_local.core.engine.contracts import AgentResult, context_snapshot
-from harness_local.core.engine.permissions import snapshot_entries, snapshot_payload
-from harness_local.core.engine.serialization import dump_history, load_history, restore_context
-from harness_local.core.engine.validation import CommandResult, run_command, run_validations
-from harness_local.profiles.typescript_web import typescript_web_profile
-from harness_local.services.managed import LocalSupervisor
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict, SQLiteManagedRepository
-from harness_local.storage.permissions import PermissionRepository
+from my_harness.adapters.engine_fake import ScriptedAgentAdapter
+from my_harness.adapters.git import GitWorkspace, GitWorktrees
+from my_harness.core.engine.commit import GitIdentity
+from my_harness.core.engine.context import EnginePolicy, ProjectContext
+from my_harness.core.engine.contracts import AgentResult, context_snapshot
+from my_harness.core.engine.permissions import snapshot_entries, snapshot_payload
+from my_harness.core.engine.serialization import dump_history, load_history, restore_context
+from my_harness.core.engine.validation import CommandResult, run_command, run_validations
+from my_harness.profiles.typescript_web import typescript_web_profile
+from my_harness.services.managed import LocalSupervisor
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict, SQLiteManagedRepository
+from my_harness.storage.permissions import PermissionRepository
 from test_git import git
 
 
@@ -320,7 +320,7 @@ def test_profile_import_is_declarative_and_core_has_no_new_stack_conditions(monk
         pytest.fail("A profile must not launch a process")
     monkeypatch.setattr(subprocess, "Popen", forbidden)
     assert typescript_web_profile().name == 'typescript-web'
-    for path in (ROOT / "src/harness_local/core").rglob("*.py"):
+    for path in (ROOT / "src/my_harness/core").rglob("*.py"):
         assert not any(word in path.read_text() for word in ("typescript-web", "typescript_web", '"npm"', '"tsc"'))
 
 

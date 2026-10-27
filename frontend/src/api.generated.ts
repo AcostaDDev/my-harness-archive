@@ -7259,7 +7259,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -7318,7 +7318,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -7379,7 +7379,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -7442,7 +7442,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -7501,7 +7501,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -7562,7 +7562,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -7621,7 +7621,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -7682,7 +7682,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -7745,7 +7745,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -7808,7 +7808,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -7873,7 +7873,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -7938,7 +7938,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -7999,7 +7999,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -8065,7 +8065,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -8128,7 +8128,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -8193,7 +8193,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -8254,7 +8254,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -8318,7 +8318,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -8382,7 +8382,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -8447,7 +8447,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -8512,7 +8512,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -8576,7 +8576,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -8643,7 +8643,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -8704,7 +8704,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -8769,7 +8769,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -8832,7 +8832,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -8897,7 +8897,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 job_id: number;
@@ -8958,7 +8958,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 job_id: number;
@@ -9025,7 +9025,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -9088,7 +9088,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -9150,7 +9150,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -9218,7 +9218,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -9286,7 +9286,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -9355,7 +9355,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -9417,7 +9417,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -9478,7 +9478,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -9543,7 +9543,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 run_id: string;
@@ -9609,7 +9609,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -9670,7 +9670,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -9735,7 +9735,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -9800,7 +9800,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -9862,7 +9862,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -9926,7 +9926,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -9989,7 +9989,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -10054,7 +10054,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -10119,7 +10119,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -10184,7 +10184,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -10250,7 +10250,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -10315,7 +10315,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -10383,7 +10383,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -10448,7 +10448,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -10515,7 +10515,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -10582,7 +10582,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -10647,7 +10647,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -10710,7 +10710,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -10775,7 +10775,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -10838,7 +10838,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -10899,7 +10899,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -10962,7 +10962,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -11028,7 +11028,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -11095,7 +11095,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -11160,7 +11160,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -11227,7 +11227,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 phase_id: string;
@@ -11296,7 +11296,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -11362,7 +11362,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -11430,7 +11430,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -11497,7 +11497,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -11562,7 +11562,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -11628,7 +11628,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -11687,7 +11687,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -11750,7 +11750,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -11815,7 +11815,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 conversation_id: string;
@@ -11878,7 +11878,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 conversation_id: string;
@@ -11943,7 +11943,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 conversation_id: string;
@@ -12010,7 +12010,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 conversation_id: string;
@@ -12076,7 +12076,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 conversation_id: string;
@@ -12142,7 +12142,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12205,7 +12205,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12270,7 +12270,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12332,7 +12332,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12396,7 +12396,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12462,7 +12462,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12530,7 +12530,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12596,7 +12596,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12658,7 +12658,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12726,7 +12726,7 @@ export interface operations {
             };
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12788,7 +12788,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12855,7 +12855,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12922,7 +12922,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -12988,7 +12988,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -13049,7 +13049,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -13113,7 +13113,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -13179,7 +13179,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -13243,7 +13243,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -13309,7 +13309,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -13368,7 +13368,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -13433,7 +13433,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -13496,7 +13496,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -13561,7 +13561,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -13624,7 +13624,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 operation_id: string;
@@ -13685,7 +13685,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 operation_id: string;
@@ -13752,7 +13752,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 operation_id: string;
@@ -13819,7 +13819,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 operation_id: string;
@@ -13884,7 +13884,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -13945,7 +13945,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -14012,7 +14012,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -14077,7 +14077,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 operation_id: string;
@@ -14140,7 +14140,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 operation_id: string;
@@ -14207,7 +14207,7 @@ export interface operations {
                 /** @description The same key and the same action return the same job. */
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 operation_id: string;
@@ -14272,7 +14272,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -14331,7 +14331,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 scope: string;
@@ -14393,7 +14393,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -14457,7 +14457,7 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -14520,7 +14520,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -14583,7 +14583,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -14646,7 +14646,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -14709,7 +14709,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -14773,7 +14773,7 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -14836,7 +14836,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -14900,7 +14900,7 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -14964,7 +14964,7 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -15027,7 +15027,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 operation_id: string;
@@ -15088,7 +15088,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 operation_id: string;
@@ -15149,7 +15149,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 operation_id: string;
@@ -15214,7 +15214,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -15280,7 +15280,7 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -15343,7 +15343,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 operation_id: string;
@@ -15408,7 +15408,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -15469,7 +15469,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -15530,7 +15530,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -15595,7 +15595,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -15661,7 +15661,7 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -15726,7 +15726,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -15792,7 +15792,7 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -15857,7 +15857,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -15924,7 +15924,7 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -15992,7 +15992,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path: {
                 project_id: string;
@@ -16096,7 +16096,7 @@ export interface operations {
             query?: never;
             header?: {
                 /** @description Required with value 1 on mutations (CSRF protection). */
-                "x-harness-local"?: string | null;
+                "x-my-harness"?: string | null;
             };
             path?: never;
             cookie?: never;

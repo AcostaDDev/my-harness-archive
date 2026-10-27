@@ -152,8 +152,8 @@ EOF
       echo "argv = [\"npm\", \"run\", \"$script\"]"
       echo 'timeout_seconds = 1800'
     done
-  } > "$C/operator/harness-local.toml"
-  chmod 600 "$C/operator/harness-local.toml"
+  } > "$C/operator/my-harness.toml"
+  chmod 600 "$C/operator/my-harness.toml"
   echo "Preparado: $C"
 }
 

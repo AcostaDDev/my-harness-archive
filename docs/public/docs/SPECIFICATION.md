@@ -1,4 +1,4 @@
-# Specification — Harness Local
+# Specification — My Harness
 
 Functional requirements and business rules in force. Technical detail is in [ARCHITECTURE](ARCHITECTURE.md), data in
 [DDBB-DIAGRAM](DDBB-DIAGRAM.md), behavior step by step in [flows](flows/task-run.md), and progress in

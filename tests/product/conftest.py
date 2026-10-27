@@ -35,8 +35,8 @@ def _legacy_close(monkeypatch):
 
     The new T004 tests use the real producer, without this fixture.
     """
-    from harness_local.storage import closure
-    from harness_local.storage.transition import TransitionRepository
+    from my_harness.storage import closure
+    from my_harness.storage.transition import TransitionRepository
     original = closure.prepare
     monkeypatch.setattr(closure, 'prepare', lambda context, state, git:
                         None if state['phase']['status'] == 'CLOSED' else original(context, state, git))
@@ -57,8 +57,8 @@ def _confirmed_work_language(request, monkeypatch):
     a real confirmation. Tests of the gate itself opt out with `@pytest.mark.unconfirmed_work_language`."""
     if request.node.get_closest_marker('unconfirmed_work_language'):
         return
-    from harness_local.services.managed_runtime import ManagedRuntime
-    from harness_local.storage import work_language
+    from my_harness.services.managed_runtime import ManagedRuntime
+    from my_harness.storage import work_language
     capture, bind = work_language.capture, ManagedRuntime.with_work_language
 
     def confirm(session, root):
@@ -72,7 +72,7 @@ def _confirmed_work_language(request, monkeypatch):
         return capture(session, root)
 
     def confirmed_bind(runtime, project):
-        from harness_local.storage.backup import is_read_only_archive
+        from my_harness.storage.backup import is_read_only_archive
         if not is_read_only_archive(runtime.engine):
             with runtime.repository._write() as session:
                 confirm(session, project.context.root)

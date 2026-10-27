@@ -10,11 +10,11 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.core.engine.contracts import ContractError
-from harness_local.core.engine.document_ops import text_hash
-from harness_local.core.engine.planning import section, task_sources
-from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
-from harness_local.storage.models import ManagedJobRow
+from my_harness.core.engine.contracts import ContractError
+from my_harness.core.engine.document_ops import text_hash
+from my_harness.core.engine.planning import section, task_sources
+from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
+from my_harness.storage.models import ManagedJobRow
 from test_contract_shapes import agent_plan
 from test_documents import PLAN_P001, v2, v2checkout  # noqa: F401 (fixtures)
 from test_engine import PHASE_ID, PLAN, TASK_ID, context, edit, harness, review  # noqa: F401 (fixture)

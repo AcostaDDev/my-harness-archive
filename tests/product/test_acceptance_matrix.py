@@ -3,7 +3,7 @@
 Temporary Git/SQLite, fake agents and commands; no provider, network or private run.
 """
 
-from harness_local.core.engine.validation import CommandResult
+from my_harness.core.engine.validation import CommandResult
 
 from test_managed_api import (  # noqa: F401 (fixtures)
     Ports, action, all_events, client, config, edit, engine, git, repo, review, settle, submit, task, url)

@@ -1,7 +1,7 @@
 """P011-T004 (D163): frozen v1 recipe identities and the maintained v2 successors (wired by T020, D168).
 
-Data-only: no preparation, process, Git or SQLite. The v1 hashes are the T001 §5 baseline; a change to any of them
-would invalidate issued receipts and composition hashes.
+Data-only: no preparation, process, Git or SQLite. The v1 hashes are the T001 §5 baseline, reissued once by the
+rename to my_harness (D230); a change to any of them would invalidate issued receipts and composition hashes.
 """
 from dataclasses import replace
 import hashlib
@@ -9,19 +9,19 @@ from pathlib import Path
 
 import pytest
 
-from harness_local import recipes
-from harness_local.recipes import django, django_2, typescript_web, typescript_web_2
-from harness_local.services import project_preparation
+from my_harness import recipes
+from my_harness.recipes import django, django_2, typescript_web, typescript_web_2
+from my_harness.services import project_preparation
 
 SOURCES = Path(recipes.__file__).parent
 V1_BYTES = {
     'django-packages.json': '4c73e05b05cd14ac38284341e42ff3e39938ec4055e9c91f0baf4c6b3942d9e8',
     'django-requirements.lock': '0f2ce9afc90274a6da1b6c1d8b10cc62d6f530dd0b1f1c8c95609fd27d313c1b',
-    'django.py': '95b7e804503e7bfa2535a26ec0aff95d55c9b57ef75a256d65742838b4251dad',
-    'typescript_web.py': '3ca5c7d15fcdb9fc0b209c4d35aa15c2e0b57af2bd7f3fd3316f4c80d83f8571',
+    'django.py': '23459eac8c1248e722ee86413bcc6f5473ece7649ae76d147b16adc7cc4cd8d7',
+    'typescript_web.py': 'c3df3655cafd2f9284166c93109aa62f14607fc8587746877c92b1eba4fe14fe',
 }
-V1_FINGERPRINTS = {django: 'f511c00a2e099d8320d813cc6200e56ef96087b9c5ee56f96ef22d0b5a80e191',
-                   typescript_web: '4b1a8117841a5c4d496621742c3dadfcc2ed3b270c9f2174684a2ee8580a6485'}
+V1_FINGERPRINTS = {django: 'd2b89bcaa647d659dac7417c4af53e7cb532cfbaef1fd7346cb29d440eb35ff2',
+                   typescript_web: 'db5cc7d21fe4ef7b82b47ac3ce14a9445137d836ffdc5f8c9e25cf03d5638041'}
 DJANGO = {'installer_executable': '/tools/uv', 'python_executable': '/tools/python', 'timeout_seconds': 300,
           'max_output_bytes': 4096}
 NODE = {'node_executable': '/tools/node', 'npm_executable': '/tools/npm', 'npm_cache': '/cache',

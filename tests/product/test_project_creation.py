@@ -8,10 +8,10 @@ from alembic import command
 import pytest
 from sqlalchemy import text
 
-from harness_local.services.local_config import load_local_config
-from harness_local.services.managed_runtime import ManagedRuntime
-from harness_local.services.project_registry import RegistryError, digest
-from harness_local.storage.database import make_engine
+from my_harness.services.local_config import load_local_config
+from my_harness.services.managed_runtime import ManagedRuntime
+from my_harness.services.project_registry import RegistryError, digest
+from my_harness.storage.database import make_engine
 from test_project_registry import POLICY, v3, operator  # noqa: F401
 from test_local_config import setup, web, write, launches, SENTINEL  # noqa: F401
 from test_managed_api import client
@@ -422,7 +422,7 @@ def test_old_formats_and_bootstrap_ceiling_do_not_gain_creation_authority(creati
 
 
 def test_creation_authority_and_journal_survive_backup_as_read_only(creation):
-    from harness_local.storage.backup import create_backup, restore_backup
+    from my_harness.storage.backup import create_backup, restore_backup
     service, parent, config, url = creation
     select_root(service, parent)
     result = service.confirm(request(service), 'create')

@@ -5,8 +5,8 @@ import sys
 
 import pytest
 
-from harness_local.adapters.fake import FakeSimulationAdapter
-from harness_local.core.simulation import SimulationService
+from my_harness.adapters.fake import FakeSimulationAdapter
+from my_harness.core.simulation import SimulationService
 
 
 class MemoryRepository:
@@ -22,12 +22,12 @@ def test_core_imports_with_standard_library_only():
     result = subprocess.run([
         sys.executable, "-S", "-c",
         "import sys; sys.path.insert(0, sys.argv[1]); "
-        "from harness_local.core.simulation import SimulationService; "
-        "from harness_local.core.engine.workflow import OfflineEngine",
+        "from my_harness.core.simulation import SimulationService; "
+        "from my_harness.core.engine.workflow import OfflineEngine",
         str(source),
     ], capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
-    for path in (source / "harness_local/core").rglob("*.py"):
+    for path in (source / "my_harness/core").rglob("*.py"):
         for node in ast.walk(ast.parse(path.read_text())):
             if isinstance(node, ast.Import):
                 modules = [alias.name for alias in node.names]
@@ -36,8 +36,8 @@ def test_core_imports_with_standard_library_only():
             else:
                 continue
             # P011-T021 (D171): the message catalogs are the only outer leaf allowed; they use the stdlib only.
-            assert all(module.split(".")[0] in sys.stdlib_module_names or module == "harness_local.i18n"
-                       or module.startswith("harness_local.core") for module in modules)
+            assert all(module.split(".")[0] in sys.stdlib_module_names or module == "my_harness.i18n"
+                       or module.startswith("my_harness.core") for module in modules)
 
 
 def test_fake_result_is_local_and_does_not_launch_processes(monkeypatch):

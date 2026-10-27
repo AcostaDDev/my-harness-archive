@@ -13,13 +13,13 @@ import pytest
 from sqlalchemy import inspect, select
 from sqlalchemy.orm import Session
 
-from harness_local.services.configuration import digest, parse
-from harness_local.services.local_config import build, LocalConfigError
-from harness_local.storage.configuration import ConfigurationRepository, ConfigurationConflict
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import SQLiteManagedRepository
-from harness_local.storage.models import ConfigurationOperationRow as Operation, RegisteredProjectRow
-from harness_local.storage.schema import require_schema
+from my_harness.services.configuration import digest, parse
+from my_harness.services.local_config import build, LocalConfigError
+from my_harness.storage.configuration import ConfigurationRepository, ConfigurationConflict
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import SQLiteManagedRepository
+from my_harness.storage.models import ConfigurationOperationRow as Operation, RegisteredProjectRow
+from my_harness.storage.schema import require_schema
 
 
 def dumps(data):
@@ -377,7 +377,7 @@ def test_multifile_partial_recovery(setup, tmp_path):
 def test_restored_database_never_reads_original_paths(setup, monkeypatch):
     repo, data, _ = setup
     save(repo, [change(repo, dumps(data))])
-    from harness_local.storage import configuration
+    from my_harness.storage import configuration
     monkeypatch.setattr(configuration, 'is_read_only_archive', lambda engine: True)
     monkeypatch.setattr(repo, '_files', lambda session: pytest.fail('Archive accessed original paths'))
     assert repo.read()['status'] == 'READ_ONLY_ARCHIVE'
@@ -463,7 +463,7 @@ def test_draft_rejects_unknown_nested_permissions(setup):
 def test_backup_requires_explicit_root_for_versioned_files(setup, tmp_path):
     repo, data, _ = setup
     save(repo, [change(repo, dumps(data))])
-    from harness_local.storage.backup import BackupError, create_backup
+    from my_harness.storage.backup import BackupError, create_backup
     target = tmp_path / 'unsupported-backup'
     with pytest.raises(BackupError, match='root|raíz'):
         create_backup(Path(repo.managed.engine.url.database), target, writers_stopped=True)
@@ -472,7 +472,7 @@ def test_backup_requires_explicit_root_for_versioned_files(setup, tmp_path):
 
 def test_fsync_failure_retains_intent_and_recovers(setup, monkeypatch):
     repo, data, _ = setup
-    from harness_local.storage import configuration_files
+    from my_harness.storage import configuration_files
     real_sync = configuration_files.os.fsync
     failed = False
     def sync(fd):
@@ -517,7 +517,7 @@ from test_managed import context  # noqa: E402,F401
 def test_real_pending_work_blocks_activation_but_allows_save(setup, context, status):
     repo, data, _ = setup
     from test_managed import submit
-    from harness_local.storage.models import ManagedJobRow, ManagedRunRow
+    from my_harness.storage.models import ManagedJobRow, ManagedRunRow
     job = submit(repo.managed, context)
     with repo.managed._write() as session:
         session.get(ManagedJobRow, job.id).status = status if status != 'ACCEPTANCE_READY' else 'COMPLETED'
@@ -532,7 +532,7 @@ def test_real_pending_work_blocks_activation_but_allows_save(setup, context, sta
 def test_global_activation_includes_unregistered_definition_roots(setup, context, tmp_path):
     repo, data, _ = setup
     from test_managed import submit
-    from harness_local.storage.models import ManagedJobRow, PlanningConversationRow, PlanningTurnRow
+    from my_harness.storage.models import ManagedJobRow, PlanningConversationRow, PlanningTurnRow
     job = submit(repo.managed, context)
     other_root = str(tmp_path / 'unregistered-definition')
     with repo.managed._write() as session:
@@ -550,7 +550,7 @@ def test_global_activation_includes_unregistered_definition_roots(setup, context
 
 
 def test_editor_errors_follow_visual_language(setup):
-    from harness_local.i18n import emission
+    from my_harness.i18n import emission
     with emission('es'), pytest.raises(ValueError, match='TOML de configuración inválido'):
         parse('invalid = [', 'global')
     with emission('es'), pytest.raises(ValueError, match='Ámbito de configuración inválido'):

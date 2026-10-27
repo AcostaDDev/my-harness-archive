@@ -15,20 +15,20 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
-from harness_local.adapters.git import GitWorkspace, GitWorktrees
-from harness_local.api.app import create_app
-from harness_local.i18n import message
-from harness_local.core.engine.commit import GitIdentity
-from harness_local.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
-from harness_local.core.engine.journal import JournalError
-from harness_local.core.managed_mode import MARKER_PATH, digest
-from harness_local.services.managed_runtime import CONFIG_ENV, ManagedConfig, ManagedProject, load_config
-from harness_local.storage.database import make_engine
-from harness_local.storage.models import Base
+from my_harness.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
+from my_harness.adapters.git import GitWorkspace, GitWorktrees
+from my_harness.api.app import create_app
+from my_harness.i18n import message
+from my_harness.core.engine.commit import GitIdentity
+from my_harness.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
+from my_harness.core.engine.journal import JournalError
+from my_harness.core.managed_mode import MARKER_PATH, digest
+from my_harness.services.managed_runtime import CONFIG_ENV, ManagedConfig, ManagedProject, load_config
+from my_harness.storage.database import make_engine
+from my_harness.storage.models import Base
 
 TASK, PHASE = "P001-T001", "P001"
-IDENTITY = GitIdentity("Harness Local", "harness@example.invalid")
+IDENTITY = GitIdentity("My Harness", "harness@example.invalid")
 VERSIONS = {"engine": "h2-exit-1", "agent_adapter": "synthetic-1", "commands": "synthetic-1",
             "evidence": "git-1", "provider_cli": None}
 PLAN = """# Synthetic managed API plan
@@ -114,7 +114,7 @@ def config(context, ports=None, *, project="synthetic", commit=True, supervisor=
 
 def client(url, tmp_path, managed, **kwargs):
     return TestClient(create_app(url, tmp_path / "ui", managed=managed), base_url=LOCAL,
-                      headers={"X-Harness-Local": "1"}, **kwargs)
+                      headers={"X-My-Harness": "1"}, **kwargs)
 
 
 def settle(http, run_id, timeout=20.0):
@@ -407,7 +407,7 @@ def test_invalid_requests_are_rejected_before_any_row(tmp_path, url, engine, pla
 
 
 def test_runs_of_unregistered_checkouts_are_readable_but_not_actionable(tmp_path, url, engine, plain):
-    from harness_local.storage.managed import SQLiteManagedRepository
+    from my_harness.storage.managed import SQLiteManagedRepository
     other = tmp_path / "unregistered"
     (other / "app").mkdir(parents=True)
     (other / "app/main.txt").write_text("baseline\n", encoding="utf-8")
@@ -453,7 +453,7 @@ def test_host_origin_and_csrf_header_are_enforced_without_effects(tmp_path, url,
         assert foreign.get("/api/managed/projects").status_code == 403
         assert foreign.get("/api/managed/projects").json()["detail"]["code"] == "host_rejected"
         assert foreign.post("/api/managed/projects/synthetic/runs", json=RUN, headers={
-            "Idempotency-Key": "k", "X-Harness-Local": "1"}).status_code == 403
+            "Idempotency-Key": "k", "X-My-Harness": "1"}).status_code == 403
     with TestClient(app, base_url="http://127.0.0.1.evil.example") as lookalike:
         assert lookalike.get("/api/managed/projects").status_code == 403
     with TestClient(app, base_url=LOCAL) as http:
@@ -462,12 +462,12 @@ def test_host_origin_and_csrf_header_are_enforced_without_effects(tmp_path, url,
         assert missing.status_code == 403 and missing.json()["detail"]["code"] == "csrf_header_required"
         for origin in ("http://evil.example", "null", "file:///tmp/page.html"):
             cross = http.post("/api/managed/projects/synthetic/runs", json=RUN, headers={
-                "Idempotency-Key": "k", "X-Harness-Local": "1", "Origin": origin})
+                "Idempotency-Key": "k", "X-My-Harness": "1", "Origin": origin})
             assert cross.status_code == 403 and cross.json()["detail"]["code"] == "origin_rejected"
         assert table_counts(engine) == counts
         assert http.get("/api/managed/projects").status_code == 200  # reads without their own header
         local = http.post("/api/managed/projects/synthetic/runs", json=RUN, headers={
-            "Idempotency-Key": "k", "X-Harness-Local": "1", "Origin": LOCAL})
+            "Idempotency-Key": "k", "X-My-Harness": "1", "Origin": LOCAL})
         assert local.status_code == 202
 
 
@@ -475,7 +475,7 @@ def test_default_service_registers_nothing_and_never_launches_processes(tmp_path
     def forbidden(*args, **kwargs):
         raise AssertionError("No process may be launched by the default service")
     monkeypatch.setattr(subprocess, "Popen", forbidden)
-    with TestClient(create_app(url, tmp_path / "ui"), base_url=LOCAL, headers={"X-Harness-Local": "1"}) as http:
+    with TestClient(create_app(url, tmp_path / "ui"), base_url=LOCAL, headers={"X-My-Harness": "1"}) as http:
         assert http.get("/api/managed/projects").json() == []
         assert http.get("/api/managed/supervisor").json() == {
             "read_only_archive": False, "enabled": False, "alive": False, "last_error": None, "ports_configured": False,
@@ -501,8 +501,8 @@ def test_configuration_is_loaded_explicitly_from_the_environment(tmp_path, monke
     module = tmp_path / "synthetic_managed_config.py"
     module.write_text(
         "from pathlib import Path\n"
-        "from harness_local.services.managed_runtime import ManagedConfig, ManagedProject\n"
-        "from harness_local.core.engine.context import EnginePolicy, ProjectContext, ProjectProfile\n"
+        "from my_harness.services.managed_runtime import ManagedConfig, ManagedProject\n"
+        "from my_harness.core.engine.context import EnginePolicy, ProjectContext, ProjectProfile\n"
         f"ROOT = Path({str(plain.root)!r})\n"
         "def build():\n"
         "    policy = EnginePolicy(('e',), ('m',), 'p', 'm', 'r', 'h')\n"

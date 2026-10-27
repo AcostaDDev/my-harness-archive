@@ -12,16 +12,16 @@ import pytest
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.preparation import PreparationCommandRunner, verify_receipt
-from harness_local.core.engine.journal import JournalError
-from harness_local.recipes import django
-from harness_local.services.local_config import load_local_config, LocalConfigError
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import ManagedRuntime
-from harness_local.services.project_registry import RegistryError, digest
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict
-from harness_local.storage.models import (ProjectPreparationOperationRow as Operation, ProjectPreparationStepRow as Step,
+from my_harness.adapters.preparation import PreparationCommandRunner, verify_receipt
+from my_harness.core.engine.journal import JournalError
+from my_harness.recipes import django
+from my_harness.services.local_config import load_local_config, LocalConfigError
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import ManagedRuntime
+from my_harness.services.project_registry import RegistryError, digest
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict
+from my_harness.storage.models import (ProjectPreparationOperationRow as Operation, ProjectPreparationStepRow as Step,
                                          ManagedProcessRow as Process, CheckoutLockRow as Lock)
 from test_definition import World, ready, DRAFTS
 import test_definition
@@ -424,7 +424,7 @@ def test_completed_steps_without_adoption_reconcile_only_the_technical_commit(pr
 
 
 def test_preparation_backup_restores_journal_in_query_mode_without_new_authority(preparation, tmp_path):
-    from harness_local.storage.backup import create_backup, restore_backup, is_read_only_archive
+    from my_harness.storage.backup import create_backup, restore_backup, is_read_only_archive
     service, config, database, folder = preparation
     op=complete(service)
     bundle=tmp_path/'backup'
@@ -477,7 +477,7 @@ def test_receipt_survives_a_remount_that_renumbers_the_device_but_not_another_di
     """P009-T018 (D130): after a reboot macOS gave the pilot's volume another st_dev with the same inodes and bytes."""
     service,*_=preparation
     op=complete(service)
-    import harness_local.adapters.preparation as adapter
+    import my_harness.adapters.preparation as adapter
     original=adapter.identity
     monkeypatch.setattr(adapter,'identity',lambda info: {**original(info),'device':info.st_dev+3})
     verify_receipt(root(service),op['receipt'])
@@ -530,14 +530,14 @@ def test_registry_projects_and_preview_preserve_integer_jobs_during_preparation(
 
 
 def test_file_effects_check_the_authorized_root_inode_on_the_open_fd(tmp_path):
-    from harness_local.adapters.preparation import write_new
+    from my_harness.adapters.preparation import write_new
     with pytest.raises(ValueError, match='identity'):
         write_new(tmp_path,'nested/target.txt',b'synthetic',expected_identity={'device':-1,'inode':-1})
     assert list(tmp_path.iterdir())==[]
 
 
 def test_uv_cache_links_are_internal_evidence_and_cannot_escape_the_cache(tmp_path):
-    from harness_local.services.project_preparation import snapshot
+    from my_harness.services.project_preparation import snapshot
     cache=tmp_path/django.WORK/'cache'
     (cache/'archive').mkdir(parents=True)
     (cache/'archive/wheel.txt').write_text('synthetic wheel cache')
@@ -645,7 +645,7 @@ def test_later_profile_preparation_does_not_replace_legacy_recipe_authority(prep
     assert bound.versions['project_environment_sha256'] == digest(completed['receipt'])
     assert service.runtime.registry.registrar._receipts[project.context.root] == completed['receipt']
     # Preparation CLI evidence is included without turning either receipt into execution authority.
-    from harness_local.storage.backup import create_backup, verify_bundle
+    from my_harness.storage.backup import create_backup, verify_bundle
     import hashlib
     import shutil
     artifacts = tmp_path / 'synthetic-preparation-cli'

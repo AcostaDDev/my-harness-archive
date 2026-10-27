@@ -13,11 +13,11 @@ from pathlib import Path
 
 import pytest
 
-from harness_local import i18n
-from harness_local.cli import build_parser, main
-from harness_local.services.local_config import load_local_config
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.project_registry import trust_statement
+from my_harness import i18n
+from my_harness.cli import build_parser, main
+from my_harness.services.local_config import load_local_config
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.project_registry import trust_statement
 from test_api_diagnostics import save_language
 from test_backup import db_path
 from test_local_config import setup, write  # noqa: F401  (fixtures)
@@ -34,7 +34,7 @@ SPANISH = re.compile(r'[áéíóúñ¿¡]|\b(desconocid[oa]s?|gestionad[oa]|requ
 EXCEPTIONS = {
     'core/engine/document_text.py': None, 'core/engine/language.py': None, 'core/engine/planning.py': None,
     'core/engine/import_commit.py': None, 'core/engine/documents.py': {'fuera de alcance'},
-    'core/engine/document_export.py': {'Estado gestionado por Harness Local (SQLite).\n\n```json\n'},
+    'core/engine/document_export.py': {'Estado gestionado por My Harness (SQLite).\n\n```json\n'},
     'core/engine/definition.py': {'ROADMAP needs at least one phase section «## PNNN — título»'},
     'core/engine/onboarding_commit.py': {'docs: incorporar al control del harness'},
     'core/engine/chat_commands.py': {'abrir-fase', 'tarea'}, 'storage/chat.py': {'tarea'},
@@ -84,7 +84,7 @@ def test_service_catalog_keys_exist_in_both_languages():
             first = node.args[0]
             if name in ('tr', 'message', 'say') and isinstance(first, ast.Constant) and isinstance(first.value, str):
                 used.add(('cli.help.' if path.name == 'cli.py' and name == 'say' else '') + first.value)
-    from harness_local.adapters.cli_diagnostics import FIXES
+    from my_harness.adapters.cli_diagnostics import FIXES
     used |= {f'cli_diagnostics.{code}' for code in FIXES}
     used.discard('{}')
     missing = sorted(key for key in used if '.' in key and (key not in base or key not in other))

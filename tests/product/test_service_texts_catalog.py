@@ -12,12 +12,12 @@ from pathlib import Path
 
 import pytest
 
-from harness_local import i18n
-from harness_local.adapters.bootstrap import DraftChanged
-from harness_local.api.managed import call
-from harness_local.core.engine.acceptance import assess_acceptance
-from harness_local.core.engine.document_ops import ManagedBlocksEdited
-from harness_local.storage.managed import Conflict
+from my_harness import i18n
+from my_harness.adapters.bootstrap import DraftChanged
+from my_harness.api.managed import call
+from my_harness.core.engine.acceptance import assess_acceptance
+from my_harness.core.engine.document_ops import ManagedBlocksEdited
+from my_harness.storage.managed import Conflict
 from test_definition import answer, world  # noqa: F401  (fixture)
 from test_documents import STATE, STATE_BEGIN, edit_view, v2, v2checkout  # noqa: F401  (fixtures)
 from test_managed import repository  # noqa: F401  (fixture)
@@ -132,7 +132,7 @@ def test_engine_reasons_follow_the_emission_and_render_back_to_english():
         root = None
 
     from unittest import mock
-    with mock.patch('harness_local.core.engine.acceptance.parity_reasons', return_value=[]):
+    with mock.patch('my_harness.core.engine.acceptance.parity_reasons', return_value=[]):
         with i18n.emission('es'):
             decision = assess_acceptance(Cycle(), None, Context())
     assert decision.reasons[0] == 'La revisión independiente no dio ACCEPT'

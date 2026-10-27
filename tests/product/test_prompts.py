@@ -9,15 +9,15 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from harness_local.core.engine.contracts import AgentResult, freeze
-from harness_local.core.engine.prompts import (
+from my_harness.core.engine.contracts import AgentResult, freeze
+from my_harness.core.engine.prompts import (
     VARIABLES, builtin_catalog, digest, dump_catalog, load_catalog, render, validate,
 )
-from harness_local.core.engine.serialization import dump_history, load_history
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict
-from harness_local.storage.models import PromptVersionRow, PromptActivationRow, PromptHeadRow
-from harness_local.storage.prompts import PromptRepository
+from my_harness.core.engine.serialization import dump_history, load_history
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict
+from my_harness.storage.models import PromptVersionRow, PromptActivationRow, PromptHeadRow
+from my_harness.storage.prompts import PromptRepository
 from test_engine import context, harness, edit, review, start
 from test_managed_api import client, config, make_context
 
@@ -200,7 +200,7 @@ def test_api_editor_guard_conflict_diff_rollback_and_restart(migrated_database, 
         assert http.post(path + '/validate', json={'template': '{{INVALID}}'}).status_code == 422
         assert http.post(path + '/validate', json={'template': text}).status_code == 200
         assert http.post(path + '/versions', json={'expected_version': 0, 'template': text},
-                         headers={'X-Harness-Local': '0'}).status_code == 403
+                         headers={'X-My-Harness': '0'}).status_code == 403
         assert http.post(path + '/versions', json={'expected_version': 0, 'template': text},
                          headers={'Origin': 'https://foreign.invalid'}).status_code == 403
         assert http.get(path, headers={'Host': 'foreign.invalid'}).status_code == 403
@@ -241,8 +241,8 @@ def test_cross_project_versions_and_wrong_scope_cannot_activate(prompts, context
 
 
 def test_schema_roundtrip_preserves_existing_managed_state(prompts, migrated_database, context):
-    from harness_local.storage.models import ManagedRunRow
-    from harness_local.storage.managed import SQLiteManagedRepository
+    from my_harness.storage.models import ManagedRunRow
+    from my_harness.storage.managed import SQLiteManagedRepository
     from test_managed import submit
     repository = SQLiteManagedRepository(prompts.engine)
     job = submit(repository, context)
@@ -257,9 +257,9 @@ def test_schema_roundtrip_preserves_existing_managed_state(prompts, migrated_dat
 
 
 def test_snapshot_is_persisted_before_agent_and_old_rows_survive_activation(prompts, context):
-    from harness_local.storage.managed import SQLiteManagedRepository
-    from harness_local.storage.models import ManagedAttemptRow
-    from harness_local.storage.managed_views import SQLiteManagedViews
+    from my_harness.storage.managed import SQLiteManagedRepository
+    from my_harness.storage.models import ManagedAttemptRow
+    from my_harness.storage.managed_views import SQLiteManagedViews
     from test_managed import submit, worker
     repository = SQLiteManagedRepository(prompts.engine)
     old = activate(prompts, context, 'execute-task', '\nInitial persisted template')

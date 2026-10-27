@@ -7,20 +7,20 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.git import GitWorkspace
-from harness_local.core.engine.contracts import ContractError, context_snapshot, task_contract
-from harness_local.core.engine.document_ops import text_hash
-from harness_local.core.engine.documents import (
+from my_harness.adapters.git import GitWorkspace
+from my_harness.core.engine.contracts import ContractError, context_snapshot, task_contract
+from my_harness.core.engine.document_ops import text_hash
+from my_harness.core.engine.documents import (
     Layout, base_section, blocks, budget_warnings, decision_index, inline, markers, parse_roadmap, phase_data,
     plan_tasks, replace_block, skeleton,
 )
-from harness_local.core.engine.journal import JournalError
-from harness_local.core.engine.planning import deterministic_task
-from harness_local.core.engine.serialization import restore_context
-from harness_local.storage.documents import DocumentsRepository
-from harness_local.storage.managed import Conflict
-from harness_local.storage.models import ManagedJobRow, PhaseOperationRow, PhaseRow
-from harness_local.storage.transition import TransitionRepository
+from my_harness.core.engine.journal import JournalError
+from my_harness.core.engine.planning import deterministic_task
+from my_harness.core.engine.serialization import restore_context
+from my_harness.storage.documents import DocumentsRepository
+from my_harness.storage.managed import Conflict
+from my_harness.storage.models import ManagedJobRow, PhaseOperationRow, PhaseRow
+from my_harness.storage.transition import TransitionRepository
 from test_managed import repository  # noqa: F401  (fixture)
 from test_managed_api import VERSIONS, client, git, make_context, review
 from test_phases import CRITERIA, World, head, phase_review
@@ -249,7 +249,7 @@ def test_named_blocks_validate_markers_and_inline_values_cannot_inject_markdown(
     hostile = f'a\n## b {STATE_END} <script>`|*_[x](y)\n```'
     escaped = inline(hostile)
     assert '\n' not in escaped and '<' not in escaped and '`' not in escaped.replace('\\`', '')
-    assert 'harness-local' in escaped and '&lt;!--' in escaped and '\\|' in escaped
+    assert 'harness-local:managed' in escaped and '&lt;!--' in escaped and '\\|' in escaped
     assert blocks(replace_block('# T\n', escaped + '\n', 'state')) == {
         'state': f'{STATE_BEGIN}\n{escaped}\n{STATE_END}'}
     long = inline('x' * 700, 600)
@@ -310,7 +310,7 @@ def test_skeleton_is_a_valid_v2_document_set_with_spanish_deterministic_plan(tmp
 
 def test_generated_instruction_files_respect_their_line_budgets_and_list_profile_commands():
     """D088 point 1: AGENTS ≤60 lines with discovery, rules and commands; CLAUDE and GEMINI ≤15 that import it."""
-    from harness_local.core.engine.documents import MAX_AGENTS_LINES, MAX_WRAPPER_LINES
+    from my_harness.core.engine.documents import MAX_AGENTS_LINES, MAX_WRAPPER_LINES
     plain = skeleton(LAYOUT, 'Sintético')
     assert 'Sin comandos declarados' in plain['AGENTS.md']
     many = [('pytest', '-q', f'tests/test_{n}.py') for n in range(40)]
@@ -609,7 +609,7 @@ def test_transition_crash_recovery_reuses_intent_and_creates_one_phase(v2, point
     original_head = head(v2)
     job = queue_transition(v2, pid)
     original_write, original_execute = GitWorkspace._write_mechanical, GitWorkspace.execute
-    import harness_local.storage.transition as module
+    import my_harness.storage.transition as module
     original_settle = module.settle
     once = [False]
 
@@ -781,7 +781,7 @@ def test_documents_status_reports_drift_changes_warnings_and_archive(v2):
 
 
 def test_http_documents_edit_without_retired_transition(v2, tmp_path):
-    from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+    from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
     pid = v2.create_v2()
     v2.accept()
     configuration = ManagedConfig((ManagedProject('synthetic', v2.context, VERSIONS),),
@@ -854,7 +854,7 @@ def test_worktree_decision_edit_regenerates_index_in_the_same_commit(v2):
 
 
 def test_d036_export_renders_v2_blocks_for_every_adopted_phase_document(v2):
-    from harness_local.storage.document_export import DocumentExportRepository
+    from my_harness.storage.document_export import DocumentExportRepository
     pid = v2.create_v2()
     v2.phases.raise_question(pid, v2.get(pid)['version'], text='¿Formato <b>final</b>?')
     exporter = DocumentExportRepository(v2.repository)

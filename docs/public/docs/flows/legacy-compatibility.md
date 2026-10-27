@@ -1,6 +1,6 @@
 # Flow — compatibility after retiring the previous harness support
 
-Harness Local once observed, indexed and imported projects run by an earlier harness format, and could activate a
+My Harness once observed, indexed and imported projects run by an earlier harness format, and could activate a
 managed mode on them. That support was retired
 ([D161](../DECISIONS.md#d161--retirement-of-the-previous-harness-support)); the product has two entries only:
 [defining a new project](project-definition.md) and [onboarding a repository without a harness](project-onboarding.md).

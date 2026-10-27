@@ -9,21 +9,21 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from harness_local.core.engine.context import IntakeContext
-from harness_local.core.engine.contracts import context_snapshot
-from harness_local.core.engine.definition import text_hash
-from harness_local.core.engine.serialization import restore_context
-from harness_local.services.profile_proposal import validate
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict, SQLiteManagedRepository
-from harness_local.storage.models import ConfigurationOperationRow, RegisteredProjectRow
-from harness_local.storage.onboarding import OnboardingDrafts
+from my_harness.core.engine.context import IntakeContext
+from my_harness.core.engine.contracts import context_snapshot
+from my_harness.core.engine.definition import text_hash
+from my_harness.core.engine.serialization import restore_context
+from my_harness.services.profile_proposal import validate
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict, SQLiteManagedRepository
+from my_harness.storage.models import ConfigurationOperationRow, RegisteredProjectRow
+from my_harness.storage.onboarding import OnboardingDrafts
 from test_definition import World, answer
 from test_managed_api import IDENTITY, VERSIONS, Ports, make_context, client
 from test_project_onboarding import checkout, git
-from harness_local.adapters.git import GitWorkspace
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+from my_harness.adapters.git import GitWorkspace
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
 
 DOCS = {
     'docs/SPECIFICATION.md': '# Specification\n\nA synthetic Go calculator.\n',
@@ -246,9 +246,9 @@ def test_http_intake_profile_contract_and_guards(intake, tmp_path):
                 'expected_version': world.view(cid)['version']}
         assert http.post(base + '/profile/preview', json=body,
                          headers={'Origin': 'https://foreign.invalid'}).status_code == 403
-        http.headers.pop('X-Harness-Local')
+        http.headers.pop('X-My-Harness')
         assert http.post(base + '/profile/preview', json=body).status_code == 403
-        http.headers['X-Harness-Local'] = '1'
+        http.headers['X-My-Harness'] = '1'
         shown = http.post(base + '/profile/preview', json=body)
         assert shown.status_code == 200 and shown.json()['ready'], shown.text
         assert http.post(base + '/profile/confirm', json={**body, 'preview_sha256': shown.json()['preview_sha256'],
@@ -285,7 +285,7 @@ def test_full_profile_shape_retains_formatter_preparation_junit_and_inventory_ev
 
 def test_v9_registration_without_composition_is_documentary_and_survives_restart(setup, tmp_path, monkeypatch):
     import shutil
-    from harness_local.services.local_config import _build
+    from my_harness.services.local_config import _build
     from test_project_registry import register, confirm as register_confirm
     repo, data, directory = setup
     root = tmp_path / 'empty intake'
@@ -330,7 +330,7 @@ from test_configuration import setup  # noqa: E402, F401
 
 def test_migration_retains_legacy_registration_and_referencing_audit(migrated_database):
     from sqlalchemy import text
-    from harness_local.storage.models import RegisteredProjectEventRow
+    from my_harness.storage.models import RegisteredProjectEventRow
     url, alembic = migrated_database
     engine = make_engine(url)
     command.downgrade(alembic, '0026_configuration')
@@ -358,7 +358,7 @@ def test_migration_retains_legacy_registration_and_referencing_audit(migrated_da
 
 def test_versioned_global_authority_restarts_with_profileless_registration(setup, tmp_path, monkeypatch):
     import shutil
-    from harness_local.services.local_config import LocalComposer
+    from my_harness.services.local_config import LocalComposer
     from test_configuration_api import app_for, store, schedule
     from test_project_registry import register, confirm as register_confirm
     from session_client import TestClient
@@ -376,7 +376,7 @@ def test_versioned_global_authority_restarts_with_profileless_registration(setup
     with TestClient(app_for(repo)) as http:
         assert http.get('/api/managed/configuration').json()['mode'] == 'READY'
         # This fixture's client needs the ordinary local CSRF header on mutations.
-        http.headers['X-Harness-Local'] = '1'
+        http.headers['X-My-Harness'] = '1'
         _, saved = register_confirm(http, register(root, project_id='intake', composition=None, bootstrap_enabled=True))
         assert saved.status_code == 200, saved.text
     with TestClient(app_for(repo)) as http:

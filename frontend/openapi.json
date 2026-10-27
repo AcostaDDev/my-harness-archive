@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Harness Local",
+    "title": "My Harness",
     "version": "0.1.0"
   },
   "paths": {
@@ -79,7 +79,7 @@
         "operationId": "managed_supervisor",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -92,7 +92,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -158,7 +158,7 @@
         "operationId": "managed_preferences",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -171,7 +171,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -248,7 +248,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -261,7 +261,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -336,7 +336,7 @@
         "operationId": "managed_projects",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -349,7 +349,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -427,7 +427,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -440,7 +440,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -505,7 +505,7 @@
         "operationId": "managed_registry",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -518,7 +518,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -592,7 +592,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -605,7 +605,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -671,7 +671,7 @@
         "operationId": "managed_registry_preview",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -684,7 +684,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -760,7 +760,7 @@
         "operationId": "managed_registry_apply",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -773,7 +773,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -858,7 +858,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -871,7 +871,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -956,7 +956,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -969,7 +969,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -1053,7 +1053,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -1066,7 +1066,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -1141,7 +1141,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -1154,7 +1154,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -1288,7 +1288,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -1301,7 +1301,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -1386,7 +1386,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -1399,7 +1399,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -1484,7 +1484,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -1497,7 +1497,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -1571,7 +1571,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -1584,7 +1584,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -1683,7 +1683,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -1696,7 +1696,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -1795,7 +1795,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -1808,7 +1808,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -1933,7 +1933,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -1946,7 +1946,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -2071,7 +2071,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -2084,7 +2084,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -2185,7 +2185,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -2198,7 +2198,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -2297,7 +2297,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -2310,7 +2310,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -2393,7 +2393,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -2406,7 +2406,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -2509,7 +2509,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -2522,7 +2522,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -2609,7 +2609,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -2622,7 +2622,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -2706,7 +2706,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -2719,7 +2719,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -2794,7 +2794,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -2807,7 +2807,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -2906,7 +2906,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -2919,7 +2919,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -3021,7 +3021,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -3034,7 +3034,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -3117,7 +3117,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -3130,7 +3130,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -3238,7 +3238,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -3251,7 +3251,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -3359,7 +3359,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -3372,7 +3372,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -3483,7 +3483,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -3496,7 +3496,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -3570,7 +3570,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -3583,7 +3583,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -3659,7 +3659,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -3672,7 +3672,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -3765,7 +3765,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -3778,7 +3778,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -3862,7 +3862,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -3875,7 +3875,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -3951,7 +3951,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -3964,7 +3964,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -4058,7 +4058,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -4071,7 +4071,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -4179,7 +4179,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -4192,7 +4192,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -4266,7 +4266,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -4279,7 +4279,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -4377,7 +4377,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -4390,7 +4390,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -4478,7 +4478,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -4491,7 +4491,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -4590,7 +4590,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -4603,7 +4603,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -4687,7 +4687,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -4700,7 +4700,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -4793,7 +4793,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -4806,7 +4806,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -4891,7 +4891,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -4904,7 +4904,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -4997,7 +4997,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -5010,7 +5010,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -5107,7 +5107,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -5120,7 +5120,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -5205,7 +5205,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -5218,7 +5218,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -5315,7 +5315,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -5328,7 +5328,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -5426,7 +5426,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -5439,7 +5439,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -5523,7 +5523,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -5536,7 +5536,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -5621,7 +5621,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -5634,7 +5634,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -5719,7 +5719,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -5732,7 +5732,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -5817,7 +5817,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -5830,7 +5830,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -5905,7 +5905,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -5918,7 +5918,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -6004,7 +6004,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -6017,7 +6017,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -6093,7 +6093,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -6106,7 +6106,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -6203,7 +6203,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -6216,7 +6216,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -6300,7 +6300,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -6313,7 +6313,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -6410,7 +6410,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -6423,7 +6423,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -6553,7 +6553,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -6566,7 +6566,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -6728,7 +6728,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -6741,7 +6741,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -6939,7 +6939,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -6952,7 +6952,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -7129,7 +7129,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -7142,7 +7142,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -7286,7 +7286,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -7299,7 +7299,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -7458,7 +7458,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -7471,7 +7471,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -7545,7 +7545,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -7558,7 +7558,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -7648,7 +7648,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -7661,7 +7661,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -7745,7 +7745,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -7758,7 +7758,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -7846,7 +7846,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -7859,7 +7859,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -7943,7 +7943,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -7956,7 +7956,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -8063,7 +8063,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -8076,7 +8076,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -8169,7 +8169,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -8182,7 +8182,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -8266,7 +8266,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -8279,7 +8279,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -8369,7 +8369,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -8382,7 +8382,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -8475,7 +8475,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -8488,7 +8488,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -8571,7 +8571,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -8584,7 +8584,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -8681,7 +8681,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -8694,7 +8694,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -8787,7 +8787,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -8800,7 +8800,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -8906,7 +8906,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -8919,7 +8919,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -9013,7 +9013,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -9026,7 +9026,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -9108,7 +9108,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -9121,7 +9121,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -9226,7 +9226,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -9239,7 +9239,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -9332,7 +9332,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -9345,7 +9345,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -9447,7 +9447,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -9460,7 +9460,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -9554,7 +9554,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -9567,7 +9567,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -9651,7 +9651,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -9664,7 +9664,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -9747,7 +9747,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -9760,7 +9760,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -9856,7 +9856,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -9869,7 +9869,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -9963,7 +9963,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -9976,7 +9976,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -10073,7 +10073,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -10086,7 +10086,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -10161,7 +10161,7 @@
         "operationId": "managed_creation_root",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -10174,7 +10174,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -10239,7 +10239,7 @@
         "operationId": "managed_creation_root_preview",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -10252,7 +10252,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -10340,7 +10340,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -10353,7 +10353,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -10428,7 +10428,7 @@
         "operationId": "managed_creation_preview",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -10441,7 +10441,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -10529,7 +10529,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -10542,7 +10542,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -10626,7 +10626,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -10639,7 +10639,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -10713,7 +10713,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -10726,7 +10726,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -10823,7 +10823,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -10836,7 +10836,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -10933,7 +10933,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -10946,7 +10946,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -11030,7 +11030,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -11043,7 +11043,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -11117,7 +11117,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -11130,7 +11130,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -11235,7 +11235,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -11248,7 +11248,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -11340,7 +11340,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -11353,7 +11353,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -11440,7 +11440,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -11453,7 +11453,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -11550,7 +11550,7 @@
             "description": "The same key and the same action return the same job."
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -11563,7 +11563,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -11638,7 +11638,7 @@
         "operationId": "configuration_read",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -11651,7 +11651,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -11734,7 +11734,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -11747,7 +11747,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -11812,7 +11812,7 @@
         "operationId": "configuration_import_preview",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -11825,7 +11825,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -11911,7 +11911,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -11924,7 +11924,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -11999,7 +11999,7 @@
         "operationId": "configuration_form",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -12012,7 +12012,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -12087,7 +12087,7 @@
         "operationId": "configuration_detect",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -12100,7 +12100,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -12175,7 +12175,7 @@
         "operationId": "configuration_check_clients",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -12188,7 +12188,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -12263,7 +12263,7 @@
         "operationId": "configuration_preview",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -12276,7 +12276,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -12362,7 +12362,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -12375,7 +12375,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -12450,7 +12450,7 @@
         "operationId": "configuration_activation_preview",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -12463,7 +12463,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -12549,7 +12549,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -12562,7 +12562,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -12648,7 +12648,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -12661,7 +12661,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -12745,7 +12745,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -12758,7 +12758,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -12832,7 +12832,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -12845,7 +12845,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -12919,7 +12919,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -12932,7 +12932,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -13007,7 +13007,7 @@
         "operationId": "configuration_assistance_preview",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -13020,7 +13020,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -13108,7 +13108,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -13121,7 +13121,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -13205,7 +13205,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -13218,7 +13218,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -13302,7 +13302,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -13315,7 +13315,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -13389,7 +13389,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -13402,7 +13402,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -13476,7 +13476,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -13489,7 +13489,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -13573,7 +13573,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -13586,7 +13586,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -13681,7 +13681,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -13694,7 +13694,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -13778,7 +13778,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -13791,7 +13791,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -13886,7 +13886,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -13899,7 +13899,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -13992,7 +13992,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -14005,7 +14005,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -14109,7 +14109,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -14122,7 +14122,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -14217,7 +14217,7 @@
             }
           },
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -14230,7 +14230,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }
@@ -14335,7 +14335,7 @@
         "operationId": "create_simulation",
         "parameters": [
           {
-            "name": "x-harness-local",
+            "name": "x-my-harness",
             "in": "header",
             "required": false,
             "schema": {
@@ -14348,7 +14348,7 @@
                 }
               ],
               "description": "Required with value 1 on mutations (CSRF protection).",
-              "title": "X-Harness-Local"
+              "title": "X-My-Harness"
             },
             "description": "Required with value 1 on mutations (CSRF protection)."
           }

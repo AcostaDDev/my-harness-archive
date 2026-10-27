@@ -13,6 +13,6 @@ class TestClient(AnonymousClient):
         client = super().__enter__()
         if self.base_url.host in {'127.0.0.1', 'localhost', '::1'}:
             response = self.post('/api/session', json={'key': self.app.state.sessions.path.read_text()},
-                                 headers={'X-Harness-Local': '1'})
+                                 headers={'X-My-Harness': '1'})
             assert response.status_code == 200, response.text
         return client

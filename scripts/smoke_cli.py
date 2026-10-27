@@ -19,13 +19,13 @@ from uuid import uuid4
 from alembic import command
 from alembic.config import Config
 
-from harness_local.adapters.cli_agents import CLIConfig, CLIProcessAdapter
-from harness_local.adapters.processes import identity
-from harness_local.core.engine.context import EnginePolicy, ProjectContext, ProjectProfile
-from harness_local.core.engine.contracts import AgentRequest, Attempt, Selection, context_snapshot, stop_history
-from harness_local.services.managed import _Journal
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import SQLiteManagedRepository
+from my_harness.adapters.cli_agents import CLIConfig, CLIProcessAdapter
+from my_harness.adapters.processes import identity
+from my_harness.core.engine.context import EnginePolicy, ProjectContext, ProjectProfile
+from my_harness.core.engine.contracts import AgentRequest, Attempt, Selection, context_snapshot, stop_history
+from my_harness.services.managed import _Journal
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import SQLiteManagedRepository
 
 
 def smoke_environment():

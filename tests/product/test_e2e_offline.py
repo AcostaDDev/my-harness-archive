@@ -9,11 +9,11 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-from harness_local.api.app import create_app
-from harness_local.core.engine.contracts import AgentResult, freeze
-from harness_local.core.engine.permissions import LAYERS
-from harness_local.core.engine.validation import CommandResult
-from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+from my_harness.api.app import create_app
+from my_harness.core.engine.contracts import AgentResult, freeze
+from my_harness.core.engine.permissions import LAYERS
+from my_harness.core.engine.validation import CommandResult
+from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
 from test_bootstrap import DATA
 from test_managed_api import (LOCAL, RUN, STOPPED, VERSIONS, Ports, action, all_events,
     config, edit, git, main_snapshot, make_context, review, settle,
@@ -22,7 +22,7 @@ from test_managed_api import (LOCAL, RUN, STOPPED, VERSIONS, Ports, action, all_
 
 def open_app(url, tmp_path, managed):
     return TestClient(create_app(url, tmp_path / 'ui', managed=managed),
-                      base_url=LOCAL, headers={'X-Harness-Local': '1'})
+                      base_url=LOCAL, headers={'X-My-Harness': '1'})
 
 
 def login(http):

@@ -27,22 +27,22 @@ from distribution_artifacts import archive_members, check_artifacts, write_manif
 
 def bundle(path):
     path.mkdir()
-    project = {'name': 'harness-local', 'version': '0.1.0', 'license': 'MIT',
+    project = {'name': 'my-harness', 'version': '0.1.0', 'license': 'MIT',
                'requires-python': '>=3.14,<3.15', 'dependencies': ['fastapi==0.143.0']}
-    metadata = ('Name: harness-local\nVersion: 0.1.0\nLicense-Expression: MIT\nRequires-Python: >=3.14,<3.15\n'
+    metadata = ('Name: my-harness\nVersion: 0.1.0\nLicense-Expression: MIT\nRequires-Python: >=3.14,<3.15\n'
                 'Requires-Dist: fastapi==0.143.0\nLicense-File: LICENSE\nLicense-File: NOTICE.md\n'
                 'License-File: NOTICE-THIRD-PARTY.md\n\nSynthetic package\n')
-    info = 'harness_local-0.1.0.dist-info/'
-    with zipfile.ZipFile(path / 'harness_local-0.1.0-py3-none-any.whl', 'w') as wheel:
-        for name, content in {'harness_local/api/app.py': 'FastAPI(title="Harness Local", version="0.1.0")',
-                              'harness_local/web/index.html': '<div id="root"></div>',
-                              'harness_local/migrations/versions/0001_synthetic.py': '# synthetic',
+    info = 'my_harness-0.1.0.dist-info/'
+    with zipfile.ZipFile(path / 'my_harness-0.1.0-py3-none-any.whl', 'w') as wheel:
+        for name, content in {'my_harness/api/app.py': 'FastAPI(title="My Harness", version="0.1.0")',
+                              'my_harness/web/index.html': '<div id="root"></div>',
+                              'my_harness/migrations/versions/0001_synthetic.py': '# synthetic',
                               info + 'METADATA': metadata,
                               **{info + 'licenses/' + name: 'Synthetic license' for name in
                                  ('LICENSE', 'NOTICE.md', 'NOTICE-THIRD-PARTY.md')}}.items():
             wheel.writestr(name, content)
-    with tarfile.open(path / 'harness_local-0.1.0.tar.gz', 'w:gz') as archive:
-        member = tarfile.TarInfo('harness_local-0.1.0/PKG-INFO')
+    with tarfile.open(path / 'my_harness-0.1.0.tar.gz', 'w:gz') as archive:
+        member = tarfile.TarInfo('my_harness-0.1.0/PKG-INFO')
         content = metadata.encode()
         member.size = len(content)
         archive.addfile(member, io.BytesIO(content))
@@ -86,7 +86,7 @@ elif '--version' in args:
 elif 'venv' in args:
     venv = pathlib.Path(args[-1]); (venv / 'bin').mkdir(parents=True)
     (venv / 'bin/python').write_text('synthetic interpreter')
-    (venv / 'bin/harness-local').write_text('synthetic CLI')
+    (venv / 'bin/my-harness').write_text('synthetic CLI')
 elif 'sync' in args and os.environ.get('FAIL_SYNC'):
     sys.exit(8)
 '''
@@ -223,7 +223,7 @@ def test_repeat_detects_changed_installed_files(setup):
     args, _ = setup
     installer.install(args)
     generation = json.loads((args.install_dir / 'current.json').read_text())['generation']
-    (args.install_dir / 'generations' / generation / 'venv/bin/harness-local').write_text('changed')
+    (args.install_dir / 'generations' / generation / 'venv/bin/my-harness').write_text('changed')
     with pytest.raises(installer.InstallRefused, match='venv has changed'):
         installer.install(args)
 
@@ -241,7 +241,7 @@ def test_self_contained_artifact_verifier_rejects_tampering(tmp_path, problem):
         write_checksums(distribution)
     else:
         with zipfile.ZipFile(wheel, 'a') as archive:
-            name = {'checksum': 'new', 'member': 'new', 'duplicate': 'harness_local/web/index.html',
+            name = {'checksum': 'new', 'member': 'new', 'duplicate': 'my_harness/web/index.html',
                     'unsafe': '../escape'}[problem]
             archive.writestr(name, 'changed')
         if problem != 'checksum':
@@ -318,12 +318,12 @@ def test_build_helper_routes_caches_locks_and_verification(tmp_path, monkeypatch
     import check_distribution as checker
     root = tmp_path / 'source'
     (root / 'frontend/dist').mkdir(parents=True)
-    (root / 'src/harness_local').mkdir(parents=True)
-    (root / 'src/harness_local/__init__.py').write_text('')
+    (root / 'src/my_harness').mkdir(parents=True)
+    (root / 'src/my_harness/__init__.py').write_text('')
     (root / 'scripts').mkdir()
     (root / 'tests/fixtures/e2e').mkdir(parents=True)
     for name in builder.PROJECT_FILES:
-        (root / name).write_text('[project]\nname = "harness-local"\nversion = "0.1.0"\n' if name == 'pyproject.toml' else 'synthetic')
+        (root / name).write_text('[project]\nname = "my-harness"\nversion = "0.1.0"\n' if name == 'pyproject.toml' else 'synthetic')
     from distribution_artifacts import BUNDLE_SCRIPTS
     for name in BUNDLE_SCRIPTS:
         (root / ('tests/fixtures/e2e' if name == 'installed_config.py' else 'scripts') / name).write_text('# synthetic')

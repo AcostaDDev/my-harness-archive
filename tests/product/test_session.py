@@ -7,10 +7,10 @@ import stat
 from fastapi.testclient import TestClient
 import pytest
 
-from harness_local.api.app import create_app
+from my_harness.api.app import create_app
 
 LOCAL = 'http://127.0.0.1:8013'
-CSRF = {'X-Harness-Local': '1'}
+CSRF = {'X-My-Harness': '1'}
 
 
 @pytest.fixture

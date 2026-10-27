@@ -1,6 +1,6 @@
-# Harness Local
+# My Harness
 
-Harness Local is a local application that runs a development harness with AI coding agents over your own Git
+My Harness is a local application that runs a development harness with AI coding agents over your own Git
 repositories. A **reviewer** agent plans and reviews in read-only mode; an **executor** agent is the only writer.
 The harness validates every change with your project's own commands, binds the review to the exact content, and
 makes the commit itself. Work is organized in phases and bounded tasks, with project documentation, chat, metrics
@@ -96,7 +96,7 @@ change your shell, Git or provider settings.
 
 | | From the source code (Git clone) | From a release package |
 |---|---|---|
-| What you download | This repository | `harness-local-<version>-distribution.tar.gz` from the repository's GitHub **Releases** page |
+| What you download | This repository | `my-harness-<version>-distribution.tar.gz` from the repository's GitHub **Releases** page |
 | Tools you need | Python 3.14, uv 0.12.19, Git, Node 24.15.0 and npm 11.12.1 | Python 3.14, uv 0.12.19 and Git |
 | What the installer does | Builds the package (a wheel that contains the compiled UI), verifies it and installs it | Verifies the checksums of the prebuilt package and installs it |
 
@@ -117,20 +117,22 @@ dependencies. If `python3.14` or `uv` is not on your `PATH`, add `--python /abso
 ### 2a. Install from the source code
 
 ```sh
-git clone <repository-url> harness-local
-cd harness-local
+git clone https://github.com/AcostaDDev/my-harness.git
+cd my-harness
 scripts/install --allow-network
 ```
 
 ### 2b. Install from a release package
 
-From the repository's **Releases** page, download `harness-local-0.1.0-distribution.tar.gz` and
-`harness-local-0.1.0-distribution.tar.gz.sha256` into the same folder, then:
+Download `my-harness-0.1.0-distribution.tar.gz` and its `.sha256` from the
+[Releases page](https://github.com/AcostaDDev/my-harness/releases) (or with `curl` as below) into the same folder, then:
 
 ```sh
-shasum -a 256 -c harness-local-0.1.0-distribution.tar.gz.sha256
-tar -xzf harness-local-0.1.0-distribution.tar.gz
-cd harness-local-0.1.0
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.0/my-harness-0.1.0-distribution.tar.gz
+curl -LO https://github.com/AcostaDDev/my-harness/releases/download/v0.1.0/my-harness-0.1.0-distribution.tar.gz.sha256
+shasum -a 256 -c my-harness-0.1.0-distribution.tar.gz.sha256
+tar -xzf my-harness-0.1.0-distribution.tar.gz
+cd my-harness-0.1.0
 scripts/install --dist "$PWD" --allow-network
 ```
 
@@ -149,17 +151,17 @@ isolated check with fake agents (no model is called). By default it uses these d
 
 | Directory | Default | Option |
 |---|---|---|
-| Installation (versions and their venv) | `~/Library/Application Support/Harness Local/installation` | `--install-dir` |
-| Data (SQLite database and temporary files) | `~/Library/Application Support/Harness Local/data` | `--data-dir` |
-| Configuration (private TOML versions) | `~/Library/Application Support/Harness Local/configuration` | `--config-dir` |
-| Download cache | `~/Library/Caches/Harness Local` | `--cache-dir` |
+| Installation (versions and their venv) | `~/Library/Application Support/My Harness/installation` | `--install-dir` |
+| Data (SQLite database and temporary files) | `~/Library/Application Support/My Harness/data` | `--data-dir` |
+| Configuration (private TOML versions) | `~/Library/Application Support/My Harness/configuration` | `--config-dir` |
+| Download cache | `~/Library/Caches/My Harness` | `--cache-dir` |
 
 To choose other locations, pass absolute paths outside every Git checkout (quote paths with spaces) and use the
 same `--install-dir` later with `scripts/start`:
 
 ```sh
-scripts/install --allow-network --install-dir '/path/Harness Local/installation' \
-  --data-dir '/path/Harness Local/data' --config-dir '/path/Harness Local/configuration' --cache-dir '/path/Harness Cache'
+scripts/install --allow-network --install-dir '/path/My Harness/installation' \
+  --data-dir '/path/My Harness/data' --config-dir '/path/My Harness/configuration' --cache-dir '/path/Harness Cache'
 ```
 
 If an installation fails, it is kept as FAILED with a diagnostic and nothing is published. Keep it for inspection
@@ -178,7 +180,7 @@ and retry with new installation/data/configuration directories; do not delete lo
    The script verifies the installation, creates the database only if it does not exist and serves the UI/API.
    It never reinstalls or silently migrates an existing database, and no Node/Vite is used at runtime.
 
-2. **Copy the access key.** The service prints `Harness Local: access key at <path>`. In another terminal:
+2. **Copy the access key.** The service prints `My Harness: access key at <path>`. In another terminal:
 
    ```sh
    pbcopy < '<path printed by the service>'
@@ -225,7 +227,7 @@ and [TypeScript](examples/typescript-web-recipe.example.toml) recipe fragments. 
 outside checkouts, use private files (0600), and inspect a legacy file with the installed CLI:
 
 ```sh
-/path/installation/generations/gen-ID/venv/bin/harness-local check-config /path/local.toml --preflight
+/path/installation/generations/gen-ID/venv/bin/my-harness check-config /path/local.toml --preflight
 ```
 
 ## Start a project
@@ -288,7 +290,7 @@ Example: set the interface to *Español* and keep *English* as the work language
 the reviewer in Spanish and read its questions in Spanish, while every document, plan, decision, code change and
 comment of the project is written in English — with Codex or Claude Code alike.
 
-`harness-local --ui-language es <command>` chooses the language of a single CLI invocation; without it, the CLI
+`my-harness --ui-language es <command>` chooses the language of a single CLI invocation; without it, the CLI
 reads the preferences of an existing database or uses English.
 
 ## Safety model
@@ -316,7 +318,7 @@ dependencies must be downloaded); it preserves previous generations and data. If
 schema upgrade, use the new generation's CLI separately before starting:
 
 ```sh
-/path/installation/generations/gen-ID/venv/bin/harness-local migrate --database /path/data/harness.sqlite3 --snapshots /path/pre-migration --writers-stopped
+/path/installation/generations/gen-ID/venv/bin/my-harness migrate --database /path/data/harness.sqlite3 --snapshots /path/pre-migration --writers-stopped
 ```
 
 `migrate` takes a verified snapshot outside every checkout and leaves a current database untouched. Failure
@@ -325,9 +327,9 @@ preserves database/snapshot for inspection; no automatic restore. `serve` never 
 **Backup.** With the service and writers stopped:
 
 ```sh
-/path/venv/bin/harness-local backup-create /path/state/harness.sqlite3 /path/new-backup --artifact-root /path/data --artifact-root /path/configuration --writers-stopped
-/path/venv/bin/harness-local backup-verify /path/new-backup
-/path/venv/bin/harness-local backup-restore /path/new-backup /path/restored
+/path/venv/bin/my-harness backup-create /path/state/harness.sqlite3 /path/new-backup --artifact-root /path/data --artifact-root /path/configuration --writers-stopped
+/path/venv/bin/my-harness backup-verify /path/new-backup
+/path/venv/bin/my-harness backup-restore /path/new-backup /path/restored
 ```
 
 `--artifact-root` (repeatable) authorizes state and configuration roots. Format 2 includes versioned TOML,
@@ -411,7 +413,7 @@ UV_CACHE_DIR=.local/uv-cache uv run --frozen --offline python scripts/export_ope
 npm --prefix frontend run generate:types
 ```
 
-Layout: `src/harness_local/` (engine in `core/`, adapters, storage, services, recipes, API, migrations and
+Layout: `src/my_harness/` (engine in `core/`, adapters, storage, services, recipes, API, migrations and
 message catalogs), `frontend/` (React/TypeScript UI), `tests/` (synthetic tests and fixtures), `scripts/`
 (development and distribution) and `examples/` (configuration templates and a synthetic demo).
 
@@ -426,5 +428,5 @@ anything. Project documents:
 - [Flows](docs/flows/task-run.md): task runs, phases, creation, onboarding, preparation, agents, CLI compatibility,
   languages, documents, chat and migration, one Mermaid document each in `docs/flows/`.
 - [Decisions](docs/DECISIONS.md): the technical decisions of the starting baseline, cited by the code as `DNNN`.
-- [Changelog](CHANGELOG.md): released versions and the versioning policy. CI runs the offline suites and the
-  package checks on every push and pull request (`.github/workflows/ci.yml`), without secrets or providers.
+- [Changelog](CHANGELOG.md): released versions and the versioning policy. There is no hosted CI: run the checks
+  above locally before proposing a change.

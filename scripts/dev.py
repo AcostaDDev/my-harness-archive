@@ -139,9 +139,9 @@ def api_command(database, config):
     if config is not None:
         if env.get('HARNESS_MANAGED_CONFIG'):
             raise SystemExit('--config and HARNESS_MANAGED_CONFIG are incompatible; choose a single composition.')
-        env.update(HARNESS_MANAGED_CONFIG='harness_local.services.local_config:from_environment',
+        env.update(HARNESS_MANAGED_CONFIG='my_harness.services.local_config:from_environment',
                    HARNESS_LOCAL_CONFIG=str(config))
-    argv = [sys.executable, '-m', 'uvicorn', 'harness_local.api.app:create_app', '--factory',
+    argv = [sys.executable, '-m', 'uvicorn', 'my_harness.api.app:create_app', '--factory',
             '--host', '127.0.0.1', '--port', str(API_PORT), '--workers', '1',
             '--no-proxy-headers', '--no-access-log']
     return argv, env
@@ -162,7 +162,7 @@ def main(argv=None):
     if busy:
         raise SystemExit(f'Ports in use on 127.0.0.1: {busy}; stop the previous service.')
     ensure_frontend()
-    from harness_local.storage.migrate import MigrationRefused, prepare_database
+    from my_harness.storage.migrate import MigrationRefused, prepare_database
     try:
         outcome = prepare_database(str(database), ROOT / '.local/backups')
     except (MigrationRefused, ValueError) as exc:
@@ -170,13 +170,13 @@ def main(argv=None):
     print(f'database: {database} ({outcome.action}, revision {outcome.revision})'
           + (f'; prior snapshot {outcome.snapshot}' if outcome.snapshot else ''), flush=True)
     if config is not None:
-        from harness_local.services.local_config import load_local_config
+        from my_harness.services.local_config import load_local_config
         load_local_config(config)  # validate before launching anything; runs no processes
 
     services = Services()
     signal.signal(signal.SIGINT, services.request_stop)
     signal.signal(signal.SIGTERM, services.request_stop)
-    key = []  # path from the service's access-key line (harness_local.api.session); keep the match in sync
+    key = []  # path from the service's access-key line (my_harness.api.session); keep the match in sync
     api_argv, api_env = api_command(database, config)
     api = services.start('api', api_argv, env=api_env,
                          relay=lambda line: key.append(line.split(' at ', 1)[1].strip())
@@ -188,7 +188,7 @@ def main(argv=None):
     if not services.wait_port(UI_PORT, ui):
         services.close()
         return 0 if services.stopping else 1
-    print(f'\nHarness Local (development)\n  UI:    http://127.0.0.1:{UI_PORT}\n  API:   http://127.0.0.1:{API_PORT}\n'
+    print(f'\nMy Harness (development)\n  UI:    http://127.0.0.1:{UI_PORT}\n  API:   http://127.0.0.1:{API_PORT}\n'
           f'  Key:   {key[0] if key else "see the API access-key line"}\n  Ctrl+C stops both.\n', flush=True)
     return services.run()
 

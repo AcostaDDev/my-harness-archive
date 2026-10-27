@@ -7,12 +7,12 @@ import json
 import pytest
 from sqlalchemy.orm import Session
 
-from harness_local.core.engine.contracts import freeze
-from harness_local.core.engine.journal import JournalError
-from harness_local.services.local_config import LocalConfigError, inspect_local_config, load_local_config, summary
-from harness_local.services.managed import LocalSupervisor
-from harness_local.storage.managed import Conflict
-from harness_local.storage.models import (
+from my_harness.core.engine.contracts import freeze
+from my_harness.core.engine.journal import JournalError
+from my_harness.services.local_config import LocalConfigError, inspect_local_config, load_local_config, summary
+from my_harness.services.managed import LocalSupervisor
+from my_harness.storage.managed import Conflict
+from my_harness.storage.models import (
     ChatConversationRow, ChatProposalRow, ChatTurnRow, ManagedRunRow,
     ManagedJobRow, PlanningConversationRow, PlanningProposalRow, PlanningTurnRow,
 )
@@ -334,7 +334,7 @@ def test_usable_conversations_block_or_supersede_without_rewriting_snapshots(ope
 
 
 def test_transaction_rechecks_job_queued_after_preview(operator, repository, migrated_database):
-    from harness_local.storage.registry import ProjectRegistryRepository, RegistryConflict
+    from my_harness.storage.registry import ProjectRegistryRepository, RegistryConflict
     context, data, folder, tmp_path = operator
     config = load_local_config(write(folder, v5(data, [tmp_path])))
     with client(migrated_database[0], tmp_path, config) as http:
@@ -352,7 +352,7 @@ def test_transaction_rechecks_job_queued_after_preview(operator, repository, mig
 
 
 def test_new_child_freezes_selected_presets_through_creation(operator, repository, migrated_database):
-    from harness_local.services.managed_runtime import ManagedRuntime
+    from my_harness.services.managed_runtime import ManagedRuntime
     from test_project_creation import request, select_root
     _, data, folder, tmp_path = operator
     parent = tmp_path / 'chosen'

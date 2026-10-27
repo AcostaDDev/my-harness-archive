@@ -11,12 +11,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from harness_local.adapters.cli_agents import CLIProcessAdapter
-from harness_local.core.engine.contracts import freeze
-from harness_local.core.engine.journal import JournalError
-from harness_local.services.managed import _Journal
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import SQLiteManagedRepository
+from my_harness.adapters.cli_agents import CLIProcessAdapter
+from my_harness.core.engine.contracts import freeze
+from my_harness.core.engine.journal import JournalError
+from my_harness.services.managed import _Journal
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import SQLiteManagedRepository
 
 
 @pytest.fixture

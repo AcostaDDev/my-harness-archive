@@ -3,11 +3,11 @@ from dataclasses import replace
 from hashlib import sha256
 from pathlib import Path
 
-from harness_local.adapters.git import GitWorkspace
-from harness_local.storage.managed import SQLiteManagedRepository
-from harness_local.storage.planning import PlanningRepository
-from harness_local.services.managed import LocalSupervisor
-from harness_local.storage.onboarding_commit import OnboardingRepository
+from my_harness.adapters.git import GitWorkspace
+from my_harness.storage.managed import SQLiteManagedRepository
+from my_harness.storage.planning import PlanningRepository
+from my_harness.services.managed import LocalSupervisor
+from my_harness.storage.onboarding_commit import OnboardingRepository
 from test_managed_api import VERSIONS, IDENTITY, Ports, make_context
 
 def answer(drafts=None, questions=(), pending=(), text='Fusiones y adelgazamiento propuestos'):

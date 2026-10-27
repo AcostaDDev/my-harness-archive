@@ -7,11 +7,11 @@ from unittest.mock import patch
 
 import pytest
 
-from harness_local.core.engine.contracts import freeze
-from harness_local.core.engine.journal import JournalError
-from harness_local.core.engine.serialization import restore_context
-from harness_local.services.local_config import LocalConfigError, build, summary
-from harness_local.services.managed import LocalSupervisor
+from my_harness.core.engine.contracts import freeze
+from my_harness.core.engine.journal import JournalError
+from my_harness.core.engine.serialization import restore_context
+from my_harness.services.local_config import LocalConfigError, build, summary
+from my_harness.services.managed import LocalSupervisor
 from test_declared_profiles import django, tool, tools, PLAN, TASK, PHASE  # noqa: F401 (fixture)
 from test_local_config import launches, setup, web  # noqa: F401 (fixtures)
 from test_typescript_profile import repository  # noqa: F401 (fixture)

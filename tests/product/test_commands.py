@@ -15,15 +15,15 @@ from uuid import uuid4
 
 import pytest
 
-from harness_local.adapters.commands import CommandConfig, ManagedCommandRunner
-from harness_local.adapters.engine_fake import ScriptedAgentAdapter, SyntheticWorkspace
-from harness_local.adapters.processes import identity, liveness
-from harness_local.core.engine.context import Command
-from harness_local.core.engine.journal import JournalError
-from harness_local.core.engine.serialization import dump_history, load_history
-from harness_local.core.engine.validation import run_command
-from harness_local.services.managed import LocalSupervisor, _Journal
-from harness_local.storage.managed import Conflict, SQLiteManagedRepository
+from my_harness.adapters.commands import CommandConfig, ManagedCommandRunner
+from my_harness.adapters.engine_fake import ScriptedAgentAdapter, SyntheticWorkspace
+from my_harness.adapters.processes import identity, liveness
+from my_harness.core.engine.context import Command
+from my_harness.core.engine.journal import JournalError
+from my_harness.core.engine.serialization import dump_history, load_history
+from my_harness.core.engine.validation import run_command
+from my_harness.services.managed import LocalSupervisor, _Journal
+from my_harness.storage.managed import Conflict, SQLiteManagedRepository
 from test_managed import context, repository, PLAN, VERSIONS, edit, review
 
 
@@ -159,7 +159,7 @@ def test_runner_has_no_unmanaged_or_default_execution(context):
         run_command(context, runner, command)
     with pytest.raises(JournalError):
         runner.run(context, command)
-    from harness_local.services.managed_runtime import ManagedConfig
+    from my_harness.services.managed_runtime import ManagedConfig
     assert ManagedConfig().ports_factory is None and not ManagedConfig().supervisor
 
 
@@ -270,8 +270,8 @@ def test_real_supervisor_crash_restart_live_group_and_explicit_recovery(reposito
 
 @pytest.mark.parametrize('mode', ['correct', 'failed-tests', 'type-error', 'changed-after-validation'])
 def test_product_runner_typescript_offline_exact_evidence_and_commit(web, repository, tmp_path, mode):
-    from harness_local.adapters.git import GitWorkspace
-    from harness_local.storage.backup import create_backup, restore_backup
+    from my_harness.adapters.git import GitWorkspace
+    from my_harness.storage.backup import create_backup, restore_backup
     from test_typescript_profile import task_checkout, TASK, PHASE, PLAN as WEB_PLAN, IDENTITY, edit as web_edit, review as web_review
     context, fixture_runner = task_checkout(web, tmp_path)
     # Reuse only the fixture's explicit executable/environment data. Its run() is never used.
@@ -319,7 +319,7 @@ def test_product_runner_typescript_offline_exact_evidence_and_commit(web, reposi
         assert after.history.cycles == history.cycles
     assert len(agents.requests) == 2 and supervisor.run_once() is None
     if mode == 'correct':
-        from harness_local.storage.database import make_engine
+        from my_harness.storage.database import make_engine
         bundle, restored = tmp_path / 'backup', tmp_path / 'restored'
         create_backup(Path(repository.engine.url.database), bundle, writers_stopped=True)
         restore_backup(bundle, restored)
@@ -351,7 +351,7 @@ def test_same_command_identity_cannot_execute_twice(repository, context):
 
 @pytest.mark.parametrize('state', ['alive', 'unknown'])
 def test_recovery_requires_closed_owner_and_absent_group(repository, context, monkeypatch, state):
-    from harness_local.adapters import processes
+    from my_harness.adapters import processes
     command = Command(('python', '-c', 'pass'))
     port, journal, job, claim = setup(repository, context, configuration(context, command))
     assert run_command(context, port, command, journal).passed
@@ -371,8 +371,8 @@ def test_recovery_requires_closed_owner_and_absent_group(repository, context, mo
 
 
 def test_unknown_group_aborts_before_next_validator_or_agent(repository, context, monkeypatch):
-    from harness_local.adapters import commands
-    from harness_local.adapters.processes import CancellationResult
+    from my_harness.adapters import commands
+    from my_harness.adapters.processes import CancellationResult
     first = Command(('python', '-c', 'print("ok")'))
     second = Command(('python', '-c', 'raise RuntimeError("not reached")'))
     context = replace(context, profile=replace(context.profile, preparation=(first, second)))
@@ -408,9 +408,9 @@ def test_invalid_configuration_has_no_effects(context, overrides):
 
 def test_maintenance_checks_validator_groups(repository, context, tmp_path, monkeypatch):
     import sqlite3
-    from harness_local.adapters import processes
-    from harness_local.storage.backup import create_backup, BackupError
-    from harness_local.storage.retention import _stopped
+    from my_harness.adapters import processes
+    from my_harness.storage.backup import create_backup, BackupError
+    from my_harness.storage.retention import _stopped
     command = Command(('python', '-c', 'pass'))
     _, rows, _ = execute(repository, context, command)
     monkeypatch.setattr(processes, 'liveness', lambda *a, **kw: 'alive')
@@ -432,7 +432,7 @@ def test_old_command_history_roundtrips_without_new_fields(repository, context):
 
 
 def test_frozen_native_configuration_never_runs_with_another_runner(repository, context):
-    from harness_local.adapters.engine_fake import ScriptedCommandRunner
+    from my_harness.adapters.engine_fake import ScriptedCommandRunner
     command = Command(('python', '-c', 'pass'))
     context = replace(context, profile=replace(context.profile, preparation=(command,)))
     versions = {**VERSIONS, **ManagedCommandRunner(configuration(context, command)).frozen_versions()}

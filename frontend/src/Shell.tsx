@@ -81,7 +81,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
   const first = useRef(true);
   const current = items[items.length - 1].label;
   // The title also follows a language change; scroll and focus only a page change.
-  useEffect(() => { document.title = `${current} | Harness Local`; }, [current]);
+  useEffect(() => { document.title = `${current} | My Harness`; }, [current]);
   // On page change: scroll to top and focus on the heading (screen readers).
   useEffect(() => {
     if (first.current) { first.current = false; return; }
@@ -91,7 +91,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
   return <div className="shell">
     <a className="skip" href="#main">{t("shell.skip")}</a>
     <header className="topbar">
-      <Link to={{ name: "home" }} className="brand"><span className="brand-mark" aria-hidden="true" />Harness Local</Link>
+      <Link to={{ name: "home" }} className="brand"><span className="brand-mark" aria-hidden="true" />My Harness</Link>
       <nav aria-label={t("shell.location")} className="crumbs">
         <ol>{items.map((item, index) => <li key={href(item.to)}>
           {index === items.length - 1 ? <span aria-current="page">{item.label}</span> : <Link to={item.to}>{item.label}</Link>}

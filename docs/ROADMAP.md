@@ -1,6 +1,6 @@
 # Roadmap — my_harness
 
-Fases del desarrollo de Harness Local. Formato del parser del harness (`## PNNN — título`, **Objetivo**, **Criterios de
+Fases del desarrollo de My Harness. Formato del parser del harness (`## PNNN — título`, **Objetivo**, **Criterios de
 salida**), sin bloques gestionados mientras el repositorio no esté registrado (D088). Las fases P001–P007 son los
 hitos H0–H6 del backlog original; la definición inicial está en [archive/phase-000](archive/phase-000/SUMMARY.md).
 
@@ -336,7 +336,7 @@ Cierre manual sin registrar/ejecutar este repositorio con el harness, tag, push 
 
 ## P013 — Instalación guiada y configuración desde la UI
 
-**Objetivo:** Simplificar instalación y arranque, permitir configurar Harness Local desde su UI sin redactar
+**Objetivo:** Simplificar instalación y arranque, permitir configurar My Harness desde su UI sin redactar
 un TOML inicial y generar/editar perfiles propios por proyecto con el revisor y el ejecutor a partir de su
 documentación o código, antes de publicar en GitHub.
 **Criterios de salida:**

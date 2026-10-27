@@ -9,13 +9,13 @@ import subprocess
 
 import pytest
 
-from harness_local.adapters.git import Git
-from harness_local.adapters.project_onboarding import read_inventory
-from harness_local.core.tree import ImportInventoryError, TreeEntry
-from harness_local.core.project_onboarding import (
+from my_harness.adapters.git import Git
+from my_harness.adapters.project_onboarding import read_inventory
+from my_harness.core.tree import ImportInventoryError, TreeEntry
+from my_harness.core.project_onboarding import (
     INVENTORY_FORMAT, MAX_ENTRY_BYTES, OnboardingInventoryError, build_inventory, fingerprint,
 )
-from harness_local.services.local_config import _profile
+from my_harness.services.local_config import _profile
 
 GIT_ENV = {**os.environ, 'GIT_CONFIG_GLOBAL': os.devnull, 'GIT_CONFIG_NOSYSTEM': '1',
            'GIT_AUTHOR_NAME': 'Synthetic Author', 'GIT_AUTHOR_EMAIL': 'author@example.invalid',
@@ -399,7 +399,7 @@ def test_fingerprint_is_root_and_commit_independent_but_content_sensitive(tmp_pa
 
 
 def test_limits_refuse_without_silent_truncation(tmp_path, monkeypatch):
-    import harness_local.adapters.project_onboarding as adapter
+    import my_harness.adapters.project_onboarding as adapter
     root = checkout(tmp_path / 'limits', DJANGO)
     monkeypatch.setattr(adapter, 'MAX_TOTAL_BYTES', 10)
     with pytest.raises(OnboardingInventoryError, match='bytes'):

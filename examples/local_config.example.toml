@@ -1,4 +1,4 @@
-# Harness Local — real-use configuration (local-config-8, P012-T010). Template, not valid as is.
+# My Harness — real-use configuration (local-config-8, P012-T010). Template, not valid as is.
 # Keep it OUTSIDE any checkout, owned by the service user, chmod 600.
 # No secrets: authentication stays in each CLI. Canonical absolute paths.
 # Selected clients are discovered on each role's explicit PATH. No CLI version is required.
@@ -7,8 +7,8 @@
 # Parsing is data-only; service startup and admission resolve clients, and every attempt revalidates them.
 # Formats 1–7 remain readable; v1–v6 explicit version assertions must match the installed client.
 # v8 keeps v7 automatic clients, v6 work-language settings, v5 presets and v2 recipe fragments.
-# Validate: harness-local check-config /path/harness-local.toml [--preflight]
-# Start:    harness-local serve --database /path/state/harness.sqlite3 --config /path/harness-local.toml
+# Validate: my-harness check-config /path/my-harness.toml [--preflight]
+# Start:    my-harness serve --database /path/state/harness.sqlite3 --config /path/my-harness.toml
 format = "local-config-8"
 
 [service]

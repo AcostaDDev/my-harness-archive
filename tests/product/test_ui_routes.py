@@ -23,7 +23,7 @@ def ui(tmp_path):
                                   '/projects/demo/stats'])
 def test_ui_routes_receive_the_shell_on_direct_load(migrated_database, ui, path):
     from session_client import TestClient
-    from harness_local.api.app import create_app
+    from my_harness.api.app import create_app
     with TestClient(create_app(migrated_database[0], ui_dir=ui)) as http:
         response = http.get(path)
         assert response.status_code == 200 and response.text == '<html>shell</html>'
@@ -32,7 +32,7 @@ def test_ui_routes_receive_the_shell_on_direct_load(migrated_database, ui, path)
 
 def test_api_and_assets_keep_their_404(migrated_database, ui):
     from session_client import TestClient
-    from harness_local.api.app import create_app
+    from my_harness.api.app import create_app
     with TestClient(create_app(migrated_database[0], ui_dir=ui)) as http:
         assert http.get('/assets/app.js').text == 'console.log(1)'
         for path in ('/assets/missing.js', '/favicon.ico', '/projects/demo/logo.svg'):
@@ -44,7 +44,7 @@ def test_api_and_assets_keep_their_404(migrated_database, ui):
 
 
 def test_phase_by_code_tasks_and_filtered_runs(tmp_path, migrated_database, checkout, monkeypatch):  # noqa: F811
-    from harness_local.services.managed_runtime import CONFIG_ENV
+    from my_harness.services.managed_runtime import CONFIG_ENV
     from test_managed_api import config
     monkeypatch.delenv(CONFIG_ENV, raising=False)
     with client(migrated_database[0], tmp_path, config(checkout, Ports([]), commit=False, supervisor=False)) as http:

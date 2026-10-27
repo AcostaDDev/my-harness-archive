@@ -12,24 +12,24 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
-from harness_local.api.app import create_app
-from harness_local.cli import main
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import ManagedConfig
-from harness_local.storage.backup import (
+from my_harness.api.app import create_app
+from my_harness.cli import main
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import ManagedConfig
+from my_harness.storage.backup import (
     BackupError, RESTORED_USER_VERSION, create_backup, restore_backup, verify_bundle, restored_artifact,
 )
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import SQLiteManagedRepository
-from harness_local.storage.managed_views import SQLiteManagedViews
-from harness_local.storage.models import Base
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import SQLiteManagedRepository
+from my_harness.storage.managed_views import SQLiteManagedViews
+from my_harness.storage.models import Base
 from test_cli_agents import adapter, setup_invocation
 from test_git import repo as git_repo
 from test_junit import managed_run, simple_xml
 from test_managed import context, repository
 from onboarding_helpers import tree_state as tree
 
-LOCAL = {'base_url': 'http://127.0.0.1:8013', 'headers': {'X-Harness-Local': '1'}}
+LOCAL = {'base_url': 'http://127.0.0.1:8013', 'headers': {'X-My-Harness': '1'}}
 
 
 def db_path(migrated_database):
@@ -390,7 +390,7 @@ def test_embedded_junit_corruption_is_detected_after_database_hash_is_resealed(g
 
 
 def test_limits_do_not_publish_truncated_bundle(context, repository, migrated_database, tmp_path, monkeypatch):
-    from harness_local.storage import backup as module
+    from my_harness.storage import backup as module
     port, _, _ = pending_process(context, repository, tmp_path, with_stream=True)
     monkeypatch.setattr(module, 'MAX_TOTAL_BYTES', 1)
     with pytest.raises(BackupError, match='total limit'):
@@ -399,7 +399,7 @@ def test_limits_do_not_publish_truncated_bundle(context, repository, migrated_da
 
 
 def test_restore_does_not_trust_changed_file_after_initial_verification(context, repository, migrated_database, tmp_path, monkeypatch):
-    from harness_local.storage import backup as module
+    from my_harness.storage import backup as module
     port, _, _ = pending_process(context, repository, tmp_path, with_stream=True)
     bundle = backup(migrated_database, tmp_path, artifact_roots=[port.artifact_root])
     original_verify = module.verify_bundle
@@ -491,7 +491,7 @@ def test_archive_signal_and_run_evidence_without_checkout(git_repo, migrated_dat
     shutil.rmtree(ctx.root)
     monkeypatch.setenv('HARNESS_MANAGED_CONFIG', 'must_not_import:build')
     archive_engine = make_engine(f'sqlite:///{destination / "state.sqlite3"}')
-    monkeypatch.setattr('harness_local.api.app.make_engine', lambda *_: archive_engine)
+    monkeypatch.setattr('my_harness.api.app.make_engine', lambda *_: archive_engine)
     app = create_app(f'sqlite:///{destination / "state.sqlite3"}', tmp_path,
                      managed=ManagedConfig(supervisor=True, ports_factory=lambda *_: pytest.fail('No ports')))
     with TestClient(app, **LOCAL) as http:

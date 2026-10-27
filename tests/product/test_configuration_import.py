@@ -9,11 +9,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from session_client import TestClient
-from harness_local.api.app import create_app
-from harness_local.services.local_config import LocalComposer, build
-from harness_local.services.profile_preparation import ProfilePreparation
-from harness_local.storage.configuration import ConfigurationConflict
-from harness_local.storage.models import ConfigurationOperationRow, RegisteredProjectRow
+from my_harness.api.app import create_app
+from my_harness.services.local_config import LocalComposer, build
+from my_harness.services.profile_preparation import ProfilePreparation
+from my_harness.storage.configuration import ConfigurationConflict
+from my_harness.storage.models import ConfigurationOperationRow, RegisteredProjectRow
 from test_configuration import setup, dumps  # noqa: F401
 from test_definition import DRAFTS
 from test_project_onboarding import checkout
@@ -67,7 +67,7 @@ def test_import_drafts_replay_and_original_hashes_unchanged(legacy_install):
     before = source.read_bytes(), source.stat().st_mode
     versions = build(data, source).projects[0].versions
     with TestClient(app()) as http:
-        http.headers['X-Harness-Local'] = '1'
+        http.headers['X-My-Harness'] = '1'
         runtime = http.app.state.runtime
         preview, saved, body = convert(http, source)
         assert [c['status'] for c in preview['changes']] == ['VALIDATED', 'DRAFT']
@@ -81,7 +81,7 @@ def test_import_drafts_replay_and_original_hashes_unchanged(legacy_install):
         assert attempt.status_code == 409
         assert attempt.json()['detail']['code'] == 'configuration_draft_not_activatable'
     with TestClient(app()) as http:
-        http.headers['X-Harness-Local'] = '1'
+        http.headers['X-My-Harness'] = '1'
         assert http.get(BASE).json()['mode'] == 'READY'
         assert http.post(BASE + '/import/save', json=body, headers={'Idempotency-Key': 'import'}).json() == saved
     assert (source.read_bytes(), source.stat().st_mode) == before
@@ -92,7 +92,7 @@ def test_import_drafts_replay_and_original_hashes_unchanged(legacy_install):
 def test_source_or_registry_change_invalidates_confirmation(legacy_install):
     repo, data, source, root, app, _ = legacy_install
     with TestClient(app()) as http:
-        http.headers['X-Harness-Local'] = '1'
+        http.headers['X-My-Harness'] = '1'
         body = {'source': str(source), 'reason': 'CAS conversion'}
         shown = http.post(BASE + '/import/preview', json=body).json()
         source.write_text(dumps({**data, 'git': {**data['git'], 'author_name': 'Changed'}}))
@@ -111,7 +111,7 @@ def test_source_or_registry_change_invalidates_confirmation(legacy_install):
 def test_import_prepares_then_promotes_complete_set(legacy_install):
     repo, data, source, root, app, executor = legacy_install
     with TestClient(app()) as http:
-        http.headers['X-Harness-Local'] = '1'
+        http.headers['X-My-Harness'] = '1'
         convert(http, source)
         base = '/api/managed/projects/own/configuration'
         current = http.post(base + '/edit-base', json={})
@@ -194,7 +194,7 @@ def test_all_legacy_loaders_keep_hashes_and_import_only_explicitly(legacy_instal
     original = source.read_bytes()
     before = build(data, source).projects[0].versions
     with TestClient(app()) as http:
-        http.headers['X-Harness-Local'] = '1'
+        http.headers['X-My-Harness'] = '1'
         assert repo.read()['version'] == 0
         assert http.get(BASE).json()['legacy'] is True
         assert repo.read()['version'] == 0  # Reading or starting never converts.
@@ -212,7 +212,7 @@ def test_import_recovery_never_duplicates_registry_or_versions(legacy_install, s
     repo, data, source, root, app, executor = legacy_install
     with TestClient(app()) as http:
         runtime = http.app.state.runtime
-        from harness_local.services.configuration_import import ConfigurationImport
+        from my_harness.services.configuration_import import ConfigurationImport
         service = ConfigurationImport(runtime)
         shown = service.preview(str(source), 'Recoverable conversion')
         def crash(point):

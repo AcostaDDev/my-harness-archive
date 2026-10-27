@@ -16,16 +16,16 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.cli_agents import CLIConfig, CLIProcessAdapter
-from harness_local.adapters.engine_fake import ScriptedCommandRunner, SyntheticWorkspace
-from harness_local.cli import main
-from harness_local.core.engine.documents import render_summary
-from harness_local.core.engine.metrics import StreamMetrics, attempt_metrics, replay
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
-from harness_local.storage.metrics import MetricsViews, backfill
-from harness_local.storage.models import AttemptMetricRow, AttemptModelMetricRow, ManagedAttemptRow
-from harness_local.storage.retention import apply_retention, preview_retention
+from my_harness.adapters.cli_agents import CLIConfig, CLIProcessAdapter
+from my_harness.adapters.engine_fake import ScriptedCommandRunner, SyntheticWorkspace
+from my_harness.cli import main
+from my_harness.core.engine.documents import render_summary
+from my_harness.core.engine.metrics import StreamMetrics, attempt_metrics, replay
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
+from my_harness.storage.metrics import MetricsViews, backfill
+from my_harness.storage.models import AttemptMetricRow, AttemptModelMetricRow, ManagedAttemptRow
+from my_harness.storage.retention import apply_retention, preview_retention
 from test_backup import db_path, dump_rows
 from test_cli_agents import PROBE, wait_until
 from test_managed import PLAN, VERSIONS, Clock, SyntheticCrash, context, edit, repository, review, submit, worker  # noqa: F401
@@ -314,7 +314,7 @@ def test_codex_failure_reports_no_usage_as_absent_not_zero(tmp_path, context, re
     result = port.invoke(context, request)
     assert result.status == 'failed'
     history = repository.get_run(job.run_id).history
-    from harness_local.core.engine.contracts import Attempt
+    from my_harness.core.engine.contracts import Attempt
     repository.checkpoint(claim, replace(history, attempts=(Attempt(request, result),)), 'reviewer')
     [row] = metric_rows(repository)
     assert (row['provider'], row['status'], row['accounting'], row['total_tokens']) == ('codex', 'FAILED', None, None)
@@ -327,7 +327,7 @@ def test_metrics_and_result_commit_atomically(context, repository, monkeypatch):
 
     def broken(*args, **kwargs):
         raise RuntimeError('synthetic metrics failure')
-    monkeypatch.setattr('harness_local.storage.managed.record_metrics', broken)
+    monkeypatch.setattr('my_harness.storage.managed.record_metrics', broken)
     with pytest.raises(RuntimeError, match='synthetic metrics failure'):
         supervisor.run_once()
     with Session(repository.engine) as session:
@@ -539,7 +539,7 @@ def test_task_quality_tests_and_stops_without_reported_usage(world):
 
 def test_validation_evolution_counts_every_cycle_by_phase_task_and_root(world):
     """H6.2 E6: OK/KO of each validation cycle (revalidations too), by phase, task or root."""
-    from harness_local.core.engine.validation import CommandResult
+    from my_harness.core.engine.validation import CommandResult
     from test_managed_api import PLAN as TASK_PLAN, review as accept
     from test_phases import PLAN_2
 
@@ -704,7 +704,7 @@ def test_phase_transition_summary_includes_consumption(repository, tmp_path, _le
 
 
 def test_transition_reviewed_before_metrics_runs_exactly_as_reviewed(repository, tmp_path, _legacy_close):  # noqa: F811
-    from harness_local.storage.models import PhaseOperationRow
+    from my_harness.storage.models import PhaseOperationRow
     from test_documents import queue_transition
     v2, pid = closed_v2(repository, tmp_path)
     job = queue_transition(v2, pid)

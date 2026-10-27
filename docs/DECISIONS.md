@@ -246,6 +246,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D232](#d232--cierre-documental-de-p013-e-instalación-guiada-archivada) | Cierre documental de P013 e instalación guiada archivada | P013 |
 | [D233](#d233--my_harness_dist-sustituido-por-el-candidato-p013) | my_harness_dist sustituido por el candidato P013 | Sin fase |
 | [D234](#d234--guía-de-instalación-y-paquete-de-release-autocontenido) | Guía de instalación y paquete de Release autocontenido | Sin fase |
+| [D235](#d235--nombre-público-my-harness-recetas-reemitidas-y-sin-ci) | Nombre público My Harness, recetas reemitidas y sin CI | Sin fase |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6919,3 +6920,30 @@ Estado: aplicado el 2026-10-27 por petición del usuario y respuestas HITL, sin 
   El README es metadato del wheel, por lo que el paquete T013 ya no corresponde a esta fuente: el de la Release
   se construirá y verificará desde el commit publicado. Expediente P013 archivado sin reescribir.
 - Sin `git init` del árbol, remoto, push, CI, tag ni Release; siguen pendientes de autorización concreta.
+
+## D235 — Nombre público My Harness, recetas reemitidas y sin CI
+
+Estado: aplicado el 2026-10-27 por petición del usuario y respuestas HITL, sin fase nueva. Decisión pública
+equivalente: D230 de `docs/public/docs/DECISIONS.md`. Precedentes: D157, D163, D168, D219, D230–D234.
+
+- El usuario fija el nombre público `my-harness` y pide renombrar producto, paquete y referencias antes de crear
+  el repositorio. HITL: producto «My Harness», distribución/CLI `my-harness`, módulo `my_harness` (`src/my_harness`),
+  carpetas por defecto `~/Library/Application Support/My Harness` y `~/Library/Caches/My Harness`, cabecera CSRF
+  `X-My-Harness`, UI `my-harness-ui` y asset `my-harness-<versión>-distribution.tar.gz`. uv.lock regenerado
+  offline; OpenAPI y tipos regenerados.
+- HITL: se conservan los identificadores persistidos: marcadores `harness-local:managed-*`, formatos
+  `harness-local/onboarding-inventory/1`, `harness-local/managed-mode/1` y `harness-local/migration-manifest/1`, y
+  versión de motor `harness-local-<engine>` congelada en jobs. Las variables internas `HARNESS_*`, incluida
+  `HARNESS_LOCAL_CONFIG`, mantienen su nombre porque instalador y arranque filtran ese prefijo del entorno.
+- HITL: las huellas de las recetas, que incluyen su texto fuente, se reemiten: Django v1 `f511c00a…` → `d2b89bca…`,
+  TypeScript v1 `4b1a8117…` → `db5cc7d2…`; v2 se derivan igual. Los recibos de proyectos privados de prueba
+  preparados antes necesitan una preparación nueva; no hay recibos públicos afectados.
+- HITL: sin CI alojada para no consumir cuota de Actions; se elimina `.github/workflows/ci.yml` y README/baseline
+  pública indican que las suites y comprobaciones del paquete se ejecutan en local. CHANGELOG fecha 0.1.0 el
+  2026-10-27 y README usa `https://github.com/AcostaDDev/my-harness` con descarga directa de la Release.
+- Historia privada (D001–D234, archive y phase) sin reescribir; docs vigentes y baseline pública renombradas.
+  Los comprobadores archivados se ejecutan con alias `harness_local` → `my_harness` y la regla congelada
+  «IDs < D230» aplicada solo a la baseline, sin modificar sus bytes.
+- Checks: 2048 pytest/29 subtests (dos opt-in omitidas), 8 unittest, 155 Node, tipos/build, Alembic en base
+  temporal y documentación pública (32 documentos/273 enlaces). Crear el repositorio privado, el commit inicial
+  del usuario, el push y la Release están autorizados por el usuario y se registran al ejecutarse.

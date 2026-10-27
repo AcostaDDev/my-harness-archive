@@ -1,6 +1,6 @@
 # Third-party frontend notices
 
-Harness Local uses third-party components under their own licenses. The
+My Harness uses third-party components under their own licenses. The
 project MIT license does not replace these terms or copyright notices.
 
 This inventory preserves the local upstream notice texts for all 123

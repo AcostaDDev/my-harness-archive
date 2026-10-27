@@ -1,6 +1,6 @@
-# Contributing to Harness Local
+# Contributing to My Harness
 
-Harness Local is preparing its first public release. Support and compatibility
+My Harness is preparing its first public release. Support and compatibility
 claims belong to the documentation shipped with that release.
 
 Use this repository's GitHub issues for bugs, feature requests and questions.

@@ -24,7 +24,7 @@ mkdir "$BASE/web/docs"
 cat > "$BASE/web/docs/STATE.md" <<'EOF'
 # Estado
 
-Checkout desechable del primer uso real de Harness Local (D033.8). Base: fixture
+Checkout desechable del primer uso real de My Harness (D033.8). Base: fixture
 `typescript_web` con una regresión deliberada de 45 minutos por tarea.
 EOF
 cat > "$BASE/web/docs/NEXT_STEPS.md" <<'EOF'
@@ -48,7 +48,7 @@ sed -i '' 's/tasks \* 30/tasks * 45/' "$BASE/web/src/estimate.ts"
 grep -q 'tasks \* 45' "$BASE/web/src/estimate.ts"
 $G commit -q -am "first use: deliberate 45-minute regression"
 
-cat > "$BASE/operator/harness-local.toml" <<EOF
+cat > "$BASE/operator/my-harness.toml" <<EOF
 # Primer uso real (D033.8). Archivo del operador; sin secretos.
 format = "local-config-1"
 
@@ -99,5 +99,5 @@ environment = { PATH = "$NODE_BIN:/usr/bin:/bin", HOME = "$BASE/command-home", T
 max_timeout_seconds = 300
 max_output_bytes = 65536
 EOF
-chmod 600 "$BASE/operator/harness-local.toml"
+chmod 600 "$BASE/operator/my-harness.toml"
 echo "Preparado: $BASE"

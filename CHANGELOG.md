@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Harness Local are recorded here. The format follows
+All notable changes to My Harness are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Versioning policy
@@ -10,17 +10,17 @@ All notable changes to Harness Local are recorded here. The format follows
 - The project is pre-1.0: a minor release (`0.x.0`) may change the configuration, the API or the UI, and its notes
   say what to do. Patch releases (`0.x.y`) only fix defects. Data compatibility does not depend on the version
   number: every release keeps reading older databases and histories, and the SQLite schema is upgraded only by
-  `harness-local migrate`, which takes a verified snapshot first.
+  `my-harness migrate`, which takes a verified snapshot first.
 - `0.2.0` is reserved for the optional continuous mode described in the [roadmap](docs/ROADMAP.md).
 - A version is released by tagging its commit and attaching to a GitHub Release the self-contained package
-  `harness-local-<version>-distribution.tar.gz` (a `harness-local-<version>/` folder with the wheel, sdist,
+  `my-harness-<version>-distribution.tar.gz` (a `my-harness-<version>/` folder with the wheel, sdist,
   `pylock.toml`, `distribution-1.json`, `SHA256SUMS` and `scripts/` for `scripts/install --dist`) and its `.sha256`
   file; the wheel, sdist, `pylock.toml` and `SHA256SUMS` may also be attached individually. Nothing is published
   to PyPI, and built artifacts are never committed to the repository.
 
 ## [Unreleased]
 
-## [0.1.0] — not yet released
+## [0.1.0] — 2026-10-27
 
 First public release candidate. Earlier development happened in a private repository; this is the starting point
 of the public history, so there is no earlier public version to upgrade from.
@@ -28,7 +28,7 @@ of the public history, so there is no earlier public version to upgrade from.
 ### Added
 
 - Local service (FastAPI + SQLite, loopback only, session key and CSRF guard) with a React UI in English and
-  Spanish, and the `harness-local` CLI.
+  Spanish, and the `my-harness` CLI.
 - Two ways to start a project: create one from scratch through a definition conversation, or onboard an existing
   Git repository without a harness. Optional Django and TypeScript web recipes prepare a new project's environment.
 - Task runs with a read-only reviewer and a single writing executor (Codex CLI or Claude Code, in any

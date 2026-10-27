@@ -68,7 +68,7 @@ def check_artifacts(distribution):
     assert manifest['format'] == 'distribution-1'
     project = manifest['project']
     name, version = project['name'].replace('-', '_'), project['version']
-    assert name == 'harness_local' and re.fullmatch(r'\d+\.\d+\.\d+(?:[a-z0-9.]+)?', version)
+    assert name == 'my_harness' and re.fullmatch(r'\d+\.\d+\.\d+(?:[a-z0-9.]+)?', version)
     wheel_name, sdist_name = f'{name}-{version}-py3-none-any.whl', f'{name}-{version}.tar.gz'
     expected = {wheel_name, sdist_name, 'pylock.toml', MANIFEST} | {'scripts/' + s for s in BUNDLE_SCRIPTS}
     assert set(sums) == expected, 'Unexpected or missing distribution files'
@@ -89,9 +89,9 @@ def check_artifacts(distribution):
         assert sorted(metadata.get_all('License-File')) == sorted(licenses)
         for license in licenses:
             assert wheel.read(info + 'licenses/' + license)
-        assert b'<div id="root">' in wheel.read('harness_local/web/index.html')
-        assert any(m.startswith('harness_local/migrations/versions/') for m in wheel.namelist())
-        assert f'version="{version}"' in wheel.read('harness_local/api/app.py').decode()
+        assert b'<div id="root">' in wheel.read('my_harness/web/index.html')
+        assert any(m.startswith('my_harness/migrations/versions/') for m in wheel.namelist())
+        assert f'version="{version}"' in wheel.read('my_harness/api/app.py').decode()
     pins = tomllib.loads((distribution / 'pylock.toml').read_text())
     packages = pins['packages']
     assert packages and project['name'] not in {p['name'] for p in packages}

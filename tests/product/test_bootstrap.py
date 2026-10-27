@@ -14,16 +14,16 @@ import pytest
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.git import GitWorkspace
-from harness_local.core.engine.phases import document_hashes
-from harness_local.core.engine.planning import deterministic_task
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
-from harness_local.storage.bootstrap import BootstrapRepository
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict, SQLiteManagedRepository
-from harness_local.storage.models import ManagedRunRow, ProjectBootstrapRow
-from harness_local.storage.phases import PhaseRepository
+from my_harness.adapters.git import GitWorkspace
+from my_harness.core.engine.phases import document_hashes
+from my_harness.core.engine.planning import deterministic_task
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
+from my_harness.storage.bootstrap import BootstrapRepository
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict, SQLiteManagedRepository
+from my_harness.storage.models import ManagedRunRow, ProjectBootstrapRow
+from my_harness.storage.phases import PhaseRepository
 from test_managed_api import IDENTITY, VERSIONS, client, git, make_context, Ports
 
 # Input of the retired v1 form: only used to check the rejection.
@@ -192,7 +192,7 @@ def test_changed_preview_is_rejected_before_effects(world, mutation):
 
 def test_v1_creation_is_retired_with_a_diagnostic(world, tmp_path):
     """D088: the H4.2 form and one-turn discovery are rejected before reading or writing the target."""
-    from harness_local.storage.bootstrap_discovery import DiscoveryRepository
+    from my_harness.storage.bootstrap_discovery import DiscoveryRepository
     root = tmp_path / 'v1-destination'
     root.mkdir()
     v1 = make_context(root)
@@ -222,7 +222,7 @@ def test_free_text_cannot_inject_task_scope_or_managed_markers(migrated_database
     assert documents['docs/archive/phase-000/BRIEF.md'] == hostile  # brief archived literally, uninterpreted
     record = documents['docs/archive/phase-000/DEFINITION.md']
     assert '<!--' not in record and 'P002-T009' not in record
-    assert all('<!-- harness-local' not in content for path, content in documents.items()
+    assert all('<!-- my-harness' not in content for path, content in documents.items()
                if path.startswith('docs/archive/') and not path.endswith('BRIEF.md'))
     world[1].engine.dispose()
 
@@ -269,8 +269,8 @@ def test_target_changed_after_queue_is_quarantined_and_foreign_bytes_preserved(w
 
 @pytest.mark.parametrize('crash_point', ['before', 'document', 'commit', 'adoption'])
 def test_crashes_reconcile_same_intent_run_commit_and_single_phase(world, monkeypatch, crash_point):
-    from harness_local.adapters import bootstrap as filesystem
-    from harness_local.storage import bootstrap as authority
+    from my_harness.adapters import bootstrap as filesystem
+    from my_harness.storage import bootstrap as authority
     context, repo, _, writer, worker, ports = world
     job = submit(world)
     if crash_point == 'before':
@@ -339,7 +339,7 @@ def test_interrupted_bootstrap_blocks_new_tasks_and_phase_creation(world, monkey
 
 
 def test_modified_partial_file_is_preserved_after_recovery(world, monkeypatch):
-    from harness_local.adapters import bootstrap as filesystem
+    from my_harness.adapters import bootstrap as filesystem
     real = filesystem._new_file
     def fail(path, content):
         real(path, content)
@@ -424,7 +424,7 @@ def test_http_guard_and_server_authorized_destination(migrated_database, tmp_pat
         assert http.post(path + '/preview', json=DATA).status_code == 404
         assert http.post(path + '/preview', json={**DATA, 'root': '/arbitrary'}).status_code == 404
         assert http.post('/api/managed/projects/existing/planning', json={},
-                         headers={'X-Harness-Local': ''}).status_code == 403
+                         headers={'X-My-Harness': ''}).status_code == 403
         assert http.get(path, headers={'Host': 'foreign.test'}).status_code == 403
         assert http.post('/api/managed/projects/existing/planning', json={}, headers={'Origin': 'https://foreign.test'}).status_code == 403
     assert not list(root.iterdir())

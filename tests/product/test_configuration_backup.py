@@ -5,12 +5,12 @@ import shutil
 import pytest
 
 from session_client import TestClient
-from harness_local.api.app import create_app
-from harness_local.services.configuration import digest
-from harness_local.storage.backup import (BackupError, create_backup, verify_bundle, restore_backup)
-from harness_local.storage.configuration import ConfigurationRepository, ConfigurationConflict
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import SQLiteManagedRepository
+from my_harness.api.app import create_app
+from my_harness.services.configuration import digest
+from my_harness.storage.backup import (BackupError, create_backup, verify_bundle, restore_backup)
+from my_harness.storage.configuration import ConfigurationRepository, ConfigurationConflict
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import SQLiteManagedRepository
 from test_configuration import setup, dumps, change, save, activate, active_global  # noqa: F401
 from test_backup import seal
 
@@ -54,7 +54,7 @@ def test_pending_and_draft_are_preserved_without_originals(setup, tmp_path, monk
         result = http.get('/api/managed/configuration/revisions/global/2')
         assert result.status_code == 200 and result.json()['text'] == dumps(data)
         for path in ('form', 'detect', 'preview', 'save', 'activate', 'check-clients', 'assistance/preview'):
-            assert http.post('/api/managed/configuration/' + path, json={}, headers={'X-Harness-Local': '1'}).status_code == 409
+            assert http.post('/api/managed/configuration/' + path, json={}, headers={'X-My-Harness': '1'}).status_code == 409
     assert verify_bundle(restored)['execution_authorized'] is False
 
 
@@ -134,8 +134,8 @@ def test_format_one_without_configuration_remains_readable(setup, tmp_path):
 
 
 def test_assistance_evidence_is_copied_and_live_owner_is_rejected(setup, tmp_path):
-    from harness_local.adapters.processes import identity
-    from harness_local.storage.models import ConfigurationOperationRow
+    from my_harness.adapters.processes import identity
+    from my_harness.storage.models import ConfigurationOperationRow
     repo, data, _ = setup
     save(repo, [change(repo, dumps(data))])
     artifacts = tmp_path / 'synthetic-assistance'

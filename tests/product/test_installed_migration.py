@@ -9,11 +9,11 @@ import sqlite3
 from alembic import command
 import pytest
 
-from harness_local.adapters.processes import identity
-from harness_local.cli import main
-from harness_local.storage import migrate, run_projection
-from harness_local.storage.backup import RESTORED_USER_VERSION
-from harness_local.storage.schema import SCHEMA_REVISION
+from my_harness.adapters.processes import identity
+from my_harness.cli import main
+from my_harness.storage import migrate, run_projection
+from my_harness.storage.backup import RESTORED_USER_VERSION
+from my_harness.storage.schema import SCHEMA_REVISION
 from test_run_projection import FEATURES, insert_run, synthetic
 
 
@@ -59,7 +59,7 @@ def test_migrate_backfills_all_formats_preserves_frozen_bytes_and_serve_accepts(
             run_projection.verify(db, run_id, history)
     assert not (tmp_path / 'wrong.sqlite3').exists()
     # Exercise serve's real schema gate; no network listener or service is started.
-    from harness_local import launcher
+    from my_harness import launcher
     import uvicorn
     package = tmp_path / 'package'
     (package / 'web').mkdir(parents=True)

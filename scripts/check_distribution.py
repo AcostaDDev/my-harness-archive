@@ -46,9 +46,9 @@ def check_checkout_artifacts(distribution, project):
     for file, digest in sums.items():
         assert hashlib.sha256((distribution / file).read_bytes()).hexdigest() == digest, file
     package = {str(path): (ROOT / 'src' / path).read_bytes() for path in package_sources()}
-    package |= {'harness_local/web/' + str(asset.relative_to(ROOT / 'frontend/dist')): asset.read_bytes()
+    package |= {'my_harness/web/' + str(asset.relative_to(ROOT / 'frontend/dist')): asset.read_bytes()
                 for asset in (ROOT / 'frontend/dist').rglob('*') if asset.is_file()}
-    assert not any(member.startswith('harness_local/' + retired) for member in package for retired in RETIRED)
+    assert not any(member.startswith('my_harness/' + retired) for member in package for retired in RETIRED)
     info = f'{name}-{version}.dist-info/'
     with zipfile.ZipFile(distribution / f'{name}-{version}-py3-none-any.whl') as wheel:
         files = {member for member in wheel.namelist() if not member.endswith('/')}
@@ -80,7 +80,7 @@ def check_checkout_artifacts(distribution, project):
             assert sdist.extractfile(prefix + item).read() == (ROOT / item.removesuffix('.orig')).read_bytes(), item
     # One version for package, API and UI (CHANGELOG versioning policy).
     ui, lock = (json.loads((ROOT / 'frontend' / file).read_text()) for file in ('package.json', 'package-lock.json'))
-    api = re.search(r'FastAPI\(title="Harness Local", version="([^"]+)"', package['harness_local/api/app.py'].decode())
+    api = re.search(r'FastAPI\(title="My Harness", version="([^"]+)"', package['my_harness/api/app.py'].decode())
     assert ui['version'] == lock['version'] == lock['packages']['']['version'] == api[1] == version
     pins = (distribution / 'pylock.toml').read_text()
     assert str(distribution) not in pins and str(ROOT) not in pins and not pins.startswith('#')
@@ -111,7 +111,7 @@ def main():
                        check=True)
         subprocess.run([args.uv, 'pip', 'install', '--offline', '--link-mode', 'copy', '--no-deps', '--python', str(python),
                         str(wheel_file)], check=True)
-        cli = venv / 'bin/harness-local'
+        cli = venv / 'bin/my-harness'
         # Git is the only extra executable exposed to the managed synthetic journey.
         (venv / 'bin/git').symlink_to(shutil.which('git'))
         # PATH without Node, no PYTHONPATH, no product configuration from the environment. TMPDIR decides where
@@ -163,14 +163,14 @@ def main():
                     assert request(base, '/api/managed/projects')[0] == 401
                     log.flush()
                     log.seek(0)
-                    # Matches the service's access-key line (harness_local.api.session).
+                    # Matches the service's access-key line (my_harness.api.session).
                     key_path = Path(re.search(r'access key at (.+)', log.read())[1])
                     assert key_path.resolve().is_relative_to(work / 'tmp'), key_path
                     key = key_path.read_text()
-                    assert request(base, '/api/session', {'key': key}, {'X-Harness-Local': '1'})[0] == 200
+                    assert request(base, '/api/session', {'key': key}, {'X-My-Harness': '1'})[0] == 200
                     assert request(base, '/api/health')[0] == 200
                     yield base
-                    assert request(base, '/api/session', headers={'X-Harness-Local': '1'}, method='DELETE')[0] == 204
+                    assert request(base, '/api/session', headers={'X-My-Harness': '1'}, method='DELETE')[0] == 204
                     assert request(base, '/api/simulations')[0] == 401
                     log.seek(0)
                     assert key not in log.read()
@@ -196,7 +196,7 @@ def main():
             '--writers-stopped', ok=False)
         assert not (work / 'absent.sqlite3').exists() and not snapshots.exists()
         subprocess.run([str(python), '-c',
-            'import sys; from alembic import command; from harness_local.storage.migrate import _config; '
+            'import sys; from alembic import command; from my_harness.storage.migrate import _config; '
             'command.downgrade(_config("sqlite:///" + sys.argv[1]), "0022_project_preparation")', str(db)],
             cwd=work, env=env, check=True)
         run('serve', '--database', db, ok=False)
@@ -217,7 +217,7 @@ def main():
         assert db.read_bytes() == before and len(list(snapshots.glob('*.sqlite3'))) == 1
         # Effective installation, migrations and templates outside the checkout.
         probe = subprocess.check_output([str(python), '-c',
-            'import harness_local; print(harness_local.__file__)'], cwd=work, env=env, text=True)
+            'import my_harness; print(my_harness.__file__)'], cwd=work, env=env, text=True)
         assert str(venv) in probe and str(ROOT) not in probe
         with server(db) as base:
             status, html = request(base, '/')
@@ -230,7 +230,7 @@ def main():
             status, projects = request(base, '/api/managed/projects')
             assert status == 200 and json.loads(projects) == []
             assert request(base, '/api/simulations', {'title': 'synthetic'})[0] == 403
-            status, body = request(base, '/api/simulations', {'title': 'synthetic'}, {'X-Harness-Local': '1'})
+            status, body = request(base, '/api/simulations', {'title': 'synthetic'}, {'X-My-Harness': '1'})
             assert status == 201
             simulation = json.loads(body)
         with server(db) as base:
@@ -248,7 +248,7 @@ def main():
         (area / 'marker').write_text('offline-installed-v2\n')
         fixture_env = {'PYTHONPATH': str(work), 'HARNESS_E2E_ROOT': str(area),
                        'HARNESS_MANAGED_CONFIG': 'installed_config:build'}
-        headers = {'X-Harness-Local': '1'}
+        headers = {'X-My-Harness': '1'}
         def post(base, path, data, key=None, expected=202):
             status, body = request(base, path, data, headers | ({'Idempotency-Key': key} if key else {}), 'POST')
             assert status == expected, (status, body)
@@ -339,7 +339,7 @@ def main():
         with server(restored_db, {'HARNESS_MANAGED_CONFIG': 'invalid'}) as base:
             assert request(base, '/')[0] == 200
             assert request(base, '/api/simulations/' + simulation['id'])[0] == 200
-            assert request(base, '/api/simulations', {'title': 'forbidden'}, {'X-Harness-Local': '1'})[0] == 409
+            assert request(base, '/api/simulations', {'title': 'forbidden'}, {'X-My-Harness': '1'})[0] == 409
             archived = read(base, f"/api/managed/runs/{task['run_id']}")
             assert archived['history'] == committed['history']
             assert archived['commit'] == committed['commit']

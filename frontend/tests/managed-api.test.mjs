@@ -29,13 +29,13 @@ test('network failure preserves exact pending envelope across reload and explici
   assert.deepEqual(restored,pending);
   assert.deepEqual(await managed(restored.path,restored.body,restored.key),{id:1});
   assert.deepEqual(calls[0], calls[1]);
-  assert.equal(calls[0].options.headers['X-Harness-Local'],'1');
+  assert.equal(calls[0].options.headers['X-My-Harness'],'1');
   assert.equal(calls[0].options.headers['Idempotency-Key'],pending.key);
 });
 
 test('conflicts preserve code and diagnostic; all managed mutations carry CSRF header', async () => {
   globalThis.fetch = async (path, options) => {
-    assert.equal(options.headers['X-Harness-Local'],'1');
+    assert.equal(options.headers['X-My-Harness'],'1');
     assert.equal(JSON.parse(options.body).expected_version,8);
     return Response.json({detail:{code:'conflict',diagnostic:'Version changed'}},{status:409});
   };
@@ -57,7 +57,7 @@ test('H0/H1 mutations carry the local CSRF header; reads do not need it', async 
   await api.create({title: 'synthetic'});
   assert.equal(calls[0].options, undefined);
   assert.equal(calls[1].options.method, 'POST');
-  assert.equal(calls[1].options.headers['X-Harness-Local'], '1');
+  assert.equal(calls[1].options.headers['X-My-Harness'], '1');
   assert.equal(calls[1].options.headers['Content-Type'], 'application/json');
 });
 

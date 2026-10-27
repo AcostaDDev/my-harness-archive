@@ -1,4 +1,4 @@
-# Arquitectura — Harness Local
+# Arquitectura — My Harness
 
 Stack, módulos, patrones y convenciones vigentes. Consolida la especificación inicial (§5–7, 9, 10 y 13), las
 decisiones vigentes y la información técnica que antes estaba en README y AGENTS. Datos:
@@ -8,7 +8,7 @@ decisiones vigentes y la información técnica que antes estaba en README y AGEN
 
 | Capa | Elección y versión exacta |
 |---|---|
-| Núcleo | Python 3.14.4, biblioteca estándar, paquete `harness-local` 0.1.0 (`uv_build==0.12.19`) |
+| Núcleo | Python 3.14.4, biblioteca estándar, paquete `my-harness` 0.1.0 (`uv_build==0.12.19`) |
 | API local | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP para acciones y observación gestionada por cursor |
 | Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0027_profile_proposals`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) y `mermaid` 11.17.2 (`strict`) |
@@ -35,10 +35,10 @@ Directorio local de la aplicación: SQLite, artefactos (streams, capturas, copia
 ```
 
 El núcleo (`core/`) no importa FastAPI, React, SDKs de proveedores ni reglas de stack: solo biblioteca estándar,
-`harness_local.core` y, como única hoja externa, los catálogos `harness_local.i18n` (solo stdlib; D171). API y CLI
+`my_harness.core` y, como única hoja externa, los catálogos `my_harness.i18n` (solo stdlib; D171). API y CLI
 llaman a los mismos casos de uso. El supervisor es el único que lanza procesos y consume la cola; cerrar el navegador no cancela trabajo.
 
-## 3. Módulos (`src/harness_local`)
+## 3. Módulos (`src/my_harness`)
 
 | Módulo | Responsabilidad |
 |---|---|
@@ -66,7 +66,7 @@ llaman a los mismos casos de uso. El supervisor es el único que lanza procesos 
 | `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Recetas empaquetadas `django-recipe-1` y `typescript-web-recipe-1` y su preparación confirmada y recuperable (D119, D143); sucesoras v2 por idioma de trabajo en `local-config-6/7/8`, con despacho por `id` (D163, D168) |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Aplicación, rutas, contratos Pydantic, sesión y guardia |
 | `profiles/typescript_web.py` | Perfil integrado `typescript-web` componible (el perfil privado solo biblioteca se retiró en P011-T015); los perfiles del TOML v4/v5 se componen en `services/local_config.py` |
-| `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`); `--ui-language` por invocación |
+| `cli.py`, `launcher.py` | `my-harness` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`); `--ui-language` por invocación |
 | `storage/preferences.py`, `i18n/` | Preferencias globales de idioma con CAS, captura del visual al admitir cada job y catálogos en/es de mensajes propios (D166); `tr()` emite en el visual de cada emisión: petición HTTP, job o invocación CLI (D171) |
 | `storage/work_language.py`, `services/work_language.py` | Idioma de trabajo inmutable por raíz, par `language-context-1` por job/intento y confirmación explícita ausente → valor (D167) |
 | `migrations/versions/0001…0027` | Esquema Alembic |
@@ -210,7 +210,7 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
   comandos antiguos error de argumentos sin SQLite. No hay observador/SSE ni activación/reversión ejecutables.
   La compatibilidad de datos y trabajos anteriores se detalla en [su flujo](flows/legacy-migration.md) (D161).
 - Seguridad: solo loopback; clave de sesión efímera en un archivo privado, cookie HttpOnly de ocho horas; Host y Origin
-  exactos; cabecera CSRF `X-Harness-Local: 1` en mutaciones; `Sec-Fetch-Site: cross-site` rechazado (D079). Markdown
+  exactos; cabecera CSRF `X-My-Harness: 1` en mutaciones; `Sec-Fetch-Site: cross-site` rechazado (D079). Markdown
   sin HTML, Mermaid dibujado como imagen, imágenes del checkout con CSP `sandbox`.
 
 - Copias de consulta (P012-T012, D202): `SupervisorRead.read_only_archive` expone la marca persistente D040.
@@ -225,7 +225,7 @@ por su API y los artefactos referenciados; la restauración es de consulta (`que
 - Documentación en español con nombres de archivo canónicos en inglés; parsers con alias en ambos idiomas.
   Los documentos que genera el harness en un proyecto (bloques, plantilla D088, archivo y registros) siguen su
   idioma de trabajo (`core/engine/document_text.py`, D169); un contexto sin él conserva los bytes españoles.
-- Comentarios, docstrings y descripciones OpenAPI de `src/harness_local` en inglés (P011-T003/T004); las fuentes v1
+- Comentarios, docstrings y descripciones OpenAPI de `src/my_harness` en inglés (P011-T003/T004); las fuentes v1
   de recetas conservan sus bytes (D163). Mensajes visibles nuevos por clave en los catálogos JSON en/es (D166): un
   mensaje completo por clave, parámetros `{nombre}` como texto, fallback inglés. Desde T021 (D171) todo texto propio
   del servicio/CLI que estaba en español sale de `i18n.tr()` en el visual de la emisión, y desde T022 (D172) también
@@ -274,8 +274,8 @@ npm --prefix frontend run generate:types
 
 Uso real (D051): construir y verificar el wheel (`scripts/build_distribution.py --out-dir`, carpeta nueva o vacía, con
 LICENSE/NOTICE, `pylock.toml` instalable offline y `SHA256SUMS`; `scripts/check_distribution.py --dist`, que además
-comprueba miembros exactos, metadatos, versión única y ausencia de componentes retirados; P011-T015), instalarlo en un venv propio y operar con `harness-local check-config RUTA [--preflight]`,
-`harness-local init-db --database RUTA` y `harness-local serve --database RUTA --config RUTA`. Nunca desde este checkout.
+comprueba miembros exactos, metadatos, versión única y ausencia de componentes retirados; P011-T015), instalarlo en un venv propio y operar con `my-harness check-config RUTA [--preflight]`,
+`my-harness init-db --database RUTA` y `my-harness serve --database RUTA --config RUTA`. Nunca desde este checkout.
 La plantilla del TOML es `local-config-8`: formateador optativo en perfiles declarados, sin pin obligatorio de CLI,
 con presets, `work_language` por proyecto
 y fragmentos de receta v2 de `examples/` (una composición ya existente se añade con otro nombre). El PATH explícito
@@ -296,7 +296,7 @@ Conserva anteriores/datos; no inicializa ni migra DB ni escribe TOML. Destinos o
 inspección, sin borrado/reintento automático. [Uso, formato y límites](archive/phase-013/P013-T002_INSTALACION.md).
 Arranque automatizado (P013-T003, D220): `scripts/start --install-dir /ruta/installation` o el wrapper
 entregado en `generations/gen-<id>/distribution/scripts/start`. Revalida referencia/recibo/paquete/venv;
-ejecuta `venv/bin/python -I -B -m harness_local.cli` con cwd en los datos del recibo, sin uv/Node/Vite.
+ejecuta `venv/bin/python -I -B -m my_harness.cli` con cwd en los datos del recibo, sin uv/Node/Vite.
 `--database` debe estar dentro de esos datos; `--config`, dentro de la configuración del recibo;
 no adopta rutas de otra instalación. Defaults: `data/harness.sqlite3`, `configuration/global.toml`
 si existe, puerto 8013 y `data/tmp` privado 0700 (`--port`/`--temp-dir` elegibles).
@@ -312,7 +312,7 @@ señales; primer uso instalado sintético verificado en T012; [candidato final y
 Los paquetes P011/P012 previos no contienen este material y no se adaptan ni reescriben.
 
 Actualización (D150): detener el servicio y los escritores, instalar el nuevo wheel y ejecutar
-`harness-local migrate --database /ruta/state/harness.sqlite3 --snapshots /ruta/copias-previas --writers-stopped`.
+`my-harness migrate --database /ruta/state/harness.sqlite3 --snapshots /ruta/copias-previas --writers-stopped`.
 Reutiliza `storage/migrate.py`: revisión conocida, instantánea SQLite verificada (`premigration-1`, integridad,
 revisión, SHA-256 y fsync) y después `upgrade head`, con comprobación del esquema final. Solo bases existentes;
 una base al día no cambia ni genera copia. Rutas absolutas sin enlaces (también auxiliares y componentes), copias

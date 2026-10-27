@@ -31,7 +31,7 @@ def call(method, path, body=None, key=None):
     global cookie
     headers = {'Host': '127.0.0.1:8013', 'Origin': ORIGIN, 'Content-Type': 'application/json'}
     if method != 'GET':
-        headers['X-Harness-Local'] = '1'
+        headers['X-My-Harness'] = '1'
     if key:
         headers['Idempotency-Key'] = key
     if cookie:

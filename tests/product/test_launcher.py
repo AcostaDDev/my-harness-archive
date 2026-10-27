@@ -3,10 +3,10 @@ from pathlib import Path
 import pytest
 from sqlalchemy import text
 
-from harness_local.cli import main
-from harness_local.launcher import initialize, local_database, serve
-from harness_local.storage.database import make_engine
-from harness_local.storage.schema import require_schema
+from my_harness.cli import main
+from my_harness.launcher import initialize, local_database, serve
+from my_harness.storage.database import make_engine
+from my_harness.storage.schema import require_schema
 
 
 def test_initialize_independent_of_cwd_and_environment(tmp_path, monkeypatch):
@@ -62,7 +62,7 @@ def test_invalid_port_has_no_effects(tmp_path, port):
 
 def test_api_assets_ignore_cwd(migrated_database, tmp_path, monkeypatch):
     from session_client import TestClient
-    from harness_local.api.app import create_app
+    from my_harness.api.app import create_app
     rogue = tmp_path / 'frontend/dist'
     rogue.mkdir(parents=True)
     (rogue / 'index.html').write_text('unexpected cwd content')
@@ -75,7 +75,7 @@ def test_api_assets_ignore_cwd(migrated_database, tmp_path, monkeypatch):
 
 def test_explicit_development_assets(migrated_database, tmp_path):
     from session_client import TestClient
-    from harness_local.api.app import create_app
+    from my_harness.api.app import create_app
     (tmp_path / 'index.html').write_text('<html>explicit</html>')
     with TestClient(create_app(migrated_database[0], ui_dir=tmp_path)) as client:
         assert client.get('/').text == '<html>explicit</html>'

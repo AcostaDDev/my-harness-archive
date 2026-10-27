@@ -6,12 +6,12 @@ import json
 
 import pytest
 
-from harness_local.core.engine.acceptance import documentation_parity, parity_reasons
-from harness_local.core.engine.contracts import task_contract
-from harness_local.core.engine.documents import blocks, executor_protected, protected_write
-from harness_local.core.engine.evidence import ContentEvidence, check_paths
-from harness_local.profiles.typescript_web import typescript_web_profile
-from harness_local.storage.managed import Conflict
+from my_harness.core.engine.acceptance import documentation_parity, parity_reasons
+from my_harness.core.engine.contracts import task_contract
+from my_harness.core.engine.documents import blocks, executor_protected, protected_write
+from my_harness.core.engine.evidence import ContentEvidence, check_paths
+from my_harness.profiles.typescript_web import typescript_web_profile
+from my_harness.storage.managed import Conflict
 from test_managed import repository  # noqa: F401  (fixture)
 from test_managed_api import VERSIONS, git, review
 from test_documents import PLAN_P001, text, v2, v2checkout  # noqa: F401  (fixtures)
@@ -73,7 +73,7 @@ def test_profile_protects_control_documents_not_product_documentation(v2):
 
 def test_instruction_files_are_editable_by_confirmed_writes_only(v2):
     web_protection(v2)
-    from harness_local.core.engine.documents import layout
+    from my_harness.core.engine.documents import layout
     target = layout(v2.context)
     assert all(target.editable(path) for path in ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md'))
     assert not target.editable('docs/archive/phase-001/SUMMARY.md') and not target.editable('agents.md')
@@ -218,8 +218,8 @@ def test_profile_protecting_all_docs_still_requires_manual_reconciliation(v2):
 
 
 def test_context_snapshot_keeps_the_previous_shape_without_data_model_paths(v2):
-    from harness_local.core.engine.contracts import context_snapshot
-    from harness_local.core.engine.serialization import restore_context
+    from my_harness.core.engine.contracts import context_snapshot
+    from my_harness.core.engine.serialization import restore_context
     assert 'data_model_paths' not in json.loads(context_snapshot(v2.context))['profile']
     declared = replace(v2.context, profile=replace(v2.context.profile, data_model_paths=('**/models.py',)))
     frozen = context_snapshot(declared)

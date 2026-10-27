@@ -1,4 +1,4 @@
-"""Install Harness Local into private, verified generations. Offline unless --allow-network is explicit."""
+"""Install My Harness into private, verified generations. Offline unless --allow-network is explicit."""
 import argparse
 from contextlib import contextmanager
 import fcntl
@@ -193,13 +193,13 @@ def current_installation(root):
 
 
 def parse_args(argv=None):
-    base = Path.home() / 'Library/Application Support/Harness Local'
+    base = Path.home() / 'Library/Application Support/My Harness'
     parser = argparse.ArgumentParser(description=__doc__)
     source = parser.add_mutually_exclusive_group()
     source.add_argument('--clone', type=Path, help='Source clone (default: this script\'s checkout)')
     source.add_argument('--dist', type=Path, help='Local built distribution; no Node/npm or checkout required')
     for name, default in (('install', base / 'installation'), ('data', base / 'data'),
-                          ('config', base / 'configuration'), ('cache', Path.home() / 'Library/Caches/Harness Local')):
+                          ('config', base / 'configuration'), ('cache', Path.home() / 'Library/Caches/My Harness')):
         parser.add_argument(f'--{name}-dir', type=Path, default=default)
     parser.add_argument('--python', help='Local Python 3.14 executable; never downloaded')
     parser.add_argument('--uv', default='uv', help='Local uv 0.12.19 executable; never downloaded')

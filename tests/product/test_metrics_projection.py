@@ -15,21 +15,21 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.core.engine import serialization
-from harness_local.core.engine.acceptance import AcceptanceDecision
-from harness_local.core.engine.context import Command
-from harness_local.core.engine.contracts import AgentRequest, AgentResult, Attempt, RunHistory, Selection, freeze
-from harness_local.core.engine.documents import validation_counts
-from harness_local.core.engine.evidence import ContentEvidence, PathPolicyResult
-from harness_local.core.engine.junit import JUnitReport, TestCase as JUnitCase
-from harness_local.core.engine.review import ReviewCycle
-from harness_local.core.engine.serialization import dump_history, load_history
-from harness_local.core.engine.validation import CommandResult, ValidationEntry, ValidationReport
-from harness_local.storage import document_export, documents, run_projection
-from harness_local.storage.database import make_engine
-from harness_local.storage.document_export import DocumentExportRepository
-from harness_local.storage.metrics import STOP_LIMIT, MetricsViews, _scope
-from harness_local.storage.models import (
+from my_harness.core.engine import serialization
+from my_harness.core.engine.acceptance import AcceptanceDecision
+from my_harness.core.engine.context import Command
+from my_harness.core.engine.contracts import AgentRequest, AgentResult, Attempt, RunHistory, Selection, freeze
+from my_harness.core.engine.documents import validation_counts
+from my_harness.core.engine.evidence import ContentEvidence, PathPolicyResult
+from my_harness.core.engine.junit import JUnitReport, TestCase as JUnitCase
+from my_harness.core.engine.review import ReviewCycle
+from my_harness.core.engine.serialization import dump_history, load_history
+from my_harness.core.engine.validation import CommandResult, ValidationEntry, ValidationReport
+from my_harness.storage import document_export, documents, run_projection
+from my_harness.storage.database import make_engine
+from my_harness.storage.document_export import DocumentExportRepository
+from my_harness.storage.metrics import STOP_LIMIT, MetricsViews, _scope
+from my_harness.storage.models import (
     ManagedCommitRow as Commit, ManagedRunRow as Run, AttemptMetricRow as Metric,
 )
 from test_backup import db_path
@@ -46,7 +46,7 @@ class LegacyMetricsViews(MetricsViews):
     """`_task`, `validations` and the stops of `summary` as they decoded the histories."""
 
     def _task(self, session, root, phase, task) -> dict:
-        from harness_local.storage.metrics import _consumption, _seconds, _sums
+        from my_harness.storage.metrics import _consumption, _seconds, _sums
         runs = session.scalars(select(Run).where(Run.root == root, Run.phase_id == phase, Run.task_id == task,
                                                  Run.purpose == 'task').order_by(Run.created_at, Run.id)).all()
         ids = [run.id for run in runs]
@@ -389,7 +389,7 @@ def test_v2_export_preview_reads_the_projection_and_matches_the_history(v2, monk
 
 
 def test_export_preview_refuses_a_projection_that_differs_from_the_history(v2):  # noqa: F811
-    from harness_local.storage.managed import Conflict
+    from my_harness.storage.managed import Conflict
     run_id = v2.accept()
     pid = v2.create_v2()
     exporter = DocumentExportRepository(v2.repository)

@@ -15,16 +15,16 @@ import pytest
 from sqlalchemy import inspect, select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.cli_agents import CLIConfig, CLIProcessAdapter, argv_for
-from harness_local.adapters.engine_fake import ScriptedCommandRunner, SyntheticWorkspace
-from harness_local.adapters.processes import identity, liveness
-from harness_local.adapters.streams import AgentStream
-from harness_local.core.engine.contracts import AgentRequest, Selection, context_snapshot
-from harness_local.core.engine.journal import JournalError
-from harness_local.services.managed import LocalSupervisor, _Journal
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict, SQLiteManagedRepository
-from harness_local.storage.models import ManagedAttemptRow
+from my_harness.adapters.cli_agents import CLIConfig, CLIProcessAdapter, argv_for
+from my_harness.adapters.engine_fake import ScriptedCommandRunner, SyntheticWorkspace
+from my_harness.adapters.processes import identity, liveness
+from my_harness.adapters.streams import AgentStream
+from my_harness.core.engine.contracts import AgentRequest, Selection, context_snapshot
+from my_harness.core.engine.journal import JournalError
+from my_harness.services.managed import LocalSupervisor, _Journal
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict, SQLiteManagedRepository
+from my_harness.storage.models import ManagedAttemptRow
 from test_managed import PLAN, VERSIONS, context, repository
 
 
@@ -108,7 +108,7 @@ def test_reserved_provider_overrides_fail_once_with_preserved_evidence(
         tmp_path,context,repository,monkeypatch,version,retry_key):
     # Reintroduce the previously generated invalid configuration. The independent
     # executable must reject it instead of falsely certifying a successful stream.
-    from harness_local.adapters import cli_agents
+    from my_harness.adapters import cli_agents
     ctx=replace(context,policy=replace(context.policy,planning_mode='agent'))
     port=adapter(tmp_path,'version_new' if version=='0.164.0' else 'success')
     port=CLIProcessAdapter((replace(port.agents['reviewer'],cli_version=version),
@@ -161,7 +161,7 @@ def test_previous_adapter_version_cannot_execute_new_configuration(tmp_path,cont
 
 def test_empty_mcp_wrapper_fails_after_planner_without_review_or_retry(
         tmp_path,context,repository,monkeypatch):
-    from harness_local.adapters import cli_agents
+    from my_harness.adapters import cli_agents
     ctx=replace(context,policy=replace(context.policy,planning_mode='agent'))
     port=adapter(tmp_path,'flow')
     original=cli_agents.argv_for
@@ -574,9 +574,9 @@ def test_new_installed_codex_version_requires_explicit_frozen_selection(tmp_path
 
 def test_pre_h23_result_json_and_history_can_resume_without_rewriting_results(context,repository):
     from test_managed import submit, worker, review
-    from harness_local.core.engine.contracts import AgentResult, freeze
-    from harness_local.core.engine.serialization import load_history
-    from harness_local.storage.models import ManagedRunRow
+    from my_harness.core.engine.contracts import AgentResult, freeze
+    from my_harness.core.engine.serialization import load_history
+    from my_harness.storage.models import ManagedRunRow
     job=submit(repository,context)
     supervisor,_,_,_=worker(repository,context,[AgentResult(None,error='Synthetic H2.2 interruption')])
     supervisor.run_once()

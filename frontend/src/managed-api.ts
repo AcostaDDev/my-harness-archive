@@ -14,7 +14,7 @@ export class ManagedError extends Error {
 }
 export async function managed<T>(path: string, body?: unknown, key?: string, method = "POST"): Promise<T> {
   const response = await fetch(`/api/managed${path}`, body === undefined ? undefined : {
-    method, headers: { "Content-Type": "application/json", "X-Harness-Local": "1",
+    method, headers: { "Content-Type": "application/json", "X-My-Harness": "1",
       ...(key ? { "Idempotency-Key": key } : {}) }, body: JSON.stringify(body),
   });
   sessionResponse(response);

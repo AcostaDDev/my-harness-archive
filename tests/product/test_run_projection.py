@@ -17,26 +17,26 @@ import pytest
 from sqlalchemy import event, select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.engine_fake import ScriptedAgentAdapter
-from harness_local.adapters.git import GitWorkspace
-from harness_local.core.engine import serialization
-from harness_local.core.engine.acceptance import AcceptanceDecision
-from harness_local.core.engine.context import Command
-from harness_local.core.engine.contracts import (
+from my_harness.adapters.engine_fake import ScriptedAgentAdapter
+from my_harness.adapters.git import GitWorkspace
+from my_harness.core.engine import serialization
+from my_harness.core.engine.acceptance import AcceptanceDecision
+from my_harness.core.engine.context import Command
+from my_harness.core.engine.contracts import (
     AgentRequest, AgentResult, Attempt, OperationalStop, RunHistory, Selection, freeze,
 )
-from harness_local.core.engine.evidence import ContentEvidence, PathPolicyResult
-from harness_local.core.engine.junit import JUnitReport, TestCase as JUnitCase
-from harness_local.core.engine.review import ReviewCycle
-from harness_local.core.engine.serialization import dump_history, load_history
-from harness_local.core.engine.validation import CommandResult, ValidationEntry, ValidationReport, validation_payload
-from harness_local.services.managed import LocalSupervisor
-from harness_local.storage import managed_views, run_projection
-from harness_local.storage.backup import BackupError, restore_backup
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict, SQLiteManagedRepository
-from harness_local.storage.managed_views import SQLiteManagedViews, diff_page
-from harness_local.storage.models import ManagedRunRow as Run
+from my_harness.core.engine.evidence import ContentEvidence, PathPolicyResult
+from my_harness.core.engine.junit import JUnitReport, TestCase as JUnitCase
+from my_harness.core.engine.review import ReviewCycle
+from my_harness.core.engine.serialization import dump_history, load_history
+from my_harness.core.engine.validation import CommandResult, ValidationEntry, ValidationReport, validation_payload
+from my_harness.services.managed import LocalSupervisor
+from my_harness.storage import managed_views, run_projection
+from my_harness.storage.backup import BackupError, restore_backup
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict, SQLiteManagedRepository
+from my_harness.storage.managed_views import SQLiteManagedViews, diff_page
+from my_harness.storage.models import ManagedRunRow as Run
 from test_backup import backup, db_path, reseal_database
 from test_engine import PHASE_ID, PLAN, TASK_ID, edit, review
 from test_git import IDENTITY, VERSIONS, make_context, repo as git_repo  # noqa: F401  (fixture)
@@ -387,7 +387,7 @@ def test_lists_and_auxiliary_reads_never_select_the_history(git_repo, migrated_d
     tasks = views.tasks(root, PHASE_ID, [TASK_ID, 'P001-T009'], 0, 30)
     views.jobs(job.run_id, 0, 30), views.attempts(job.run_id, 0, 30), views.events(job.run_id, 0, 100)
     views.exists(job.run_id)
-    from harness_local.storage.permissions import PermissionRepository
+    from my_harness.storage.permissions import PermissionRepository
     PermissionRepository(repository).list(job.run_id)
     assert probe.clean() and probe.statements
     assert [item['id'] for item in runs['items']] == [job.run_id]

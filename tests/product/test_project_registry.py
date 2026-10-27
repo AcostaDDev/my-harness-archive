@@ -11,12 +11,12 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from harness_local.core.engine.contracts import freeze
-from harness_local.core.engine.journal import JournalError
-from harness_local.services.local_config import LocalConfigError, load_local_config, summary
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import CONFIG_ENV
-from harness_local.storage.models import RegisteredProjectEventRow
+from my_harness.core.engine.contracts import freeze
+from my_harness.core.engine.journal import JournalError
+from my_harness.services.local_config import LocalConfigError, load_local_config, summary
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import CONFIG_ENV
+from my_harness.storage.models import RegisteredProjectEventRow
 from test_agent_roles import v2
 from test_local_config import SENTINEL, launches, setup, write  # noqa: F401 (fixture)
 from test_managed_api import client

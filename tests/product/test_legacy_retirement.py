@@ -7,19 +7,19 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.api.app import create_app
-from harness_local.cli import main
-from harness_local.core.engine.contracts import ContractError, freeze
-from harness_local.core.engine.prompts import Template, builtin_catalog, digest, dump_catalog, load_catalog, render, validate
-from harness_local.storage.backup import create_backup, restore_backup, verify_bundle
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict
-from harness_local.storage.managed_mode import ModeGuard
-from harness_local.storage.models import (
+from my_harness.api.app import create_app
+from my_harness.cli import main
+from my_harness.core.engine.contracts import ContractError, freeze
+from my_harness.core.engine.prompts import Template, builtin_catalog, digest, dump_catalog, load_catalog, render, validate
+from my_harness.storage.backup import create_backup, restore_backup, verify_bundle
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict
+from my_harness.storage.managed_mode import ModeGuard
+from my_harness.storage.models import (
     LegacySourceRow, ManagedActivationRow, ManagedJobRow, ManagedRunRow, PlanningConversationRow,
     ProjectImportRow, PromptHeadRow, PromptVersionRow,
 )
-from harness_local.storage.prompts import PromptRepository
+from my_harness.storage.prompts import PromptRepository
 from test_managed_api import client, config, VERSIONS
 from test_onboarding_conversation import world  # noqa: F401
 from test_onboarding_commit import ready, preview, confirm
@@ -251,7 +251,7 @@ def test_old_active_prompt_head_is_inert(world):
 
 
 def test_retained_artifact_directory_remains_canonical_and_protected(world, tmp_path, monkeypatch):
-    from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+    from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
     from session_client import TestClient
     monkeypatch.chdir(world.context.root)
     managed = ManagedConfig((ManagedProject('synthetic', world.context, VERSIONS),),

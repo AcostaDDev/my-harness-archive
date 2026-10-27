@@ -140,7 +140,7 @@ test('archive home, blocked direct routes, missing run and loading gate never mo
     const env = environment('es');
     try {
       const html = await env.render(env.tree(path));
-      assert.doesNotMatch(html, /decision-pending|harness-local serve --config/);
+      assert.doesNotMatch(html, /decision-pending|my-harness serve --config/);
       if (path === '/') assert.match(html, /Id de run/);
       else if (path !== '/runs/unknown') assert.match(html, /no está disponible/);
       assert.ok(env.requests.length === 0 || path === '/runs/unknown');

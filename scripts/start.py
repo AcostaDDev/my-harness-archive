@@ -20,9 +20,9 @@ import sys
 import sqlite3
 from pathlib import Path
 from sqlalchemy import create_engine
-from harness_local.launcher import local_database
-from harness_local.storage.schema import require_schema
-from harness_local.storage.backup import is_read_only_archive
+from my_harness.launcher import local_database
+from my_harness.storage.schema import require_schema
+from my_harness.storage.backup import is_read_only_archive
 try:
     path, url = local_database(sys.argv[1])
     archived = False
@@ -34,7 +34,7 @@ try:
             require_schema(engine)
             archived = is_read_only_archive(engine)
         except Exception as error:
-            raise RuntimeError('Database is not ready. Stop service and writers; use harness-local migrate '
+            raise RuntimeError('Database is not ready. Stop service and writers; use my-harness migrate '
                                '--database PATH --snapshots DIRECTORY --writers-stopped separately '
                                '(D150, verified backup before migration). ' + str(error)) from None
         finally:
@@ -114,7 +114,7 @@ class Children:
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--install-dir', type=Path,
-                        default=Path.home() / 'Library/Application Support/Harness Local/installation')
+                        default=Path.home() / 'Library/Application Support/My Harness/installation')
     parser.add_argument('--database', type=Path, help='Database within the installation data directory; default: harness.sqlite3')
     parser.add_argument('--config', type=Path, help='TOML within the installation configuration directory; default: global.toml if present')
     parser.add_argument('--port', type=int, default=8013, help='Loopback port (default: 8013)')
@@ -177,7 +177,7 @@ def start(args):
         env.update(TMPDIR=str(temporary), TMP=str(temporary), TEMP=str(temporary),
                    PYTHONDONTWRITEBYTECODE='1', PYTHONNOUSERSITE='1')
         python = generation / 'venv/bin/python'
-        command = [python, '-I', '-B', '-m', 'harness_local.cli']
+        command = [python, '-I', '-B', '-m', 'my_harness.cli']
         selected_config = str(config) if args.config is not None or config.exists() else ''
         children = Children((instance_descriptor, install_descriptor))
         previous = {number: signal.signal(number, children.signal) for number in (signal.SIGINT, signal.SIGTERM)}
@@ -194,7 +194,7 @@ def start(args):
                     raise StartRefused('init-db did not produce a database; no service was started')
             if not selected_config and not archived:
                 print('No global TOML: starting the protected configuration assistant at /setup.', flush=True)
-            print(f'Starting installed Harness Local at http://127.0.0.1:{args.port}; database: {database}.', flush=True)
+            print(f'Starting installed My Harness at http://127.0.0.1:{args.port}; database: {database}.', flush=True)
             serve = [*command, 'serve', '--database', database, '--port', str(args.port),
                      '--configuration-dir', configuration, '--state-dir', data]
             if selected_config and not archived:

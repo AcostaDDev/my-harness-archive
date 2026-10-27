@@ -7,7 +7,7 @@ import hashlib
 
 import pytest
 
-from harness_local.storage.managed_views import MAX_DIFF_PAGE, diff_page
+from my_harness.storage.managed_views import MAX_DIFF_PAGE, diff_page
 from test_managed_api import Ports, client, config, review, settle, submit, url, repo, task  # noqa: F401  (fixtures)
 
 

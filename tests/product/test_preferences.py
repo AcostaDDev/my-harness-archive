@@ -10,11 +10,11 @@ import pytest
 from sqlalchemy import delete, select, text
 from sqlalchemy.orm import Session
 
-from harness_local import i18n
-from harness_local.cli import cli_language
-from harness_local.storage.database import make_engine
-from harness_local.storage.models import ManagedJobRow, ProductPreferencesRow
-from harness_local.storage.preferences import (
+from my_harness import i18n
+from my_harness.cli import cli_language
+from my_harness.storage.database import make_engine
+from my_harness.storage.models import ManagedJobRow, ProductPreferencesRow
+from my_harness.storage.preferences import (
     PreferencesChanged, PreferencesInvalid, PreferencesKeyReused, PreferencesRepository,
 )
 from session_client import TestClient
@@ -178,7 +178,7 @@ def test_http_preferences_contract(url, tmp_path, task):  # noqa: F811
         for invalid in ({**body, 'ui_language': 'fr'}, {**body, 'expected_version': -1}, {**body, 'project': 'x'},
                         {'expected_version': 2, 'ui_language': 'en'}):
             assert http.put(PREFERENCES, json=invalid, headers={'Idempotency-Key': 'k3'}).status_code == 422
-        unguarded = http.put(PREFERENCES, json=body, headers={'Idempotency-Key': 'k4', 'X-Harness-Local': ''})
+        unguarded = http.put(PREFERENCES, json=body, headers={'Idempotency-Key': 'k4', 'X-My-Harness': ''})
         assert unguarded.status_code == 403
         job = http.post('/api/managed/projects/synthetic/runs',
                         json={'task_id': 'P001-T001', 'phase_id': 'P001', 'text': '# Plan\n'},

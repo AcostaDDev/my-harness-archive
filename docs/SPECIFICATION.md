@@ -1,4 +1,4 @@
-# Especificación — Harness Local
+# Especificación — My Harness
 
 Requisitos funcionales y reglas de negocio vigentes. Consolida la especificación inicial
 ([archivo](archive/phase-000/01-especificacion-harness-local.md)) con las decisiones posteriores y la ampliación

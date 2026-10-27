@@ -15,11 +15,11 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from harness_local.recipes import django
-from harness_local.services.local_config import load_local_config
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.project_registry import digest
-from harness_local.storage.models import ManagedProcessRow
+from my_harness.recipes import django
+from my_harness.services.local_config import load_local_config
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.project_registry import digest
+from my_harness.storage.models import ManagedProcessRow
 from test_definition import DRAFTS, answer
 from test_local_config import launches, setup, web, write  # noqa: F401
 from test_managed_api import client, git
@@ -77,7 +77,7 @@ def journey(request, operator, migrated_database, monkeypatch):
             installer_executable=installer, installer_version=uv_version, wheelhouse=str(Path(wheelhouse).resolve()))
     config = load_local_config(write(folder, value))
     captured = []
-    app = importlib.import_module('harness_local.api.app')
+    app = importlib.import_module('my_harness.api.app')
     runtime_class = app.ManagedRuntime
     def runtime(*args, **kwargs):
         instance = runtime_class(*args, **kwargs)
@@ -85,7 +85,7 @@ def journey(request, operator, migrated_database, monkeypatch):
         return instance
     monkeypatch.setattr(app, 'ManagedRuntime', runtime)
     if not real:
-        from harness_local.services.project_preparation import ProjectPreparation
+        from my_harness.services.project_preparation import ProjectPreparation
         original = ProjectPreparation._files
         def files(self, root, plan):
             original(self, root, plan)

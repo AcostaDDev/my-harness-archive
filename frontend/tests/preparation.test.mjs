@@ -63,5 +63,5 @@ test('lost preparation confirmation retains exact consent and key until acknowle
   await assert.rejects(createOnce('/projects/demo/preparation/confirm',body));
   assert.equal((await createOnce('/projects/demo/preparation/confirm',body)).id,'same-preparation');
   assert.deepEqual(calls[0],calls[1]);
-  assert.equal(calls[1].options.headers['X-Harness-Local'],'1');
+  assert.equal(calls[1].options.headers['X-My-Harness'],'1');
 });

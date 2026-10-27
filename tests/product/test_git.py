@@ -16,17 +16,17 @@ from alembic import command
 import pytest
 from sqlalchemy import inspect
 
-from harness_local.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
-from harness_local.adapters.git import EvidenceCaptureError, Git, GitError, GitWorkspace, GitWorktrees
-from harness_local.core.engine.commit import CommitUncertain, GitIdentity, MechanicalUpdate, git_provenance
-from harness_local.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
-from harness_local.core.engine.serialization import dump_history, load_history
-from harness_local.services.managed import LocalSupervisor
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict, SQLiteManagedRepository
+from my_harness.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
+from my_harness.adapters.git import EvidenceCaptureError, Git, GitError, GitWorkspace, GitWorktrees
+from my_harness.core.engine.commit import CommitUncertain, GitIdentity, MechanicalUpdate, git_provenance
+from my_harness.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
+from my_harness.core.engine.serialization import dump_history, load_history
+from my_harness.services.managed import LocalSupervisor
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict, SQLiteManagedRepository
 
 TASK, PHASE = "P001-T001", "P001"
-IDENTITY = GitIdentity("Harness Local", "harness@example.invalid")
+IDENTITY = GitIdentity("My Harness", "harness@example.invalid")
 VERSIONS = {"engine": "h2.4", "agent_adapter": "synthetic-1", "commands": "synthetic-1",
             "evidence": "git-1", "provider_cli": None}
 PLAN = """# Synthetic H2.4 plan
@@ -154,7 +154,7 @@ def run_commit(repository, job, key="commit", mechanical=(), context=None, **kwa
 
 
 def load_context(record):
-    from harness_local.core.engine.serialization import restore_context
+    from my_harness.core.engine.serialization import restore_context
     return restore_context(record.history.context_json)
 
 
@@ -353,7 +353,7 @@ def test_accepted_task_creates_exactly_the_reviewed_commit(tmp_path, repo, task,
     assert f"Harness-Run: {job.run_id}" in message
     assert f"Harness-Reviewed-Fingerprint: {evidence.fingerprint}" in message
     assert git(context.root, "log", "-1", "--format=%an <%ae>|%cn <%ce>") == (
-        "Harness Local <harness@example.invalid>|Harness Local <harness@example.invalid>")
+        "My Harness <harness@example.invalid>|My Harness <harness@example.invalid>")
     # Index refreshed, unreviewed content kept, nothing done outside the worktree.
     assert git(context.root, "status", "--porcelain") == ""
     assert (context.root / "ignored/ignored.txt").read_text() == "never reviewed\n"

@@ -10,16 +10,16 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.cli_agents import CLIConfig, argv_for
-from harness_local.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
-from harness_local.core.engine.contracts import AgentResult, freeze
-from harness_local.core.engine.permissions import KINDS, LAYERS, digest, snapshot_entries
-from harness_local.core.engine.serialization import dump_history, load_history
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
-from harness_local.storage.managed import Conflict, SQLiteManagedRepository
-from harness_local.storage.models import ManagedAttemptRow, PermissionRequestRow
-from harness_local.storage.permissions import PermissionRepository
+from my_harness.adapters.cli_agents import CLIConfig, argv_for
+from my_harness.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
+from my_harness.core.engine.contracts import AgentResult, freeze
+from my_harness.core.engine.permissions import KINDS, LAYERS, digest, snapshot_entries
+from my_harness.core.engine.serialization import dump_history, load_history
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
+from my_harness.storage.managed import Conflict, SQLiteManagedRepository
+from my_harness.storage.models import ManagedAttemptRow, PermissionRequestRow
+from my_harness.storage.permissions import PermissionRepository
 from test_managed import PLAN, VERSIONS, context, repository
 from test_managed_api import client
 
@@ -85,7 +85,7 @@ def test_categories_audited_and_do_not_imply_each_other(setup, kind):
 def test_each_higher_ceiling_denies_independently(setup, layer):
     repo, permissions, run_id, *_ = setup
     # Synthetic persisted configuration for testing each frozen ceiling.
-    from harness_local.storage.models import ManagedRunRow
+    from my_harness.storage.models import ManagedRunRow
     with Session(repo.engine) as session, session.begin():
         run = session.get(ManagedRunRow, run_id)
         versions = json.loads(run.versions_json)
@@ -305,7 +305,7 @@ def test_mutated_request_cannot_reuse_fingerprint(setup):
 
 
 def test_grant_bound_to_frozen_configuration_is_not_reused(setup):
-    from harness_local.storage.models import ManagedRunRow
+    from my_harness.storage.models import ManagedRunRow
     row = request(setup); decide(setup, row)
     with Session(setup[0].engine) as session, session.begin():
         run = session.get(ManagedRunRow, setup[2])
@@ -314,7 +314,7 @@ def test_grant_bound_to_frozen_configuration_is_not_reused(setup):
 
 
 def test_file_ceiling_cannot_expand_contract_or_escape_checkout(setup):
-    from harness_local.storage.models import ManagedRunRow
+    from my_harness.storage.models import ManagedRunRow
     repo, _, run_id, *_ = setup
     with Session(repo.engine) as session, session.begin():
         run = session.get(ManagedRunRow, run_id)
@@ -338,7 +338,7 @@ def test_cli_grant_launch_uses_persisted_snapshot_and_exact_rule(repository, con
     versions = {**VERSIONS, **port.frozen_versions(), 'permission_authority': freeze(authority)}
     workspace = SyntheticWorkspace(context, ('app/main.txt',))
     configs = dict(port.agents)
-    from harness_local.adapters.cli_agents import CLIProcessAdapter
+    from my_harness.adapters.cli_agents import CLIProcessAdapter
     worker = LocalSupervisor(repository, lambda c, v: (CLIProcessAdapter(configs, port.artifact_root),
                                                       ScriptedCommandRunner([]), workspace))
     job = repository.submit(context, 'P001-T001', 'P001', PLAN, versions, key='cli')
@@ -366,7 +366,7 @@ def test_api_create_replace_deny_and_actions(setup, migrated_database, tmp_path)
         body = dict(expected_version=run['version'], kind='tools', target=TARGETS['tools'], operation='use', arguments=[],
                     requested_by='synthetic executor', source_attempt_id=repo.get_run(run_id).history.attempts[0].request.id,
                     reason='HTTP request', ttl_seconds=3600)
-        assert http.post(path, json=body, headers={'X-Harness-Local': ''}).status_code == 403
+        assert http.post(path, json=body, headers={'X-My-Harness': ''}).status_code == 403
         response = http.post(path, json=body)
         assert response.status_code == 201
         first = response.json()

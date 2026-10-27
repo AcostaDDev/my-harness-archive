@@ -9,13 +9,13 @@ import json
 
 import pytest
 
-from harness_local.adapters.cli_agents import EFFORTS, CLIConfig, CLIProcessAdapter, argv_for
-from harness_local.core.engine.context import EnginePolicy
-from harness_local.core.engine.contracts import AgentRequest, Selection, context_snapshot
-from harness_local.core.engine.journal import JournalError
-from harness_local.core.engine.serialization import restore_context
-from harness_local.services.local_config import LocalConfigError, build, inspect_local_config, load_local_config
-from harness_local.services.managed import LocalSupervisor
+from my_harness.adapters.cli_agents import EFFORTS, CLIConfig, CLIProcessAdapter, argv_for
+from my_harness.core.engine.context import EnginePolicy
+from my_harness.core.engine.contracts import AgentRequest, Selection, context_snapshot
+from my_harness.core.engine.journal import JournalError
+from my_harness.core.engine.serialization import restore_context
+from my_harness.services.local_config import LocalConfigError, build, inspect_local_config, load_local_config
+from my_harness.services.managed import LocalSupervisor
 from test_local_config import PROBE, SENTINEL, launches, setup, write  # noqa: F401 (fixture)
 from test_typescript_profile import PHASE, PLAN, TASK, repository, web  # noqa: F401 (fixtures)
 
@@ -212,12 +212,12 @@ def mutate(data, change):
 def test_invalid_agent_configuration_rejected_without_effects(setup, change):
     context, data, folder, tmp_path = setup
     with pytest.raises(LocalConfigError):
-        build(mutate(data, change), folder / 'harness-local.toml')
+        build(mutate(data, change), folder / 'my-harness.toml')
     assert not launches(tmp_path)
 
 
 def test_check_config_shows_agents_and_preflights_each_access_mode(setup, capsys):
-    from harness_local.cli import main
+    from my_harness.cli import main
     context, data, folder, tmp_path = setup
     path = write(folder, v2(data, 'claude', 'codex', mode='open'))
     assert main(['check-config', str(path), '--preflight']) == 0
@@ -233,7 +233,7 @@ def test_check_config_shows_agents_and_preflights_each_access_mode(setup, capsys
     # A Claude CLI without the read-only flags cannot serve as reviewer.
     _, agents = inspect_local_config(path)
     reviewer = replace(agents['reviewer'], executable=agents['reviewer'].executable[:-1] + ('no_read_flags',))
-    from harness_local.adapters.cli_diagnostics import preflight_config
+    from my_harness.adapters.cli_diagnostics import preflight_config
     report = preflight_config(reviewer, access='read')
     assert report['available'] is False and report['missing_flags'] == ['--restricted', '--json-schema']
     assert preflight_config(reviewer, access='write')['available'] is True

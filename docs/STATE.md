@@ -9,7 +9,7 @@ salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; 
 local completada en el alcance de D151/D153; apertura pública preparada con expediente P013 sin ejecutar (D231/D232).
 
 - **Núcleo y motor** ([P001](archive/phase-001/SUMMARY.md), [P003](archive/phase-003/SUMMARY.md)): paquete
-  `harness_local` con contexto explícito por proyecto, contrato de tarea congelado, planificación determinista o por el
+  `my_harness` con contexto explícito por proyecto, contrato de tarea congelado, planificación determinista o por el
   revisor, bucle ejecución → validación → revisión con límite de correcciones, aceptación ligada al contenido exacto y
   commit determinista conciliable. Formateo del perfil tras cada turno del ejecutor (D133). Codec de historial
   en formato 8 (lee 1–7).

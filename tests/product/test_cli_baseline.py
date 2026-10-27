@@ -5,10 +5,10 @@ import sys
 
 import pytest
 
-from harness_local.adapters.cli_agents import SUPPORTED, VERSION, WRITE_SUPPORTED, CLIConfig, argv_for
-from harness_local.adapters.cli_compatibility import CompatibilityError, MINIMUM
-from harness_local.adapters.cli_diagnostics import ACCESS_REQUIRED, REQUIRED, preflight_config
-from harness_local.services.local_config import load_local_config
+from my_harness.adapters.cli_agents import SUPPORTED, VERSION, WRITE_SUPPORTED, CLIConfig, argv_for
+from my_harness.adapters.cli_compatibility import CompatibilityError, MINIMUM
+from my_harness.adapters.cli_diagnostics import ACCESS_REQUIRED, REQUIRED, preflight_config
+from my_harness.services.local_config import load_local_config
 import test_agent_roles
 from test_agent_roles import journey, request, v2
 from test_local_config import launches, setup, write  # noqa: F401 (fixture)

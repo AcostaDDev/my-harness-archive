@@ -11,13 +11,13 @@ import sys
 
 import pytest
 
-from harness_local.adapters.commands import CommandConfig, ManagedCommandRunner, config_payload
-from harness_local.core.engine.context import Command, ProjectProfile
-from harness_local.core.engine.contracts import freeze
-from harness_local.core.engine.serialization import dump_history, load_history
-from harness_local.core.engine.validation import CommandResult, run_command
-from harness_local.recipes import django
-from harness_local.services.local_config import LocalConfigError, _commands, load_local_config
+from my_harness.adapters.commands import CommandConfig, ManagedCommandRunner, config_payload
+from my_harness.core.engine.context import Command, ProjectProfile
+from my_harness.core.engine.contracts import freeze
+from my_harness.core.engine.serialization import dump_history, load_history
+from my_harness.core.engine.validation import CommandResult, run_command
+from my_harness.recipes import django
+from my_harness.services.local_config import LocalConfigError, _commands, load_local_config
 from test_commands import setup as native
 from test_engine import PHASE_ID, PLAN, TASK_ID, context, harness, review  # noqa: F401 (fixture)
 from test_local_config import setup, web, write  # noqa: F401
@@ -29,7 +29,7 @@ FORMATTER = ('fmt', '--')
 CHECK = Command(('fmt', '--check', '.'))
 UNFORMATTED, FORMATTED = "VALUE = 'x'\n", 'VALUE = "x"\n'
 # The recipe fingerprint binds the preparation receipts already issued, among them the pilot child's (D119, D130).
-RECIPE_FINGERPRINT = 'f511c00a2e099d8320d813cc6200e56ef96087b9c5ee56f96ef22d0b5a80e191'
+RECIPE_FINGERPRINT = 'd2b89bcaa647d659dac7417c4af53e7cb532cfbaef1fd7346cb29d440eb35ff2'
 
 
 def formatting_profile(context, **changes):

@@ -11,11 +11,11 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from session_client import TestClient
-from harness_local.core.engine.context import IntakeContext, ProjectContext
-from harness_local.services.local_config import LocalComposer
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.profile_preparation import ProfilePreparation
-from harness_local.storage.models import (ConfigurationOperationRow, ProjectBootstrapRow, ProjectImportRow,
+from my_harness.core.engine.context import IntakeContext, ProjectContext
+from my_harness.services.local_config import LocalComposer
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.profile_preparation import ProfilePreparation
+from my_harness.storage.models import (ConfigurationOperationRow, ProjectBootstrapRow, ProjectImportRow,
     RegisteredProjectRow, PlanningProposalRow, ManagedRunRow, ConfigurationScopeRow)
 from test_configuration import setup  # noqa: F401
 from test_configuration_api import app_for, store, schedule
@@ -42,7 +42,7 @@ def journey(request, setup, tmp_path, monkeypatch):
         store(http, data); schedule(http)
     app = app_for(repo)
     with TestClient(app) as http:
-        http.headers['X-Harness-Local'] = '1'
+        http.headers['X-My-Harness'] = '1'
         runtime = app.state.runtime
         if kind == 'definition':
             parent = tmp_path / 'chosen parent'
@@ -256,7 +256,7 @@ def test_activation_rejects_stale_prepared_authority(journey, fault):
         git(root, 'add', 'app/main.go'); git(root, 'commit', '-qm', 'Synthetic drift')
     elif fault == 'tool': tool.write_text(tool.read_text() + '\n# drift\n')
     elif fault == 'pending':
-        from harness_local.storage.models import CheckoutLockRow
+        from my_harness.storage.models import CheckoutLockRow
         # A foreign live/uncertain checkout owner blocks the activation barrier.
         with runtime.repository._write() as session:
             session.add(CheckoutLockRow(root=str(root), job_id=None,
@@ -308,9 +308,9 @@ def test_project_editor_rejects_csrf_origin_unknown_fields_and_reused_activation
     body = activation(http)
     assert http.post(BASE + '/configuration/activate', json=body, headers={
         'Origin': 'https://example.invalid', 'Idempotency-Key': 'wrong-origin'}).status_code == 403
-    del http.headers['X-Harness-Local']
+    del http.headers['X-My-Harness']
     assert http.post(BASE + '/configuration/activate', json=body, headers={'Idempotency-Key': 'no-csrf'}).status_code == 403
-    http.headers['X-Harness-Local'] = '1'
+    http.headers['X-My-Harness'] = '1'
     assert http.post(BASE + '/configuration/activate', json={**body, 'prepared': True},
         headers={'Idempotency-Key': 'forged'}).status_code == 422
     result = http.post(BASE + '/configuration/activate', json=body, headers={'Idempotency-Key': 'exact-key'})
@@ -334,10 +334,10 @@ def test_immutable_authority_checked_for_owned_job_without_adopting_working_edit
     (repo.directory / 'projects/own/project.toml').write_text('Foreign working copy')
     with runtime.repository._write() as session:
         runtime.repository._owned(session, claim)
-    from harness_local.storage.configuration_files import ConfigurationFiles
+    from my_harness.storage.configuration_files import ConfigurationFiles
     immutable = repo.directory.joinpath(*ConfigurationFiles.immutable('project:own', 1, active['sha256']))
     immutable.write_text('Foreign immutable authority')
-    from harness_local.storage.managed import Conflict
+    from my_harness.storage.managed import Conflict
     with pytest.raises(Conflict):
         with runtime.repository._write() as session:
             runtime.repository._owned(session, claim)

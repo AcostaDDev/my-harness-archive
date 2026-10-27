@@ -10,21 +10,21 @@ from pathlib import Path
 from session_client import TestClient
 import pytest
 
-from harness_local.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
-from harness_local.adapters.git import GitWorkspace
-from harness_local.api.app import create_app
-from harness_local.core.engine.context import Command, JUnitDeclaration
-from harness_local.core.engine.contracts import context_snapshot
-from harness_local.core.engine.junit import MAX_BYTES, MAX_CASES, capture_junit, observe_report, parse_junit
-from harness_local.core.engine.serialization import dump_history, load_history, restore_context
-from harness_local.core.engine.validation import CommandResult, run_validations
-from harness_local.core.engine.workflow import OfflineEngine
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict, SQLiteManagedRepository
-from harness_local.storage.managed_views import SQLiteManagedViews
-from harness_local.storage.phases import PhaseRepository
+from my_harness.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
+from my_harness.adapters.git import GitWorkspace
+from my_harness.api.app import create_app
+from my_harness.core.engine.context import Command, JUnitDeclaration
+from my_harness.core.engine.contracts import context_snapshot
+from my_harness.core.engine.junit import MAX_BYTES, MAX_CASES, capture_junit, observe_report, parse_junit
+from my_harness.core.engine.serialization import dump_history, load_history, restore_context
+from my_harness.core.engine.validation import CommandResult, run_validations
+from my_harness.core.engine.workflow import OfflineEngine
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict, SQLiteManagedRepository
+from my_harness.storage.managed_views import SQLiteManagedViews
+from my_harness.storage.phases import PhaseRepository
 from test_engine import context, PLAN, TASK_ID, PHASE_ID, edit, review
 from test_git import repo as git_repo, make_context, IDENTITY, VERSIONS, git
 

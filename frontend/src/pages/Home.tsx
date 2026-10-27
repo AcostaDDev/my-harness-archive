@@ -22,7 +22,7 @@ export function Home() {
     {!list ? projects.error ? <p role="alert" className="state state-error">{t("home.read_failed", { error: projects.error })}</p> : <Loading>{t("home.loading")}</Loading>
       : !list.length ? <Empty title={t("home.empty.title")}>
         {available ? <p>{t("home.empty.register")} <Link to={{ name: "project-new" }}>{t("home.register")}</Link></p>
-          : <p>{rich("home.empty.operator", { command: <code>harness-local serve --config</code>, formats: <code>local-config-3/4/5/6/7</code>, section: <code>[registration]</code> })}</p>}
+          : <p>{rich("home.empty.operator", { command: <code>my-harness serve --config</code>, formats: <code>local-config-3/4/5/6/7</code>, section: <code>[registration]</code> })}</p>}
       </Empty>
         : <div className="table-scroll" role="region" aria-label={t("home.table")} tabIndex={0}>
           <table className="table">

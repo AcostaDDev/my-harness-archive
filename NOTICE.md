@@ -1,6 +1,6 @@
 # Notices
 
-Original Harness Local code and documentation are copyright (c) 2026
+Original My Harness code and documentation are copyright (c) 2026
 David Acosta and are provided under the [MIT license](LICENSE).
 
 Third-party components retain their own licenses and copyright notices.

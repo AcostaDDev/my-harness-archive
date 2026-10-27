@@ -8,17 +8,17 @@ import pytest
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.git import GitWorkspace
-from harness_local.core.engine.documents import Layout, blocks, decision_index, markers, parse_roadmap
-from harness_local.core.engine.journal import JournalError
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
-from harness_local.storage.bootstrap import BootstrapRepository
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict, SQLiteManagedRepository
-from harness_local.storage.models import PhaseRow, PlanningProposalRow
-from harness_local.storage.phases import PhaseRepository
-from harness_local.storage.planning import PlanningRepository
+from my_harness.adapters.git import GitWorkspace
+from my_harness.core.engine.documents import Layout, blocks, decision_index, markers, parse_roadmap
+from my_harness.core.engine.journal import JournalError
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
+from my_harness.storage.bootstrap import BootstrapRepository
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict, SQLiteManagedRepository
+from my_harness.storage.models import PhaseRow, PlanningProposalRow
+from my_harness.storage.phases import PhaseRepository
+from my_harness.storage.planning import PlanningRepository
 from test_documents import PLAN_P002, transitions, v2, v2checkout  # noqa: F401  (fixtures)
 from test_managed import repository  # noqa: F401  (fixture)
 from test_managed_api import IDENTITY, VERSIONS, client, git, make_context, Ports, review
@@ -253,7 +253,7 @@ def test_empty_folder_to_root_commit_with_p001_and_phase_000(world):
 
 @pytest.mark.parametrize('custom_instructions', [False, True])
 def test_all_unified_documents_are_required_in_the_accepted_result(world, custom_instructions):
-    from harness_local.core.engine.definition import required_documents
+    from my_harness.core.engine.definition import required_documents
     cid = world.create()
     drafts = {path: text for path, text in DRAFTS.items() if path != 'docs/DDBB-DIAGRAM.md'}
     instructions = {'AGENTS.md': '# Reglas sintéticas\n\nUsar el perfil registrado.\n',
@@ -290,10 +290,10 @@ def test_profile_protection_limits_the_executor_not_confirmed_v2_document_writes
     """D081: typescript-web protects the control documents from the executor (P008-T003); the confirmed creation
     and editing of the v2 contract write there anyway. Outside the contract, and in v1, the profile protection
     stays."""
-    from harness_local.core.engine.documents import protected_write
-    from harness_local.core.engine.evidence import check_paths
-    from harness_local.profiles.typescript_web import typescript_web_profile
-    from harness_local.storage.documents import DocumentsRepository
+    from my_harness.core.engine.documents import protected_write
+    from my_harness.core.engine.evidence import check_paths
+    from my_harness.profiles.typescript_web import typescript_web_profile
+    from my_harness.storage.documents import DocumentsRepository
     world.context = replace(world.context, profile=typescript_web_profile())
     contract = ('README.md', 'docs/STATE.md', 'docs/DDBB-DIAGRAM.md', 'docs/flows/x.md', 'docs/phase/x.md',
                 'docs/archive/phase-001/SUMMARY.md', 'docs/archive/phase-000/BRIEF.md',
@@ -580,7 +580,7 @@ def test_bootstrap_replaces_drafts_only_from_their_reviewed_bytes(world, monkeyp
 
 @pytest.mark.parametrize('point', ['replace', 'commit'])
 def test_bootstrap_crash_resumes_the_same_intent(world, monkeypatch, point):
-    from harness_local.adapters import bootstrap as filesystem
+    from my_harness.adapters import bootstrap as filesystem
     cid = ready(world)
     job = world.accept(cid)
     if point == 'replace':
@@ -640,7 +640,7 @@ def test_turn_crash_is_unknown_and_never_retried(world):
 
 def test_v1_flows_are_refused_for_v2_and_v2_flows_for_v1(world, tmp_path):
     from test_bootstrap import DATA
-    from harness_local.storage.bootstrap_discovery import DiscoveryRepository
+    from my_harness.storage.bootstrap_discovery import DiscoveryRepository
     with pytest.raises(ValueError, match='definition conversation'):
         world.bootstrap.preview(world.context, DATA, VERSIONS, world.writer)
     with pytest.raises(ValueError, match='D088: v1 project creation'):

@@ -7,13 +7,13 @@ import stat
 import pytest
 from sqlalchemy.orm import Session
 
-from harness_local.core.engine.definition import KINDS
-from harness_local.services.managed import LocalSupervisor
-from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
-from harness_local.storage.database import make_engine
-from harness_local.storage.models import PlanningConversationRow
-from harness_local.storage.onboarding import OnboardingDrafts
-from harness_local.storage.managed import Conflict
+from my_harness.core.engine.definition import KINDS
+from my_harness.services.managed import LocalSupervisor
+from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
+from my_harness.storage.database import make_engine
+from my_harness.storage.models import PlanningConversationRow
+from my_harness.storage.onboarding import OnboardingDrafts
+from my_harness.storage.managed import Conflict
 from onboarding_helpers import World as ImportWorld, answer, tree_state
 from test_managed_api import VERSIONS, Ports, client, make_context
 from test_project_onboarding import DJANGO, TYPESCRIPT, checkout, git
@@ -199,7 +199,7 @@ def test_missing_objects_fail_without_agent_or_fallback(world):
     head = world.view(cid)['source']['head']
     obj = world.context.root / '.git/objects' / head[:2] / head[2:]
     obj.unlink()
-    from harness_local.adapters.git import GitError
+    from my_harness.adapters.git import GitError
     with pytest.raises(GitError):
         world.worker.run_once()
     assert world.ports.roles() == []
@@ -257,8 +257,8 @@ def test_http_onboarding_and_private_cas(migrated_database, tmp_path):
 
 
 def test_codex_exported_onboarding_uses_read_only_role_without_git_metadata(tmp_path):
-    from harness_local.adapters.cli_agents import CLIConfig, argv_for
-    from harness_local.core.engine.contracts import AgentRequest, Selection, context_snapshot
+    from my_harness.adapters.cli_agents import CLIConfig, argv_for
+    from my_harness.core.engine.contracts import AgentRequest, Selection, context_snapshot
     origin = make_context(tmp_path)
     export = tmp_path / 'export'
     export.mkdir()
@@ -272,7 +272,7 @@ def test_codex_exported_onboarding_uses_read_only_role_without_git_metadata(tmp_
 
 
 def test_interrupted_export_is_cleaned_only_after_writer_confirmed_stopped(world, monkeypatch):
-    from harness_local.adapters.chat_snapshot import HeadSnapshot, snapshot_path
+    from my_harness.adapters.chat_snapshot import HeadSnapshot, snapshot_path
     cid = world.create()
     job = world.message(cid)
 
@@ -307,7 +307,7 @@ def test_question_defer_and_answer_are_explicit_and_contextual(world):
 
 
 def test_context_size_is_bounded(world, monkeypatch):
-    from harness_local.storage import onboarding
+    from my_harness.storage import onboarding
     cid = world.create()
     monkeypatch.setattr(onboarding, 'MAX_CONTEXT_DRAFT_BYTES', 1)
     with pytest.raises(ValueError, match='exceed'):

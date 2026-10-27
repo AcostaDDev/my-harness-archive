@@ -6,12 +6,12 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.git import GitWorkspace
-from harness_local.core.engine.document_export import BEGIN, END, replace_block, text_hash
-from harness_local.core.engine.journal import JournalError
-from harness_local.storage.document_export import DocumentExportRepository
-from harness_local.storage.managed import Conflict
-from harness_local.storage.models import ManagedAttemptRow, PhaseOperationRow, ManagedJobRow
+from my_harness.adapters.git import GitWorkspace
+from my_harness.core.engine.document_export import BEGIN, END, replace_block, text_hash
+from my_harness.core.engine.journal import JournalError
+from my_harness.storage.document_export import DocumentExportRepository
+from my_harness.storage.managed import Conflict
+from my_harness.storage.models import ManagedAttemptRow, PhaseOperationRow, ManagedJobRow
 from test_managed import repository  # noqa: F401
 from test_managed_api import VERSIONS, LOCAL, client, git
 from test_phases import world, checkout, head, phase_review, tags  # noqa: F401
@@ -148,7 +148,7 @@ def test_crash_recovery_reuses_intent_without_duplicate_commits(world, point, mo
     before, original_head = docs(world), head(world)
     job = queue(world, pid)
     original_write, original_execute = GitWorkspace._write_mechanical, GitWorkspace.execute
-    original_settle = __import__('harness_local.storage.document_export', fromlist=['settle']).settle
+    original_settle = __import__('my_harness.storage.document_export', fromlist=['settle']).settle
     once = [False]
     def write(self, context, intent):
         if not once[0]:
@@ -173,7 +173,7 @@ def test_crash_recovery_reuses_intent_without_duplicate_commits(world, point, mo
     elif point == 'after_commit':
         monkeypatch.setattr(GitWorkspace, 'execute', execute)
     else:
-        monkeypatch.setattr('harness_local.storage.document_export.settle', settle)
+        monkeypatch.setattr('my_harness.storage.document_export.settle', settle)
     with pytest.raises((RuntimeError, JournalError), match='synthetic'):
         world.run()
     with Session(world.repository.engine) as session:
@@ -228,7 +228,7 @@ def test_stale_sqlite_preview_version_hash_and_confirmation_rejected(world):
     queued = queue(world, pid)
     # Changing the authority after admission does not allow an effect with a stale snapshot.
     with Session(world.repository.engine) as session:
-        from harness_local.storage.models import PhaseRow
+        from my_harness.storage.models import PhaseRow
         p = session.get(PhaseRow, pid)
         p.status = 'ACTIVE'
         session.commit()
@@ -246,7 +246,7 @@ def test_active_batch_prevents_export(world):
 
 
 def test_http_guard_confirmation_versions_idempotency_and_projection(world, tmp_path):
-    from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+    from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
     pid = world.create()
     configuration = ManagedConfig((ManagedProject('synthetic', world.context, VERSIONS),),
                                   ports_factory=world.ports, commit_factory=world.ports.writer, supervisor=False)
@@ -267,9 +267,9 @@ def test_http_guard_confirmation_versions_idempotency_and_projection(world, tmp_
         assert http.post(path, json=body, headers={'Idempotency-Key': 'origin', 'Origin': 'https://foreign.invalid'}).status_code == 403
         # The guard precedes the lookup, managed reads included.
         assert http.get(path, headers={'Host': 'foreign.invalid'}).status_code == 403
-        http.headers.pop('X-Harness-Local')
+        http.headers.pop('X-My-Harness')
         assert http.post(path, json=body, headers={'Idempotency-Key': 'missing-csrf'}).status_code == 403
-        http.headers['X-Harness-Local'] = '1'
+        http.headers['X-My-Harness'] = '1'
         response = http.post(path, json=body, headers={'Idempotency-Key': 'http-export'})
         assert response.status_code == 202, response.text
         assert http.post(path, json=body, headers={'Idempotency-Key': 'http-export'}).json() == response.json()

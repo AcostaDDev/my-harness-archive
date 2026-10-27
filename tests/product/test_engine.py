@@ -11,14 +11,14 @@ import subprocess
 
 import pytest
 
-from harness_local.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
-from harness_local.core.engine.acceptance import assess_acceptance
-from harness_local.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
-from harness_local.core.engine.contracts import AgentResult, ContractError, freeze
-from harness_local.core.engine.evidence import check_paths
-from harness_local.core.engine.planning import deterministic_task, next_task_id
-from harness_local.core.engine.validation import CommandResult, run_validations
-from harness_local.core.engine.workflow import OfflineEngine
+from my_harness.adapters.engine_fake import ScriptedAgentAdapter, ScriptedCommandRunner, SyntheticWorkspace
+from my_harness.core.engine.acceptance import assess_acceptance
+from my_harness.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
+from my_harness.core.engine.contracts import AgentResult, ContractError, freeze
+from my_harness.core.engine.evidence import check_paths
+from my_harness.core.engine.planning import deterministic_task, next_task_id
+from my_harness.core.engine.validation import CommandResult, run_validations
+from my_harness.core.engine.workflow import OfflineEngine
 
 
 TASK_ID = "P001-T001"
@@ -481,7 +481,7 @@ def test_stack_rules_are_in_declarative_profile_not_core(context, monkeypatch):
     assert any("manage.py" in command.argv for command in profile.validations)
     assert "PostgreSQL" in profile.executor_instructions
     assert profile.formatter_argv == ("python", "-m", "ruff", "format", "--")
-    core = Path(__file__).resolve().parents[2] / "src/harness_local/core/engine"
+    core = Path(__file__).resolve().parents[2] / "src/my_harness/core/engine"
     assert not any(word in path.read_text() for path in core.glob("*.py")
                    for word in ("Django", "docker", "PostgreSQL", "manage.py", "ruff"))
     # The generic profile already walks the same flow without stack exceptions.

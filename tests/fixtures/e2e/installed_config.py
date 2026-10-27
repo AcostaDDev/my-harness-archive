@@ -3,13 +3,13 @@ import json
 import os
 from pathlib import Path
 
-from harness_local.adapters.engine_fake import ScriptedCommandRunner
-from harness_local.adapters.git import GitWorkspace
-from harness_local.core.engine.commit import GitIdentity
-from harness_local.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
-from harness_local.core.engine.contracts import AgentResult, freeze
-from harness_local.core.engine.documents import markers
-from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
+from my_harness.adapters.engine_fake import ScriptedCommandRunner
+from my_harness.adapters.git import GitWorkspace
+from my_harness.core.engine.commit import GitIdentity
+from my_harness.core.engine.context import Command, EnginePolicy, ProjectContext, ProjectProfile
+from my_harness.core.engine.contracts import AgentResult, freeze
+from my_harness.core.engine.documents import markers
+from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
 
 MARKER = 'offline-installed-v2\n'
 STATE_BEGIN, STATE_END = markers('state')

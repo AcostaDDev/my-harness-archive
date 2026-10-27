@@ -16,17 +16,17 @@ import pytest
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.preparation import verify_receipt
-from harness_local.core.engine.context import IntakeContext
-from harness_local.core.engine.contracts import AgentResult, freeze
-from harness_local.core.engine.definition import text_hash
-from harness_local.core.engine.journal import JournalError
-from harness_local.services.configuration_setup import toml_document
-from harness_local.services.profile_preparation import CONTRACT, ProfilePreparation, validate_plan
-from harness_local.services.profile_proposal import validate
-from harness_local.services.project_registry import RegistryError, digest
-from harness_local.storage.configuration import ConfigurationRepository
-from harness_local.storage.models import (
+from my_harness.adapters.preparation import verify_receipt
+from my_harness.core.engine.context import IntakeContext
+from my_harness.core.engine.contracts import AgentResult, freeze
+from my_harness.core.engine.definition import text_hash
+from my_harness.core.engine.journal import JournalError
+from my_harness.services.configuration_setup import toml_document
+from my_harness.services.profile_preparation import CONTRACT, ProfilePreparation, validate_plan
+from my_harness.services.profile_proposal import validate
+from my_harness.services.project_registry import RegistryError, digest
+from my_harness.storage.configuration import ConfigurationRepository
+from my_harness.storage.models import (
     PlanningConversationRow as Conversation, PlanningTurnRow as Turn, PlanningProposalRow as Proposal,
     ProjectBootstrapRow as Bootstrap, ProjectPreparationOperationRow as Operation,
     ProjectPreparationStepRow as Step, ManagedProcessRow as Process, CheckoutLockRow as Lock,
@@ -293,7 +293,7 @@ def test_lost_technical_commit_adoption_reconciles_without_replaying_commands(ge
 def test_reviewer_plan_cannot_grant_documentary_global_or_unbounded_authority(generic, fault):
     service, _, _, _, data, _ = generic
     context = service.runtime.project('child').context
-    from harness_local.services.local_config import _profile
+    from my_harness.services.local_config import _profile
     profile = _profile(data['profile_name'], data['profile'], allow_formatter=True)
     plan = technical()
     if fault == 'document-scope': plan['write_paths'].append('docs/**')
@@ -339,7 +339,7 @@ def test_receipt_binding_rejects_new_saved_configuration(generic):
 @pytest.mark.parametrize('provider', ['codex', 'claude'])
 def test_real_cli_transport_journals_preparation_process_without_run_or_attempt(generic, monkeypatch, provider):
     service, _, _, _, _, tool = generic
-    from harness_local.adapters.cli_agents import CLIConfig, CLIProcessAdapter
+    from my_harness.adapters.cli_agents import CLIConfig, CLIProcessAdapter
     probe = str(Path(__file__).with_name('cli_process_probe.py'))
     configurations = {role: CLIConfig(provider, (sys.executable, probe, provider, 'success'),
                          '0.163.0' if provider == 'codex' else '2.1.304', (), 10)
@@ -395,13 +395,13 @@ def test_reviewer_proposes_preparation_separately_and_adopts_without_execution(i
 
 def test_generic_api_validates_exact_union_and_security_before_confirming(generic):
     from session_client import TestClient
-    from harness_local.api.app import create_app
+    from my_harness.api.app import create_app
     service, body, *_ = generic
     # Keep the real protected app/session router, substitute only runtime composition with this synthetic fixture.
     application = create_app(str(service.runtime.engine.url), service.runtime.database.parent / 'test-ui',
                              managed=service.runtime.config)
     # managed_router closes over its own runtime; inject the service through that instance's class method.
-    from harness_local.services.managed_runtime import ManagedRuntime
+    from my_harness.services.managed_runtime import ManagedRuntime
     original_start = ManagedRuntime.start
     # Use instance attributes after normal startup; all effects still target the same synthetic temporary database.
     from unittest.mock import patch
@@ -409,7 +409,7 @@ def test_generic_api_validates_exact_union_and_security_before_confirming(generi
         original_start(runtime)
         runtime.preparation = service
     with patch.object(ManagedRuntime, 'start', start):
-        with TestClient(application, base_url='http://127.0.0.1:8013', headers={'X-Harness-Local': '1'}) as http:
+        with TestClient(application, base_url='http://127.0.0.1:8013', headers={'X-My-Harness': '1'}) as http:
             base = '/api/managed/projects/child/preparation'
             assert http.post(base+'/preview', json={**body, 'argv': ['foreign']}).status_code == 422
             assert http.post(base+'/preview', json=body, headers={'Origin': 'https://foreign.invalid'}).status_code == 403
@@ -427,7 +427,7 @@ def test_generic_api_validates_exact_union_and_security_before_confirming(generi
 def test_preparation_executor_cancel_or_timeout_stops_group_and_never_issues_receipt(generic, monkeypatch, cancel):
     from concurrent.futures import ThreadPoolExecutor
     import time
-    from harness_local.adapters.cli_agents import CLIConfig, CLIProcessAdapter
+    from my_harness.adapters.cli_agents import CLIConfig, CLIProcessAdapter
     service, _, _, _, _, tool = generic
     probe = str(Path(__file__).with_name('cli_process_probe.py'))
     configs = {role: CLIConfig('codex', (sys.executable, probe, 'codex', 'hang'), '0.163.0', (), 10 if cancel else .1)
@@ -555,7 +555,7 @@ def test_success_exit_requires_successful_fresh_junit(generic, fault):
 
 
 def test_environment_links_allow_only_explicit_byte_bound_tools(generic):
-    from harness_local.services.project_preparation import snapshot
+    from my_harness.services.project_preparation import snapshot
     service, body, _, _, _, tool = generic
     root = service.runtime.project('child').context.root
     plan = service.preview('child', body)

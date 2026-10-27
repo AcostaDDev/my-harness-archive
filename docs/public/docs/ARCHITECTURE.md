@@ -1,4 +1,4 @@
-# Architecture — Harness Local
+# Architecture — My Harness
 
 Stack, modules, patterns and conventions in force. Requirements: [SPECIFICATION](SPECIFICATION.md). Data:
 [DDBB-DIAGRAM](DDBB-DIAGRAM.md). Flows: [docs/flows](flows/task-run.md). Installation and operation for users:
@@ -8,7 +8,7 @@ Stack, modules, patterns and conventions in force. Requirements: [SPECIFICATION]
 
 | Layer | Choice and exact version |
 |---|---|
-| Core | Python 3.14.4, standard library, package `harness-local` 0.1.0 (`uv_build==0.12.19`) |
+| Core | Python 3.14.4, standard library, package `my-harness` 0.1.0 (`uv_build==0.12.19`) |
 | Local API | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP for actions and cursor-based observation of managed runs |
 | Persistence | SQLite with SQLAlchemy 2.1.4 and Alembic 1.20.0 (schema `0027_profile_proposals`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) and `mermaid` 11.17.2 (`strict`) |
@@ -36,11 +36,11 @@ Local application folder: SQLite, artifacts (streams, captures, copies), backups
 ```
 
 The core (`core/`) does not import FastAPI, React, provider SDKs or stack rules: only the standard library,
-`harness_local.core` and, as its single external leaf, the `harness_local.i18n` catalogs (standard library only). API
+`my_harness.core` and, as its single external leaf, the `my_harness.i18n` catalogs (standard library only). API
 and CLI call the same use cases. The supervisor is the only component that launches processes and consumes the
 queue; closing the browser does not cancel work.
 
-## 3. Modules (`src/harness_local`)
+## 3. Modules (`src/my_harness`)
 
 | Module | Responsibility |
 |---|---|
@@ -68,7 +68,7 @@ queue; closing the browser does not cancel work.
 | `recipes/`, `services/project_preparation.py`, `storage/preparation.py`, `adapters/preparation.py` | Packaged recipes (`django-recipe-1/2`, `typescript-web-recipe-1/2`) and their confirmed, recoverable preparation |
 | `api/app.py`, `managed.py`, `schemas.py`, `session.py`, `security.py` | Application, routes, Pydantic contracts, session and guard |
 | `profiles/` | Built-in profile `typescript-web` (composable); TOML profiles are composed in `services/local_config.py` |
-| `cli.py`, `launcher.py` | `harness-local` (`init-db`, `serve`, `migrate`, `check-config`, backup, retention, `metrics-backfill`, `diagnose-cli`); `--ui-language` per invocation |
+| `cli.py`, `launcher.py` | `my-harness` (`init-db`, `serve`, `migrate`, `check-config`, backup, retention, `metrics-backfill`, `diagnose-cli`); `--ui-language` per invocation |
 | `storage/preferences.py`, `i18n/` | Global language preferences with CAS, capture of the interface language when admitting each job, en/es catalogs of own messages; `tr()` emits in the language of each emission |
 | `storage/work_language.py`, `services/work_language.py` | Immutable work language per root, `language-context-1` pair per job and attempt, explicit confirmation from absent to a value |
 | `migrations/versions/0001…0027` | Alembic schema |
@@ -206,7 +206,7 @@ configured projects, a checkout or supervisor. All mutations retain their 409 gu
   execution polling. Routes of the retired
   support show not found ([compatibility](flows/legacy-compatibility.md)).
 - Security: loopback only; an ephemeral session key in a private file and an eight-hour HttpOnly cookie; exact Host
-  and Origin; CSRF header `X-Harness-Local: 1` on mutations; `Sec-Fetch-Site: cross-site` refused
+  and Origin; CSRF header `X-My-Harness: 1` on mutations; `Sec-Fetch-Site: cross-site` refused
   ([D079](DECISIONS.md#d079--cross-site-navigations-rejected)). Markdown without HTML, Mermaid drawn as an image,
   checkout images with a `sandbox` CSP.
 
@@ -244,7 +244,8 @@ is for development only and creates or migrates its own database (`.local/harnes
 (sources, UI assets and the `LICENSE`/`NOTICE*` files), `pylock.toml` (the service dependencies with the URL and
 hash of every wheel, installable offline) and `SHA256SUMS`. `check_distribution.py` verifies the exact members,
 metadata, license files, checksums, absence of retired components and one version for package, API and UI, then
-installs the wheel in an isolated venv and runs a synthetic journey. `.github/workflows/ci.yml` runs the same suites and package checks on macOS without secrets.
+installs the wheel in an isolated venv and runs a synthetic journey. There is no hosted CI: these suites and package
+checks run locally (D230).
 
 `serve` writes the session key (`harness-session-*/login-key`, 0700/0600, deleted on exit) and temporary Git indexes
 and seals (`harness-git-*`, `harness-bootstrap-*`) under the process `TMPDIR`. Without it, Python uses the system

@@ -6,10 +6,10 @@ import tomllib
 
 import pytest
 
-from harness_local.adapters.cli_agents import CLIConfig, CLIProcessAdapter, argv_for
-from harness_local.core.engine.journal import JournalError
-from harness_local.services.local_config import load_local_config
-from harness_local.services.managed import LocalSupervisor
+from my_harness.adapters.cli_agents import CLIConfig, CLIProcessAdapter, argv_for
+from my_harness.core.engine.journal import JournalError
+from my_harness.services.local_config import load_local_config
+from my_harness.services.managed import LocalSupervisor
 from test_agent_roles import request, v2
 from test_cli_agents import adapter, setup_invocation
 from test_local_config import launches, setup, write  # noqa: F401 (fixture)
@@ -56,7 +56,7 @@ def test_conflicting_claude_memory_environment_is_refused_before_effects(tmp_pat
 @pytest.mark.parametrize('provider,role', [('codex', 'planner'), ('claude', 'executor')])
 def test_missing_memory_control_fails_once_with_original_capture(
         context, repository, tmp_path, monkeypatch, provider, role):
-    from harness_local.adapters import cli_agents
+    from my_harness.adapters import cli_agents
     base = adapter(tmp_path)
     port = CLIProcessAdapter({agent: replace(config, environment=config.environment +
         (('PROBE_MEMORY_REQUIRED', '1'),)) for agent, config in base.agents.items()}, base.artifact_root)
@@ -101,7 +101,7 @@ def test_old_job_is_quarantined_without_launch_or_history_change(setup, reposito
 
 
 def test_missing_trust_override_refuses_synthetic_writer_before_edit(context, repository, tmp_path, monkeypatch):
-    from harness_local.adapters import cli_agents
+    from my_harness.adapters import cli_agents
     base = adapter(tmp_path)
     codex_writer = replace(base.agents['reviewer'], cli_version='0.164.0',
                            environment=base.agents['reviewer'].environment + (('PROBE_VERSION', '0.164.0'),))

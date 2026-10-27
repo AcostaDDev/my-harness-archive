@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-from harness_local.api.app import create_app
+from my_harness.api.app import create_app
 
 
 if __name__ == "__main__":

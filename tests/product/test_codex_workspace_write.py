@@ -13,10 +13,10 @@ import tomllib
 
 import pytest
 
-from harness_local.adapters.cli_agents import CLIConfig, argv_for
-from harness_local.core.engine.journal import JournalError
-from harness_local.services.local_config import load_local_config
-from harness_local.services.managed import LocalSupervisor
+from my_harness.adapters.cli_agents import CLIConfig, argv_for
+from my_harness.core.engine.journal import JournalError
+from my_harness.services.local_config import load_local_config
+from my_harness.services.managed import LocalSupervisor
 from test_agent_roles import journey, request, v2
 from test_local_config import PROBE, launches, setup, write  # noqa: F401 (fixture)
 from test_managed import context  # noqa: F401 (fixture)

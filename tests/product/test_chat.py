@@ -9,14 +9,14 @@ import pytest
 from sqlalchemy import func, inspect, select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.cli_agents import CLIConfig, argv_for
-from harness_local.core.engine.chat import validate_chat_result
-from harness_local.core.engine.contracts import AgentRequest, AgentResult, ContractError, Selection, freeze
-from harness_local.core.engine.journal import JournalError
-from harness_local.core.engine.prompts import builtin_catalog, dump_catalog, load_catalog, output_schema
-from harness_local.storage.chat import ChatRepository
-from harness_local.storage.managed import Conflict
-from harness_local.storage.models import ChatTurnRow, ManagedAttemptRow, ManagedJobRow, PermissionRequestRow
+from my_harness.adapters.cli_agents import CLIConfig, argv_for
+from my_harness.core.engine.chat import validate_chat_result
+from my_harness.core.engine.contracts import AgentRequest, AgentResult, ContractError, Selection, freeze
+from my_harness.core.engine.journal import JournalError
+from my_harness.core.engine.prompts import builtin_catalog, dump_catalog, load_catalog, output_schema
+from my_harness.storage.chat import ChatRepository
+from my_harness.storage.managed import Conflict
+from my_harness.storage.models import ChatTurnRow, ManagedAttemptRow, ManagedJobRow, PermissionRequestRow
 from test_managed import repository  # noqa: F401  (fixture)
 from test_managed_api import PLAN, VERSIONS, Ports, client, git, make_context, review, settle
 from test_phases import checkout, world  # noqa: F401  (fixtures)
@@ -275,7 +275,7 @@ def test_chat_never_grants_permissions_or_writes_outside_the_engine(world, chat)
     assert tree_status(world) == ''  # the turn did not write to the checkout
     turn_run = chat.get(cid)['turns'][0]['run_id']
     assert world.repository.get_run(turn_run).history.task_json is None
-    from harness_local.storage.managed_views import SQLiteManagedViews
+    from my_harness.storage.managed_views import SQLiteManagedViews
     view = SQLiteManagedViews(world.repository.engine).run(turn_run)
     assert view['purpose'] == 'chat' and view['actions'] == []  # no revalidation, retry, commit or permissions
 
@@ -378,7 +378,7 @@ def test_migration_roundtrip_and_downgrade_refused_with_chat_runs(migrated_datab
 
 
 def test_http_chat_flow_with_guard_confirmation_and_linked_task(tmp_path, migrated_database, checkout, monkeypatch):  # noqa: F811
-    from harness_local.services.managed_runtime import CONFIG_ENV
+    from my_harness.services.managed_runtime import CONFIG_ENV
     from test_managed_api import config
     monkeypatch.delenv(CONFIG_ENV, raising=False)
 
@@ -389,7 +389,7 @@ def test_http_chat_flow_with_guard_confirmation_and_linked_task(tmp_path, migrat
                    {**review(), 'task_id': 'CHAT-T001'}])
     with client(migrated_database[0], tmp_path, config(checkout, ports)) as http:
         denied = http.post('/api/managed/projects/synthetic/conversations', json={'title': 'Chat'},
-                           headers={'X-Harness-Local': '0'})
+                           headers={'X-My-Harness': '0'})
         assert denied.status_code == 403
         path = '/api/managed/projects/synthetic/conversations'
         assert http.post(path, json={'title': 'Chat'}).status_code == 422  # without Idempotency-Key

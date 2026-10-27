@@ -10,10 +10,10 @@ import shlex
 
 import pytest
 
-from harness_local.core.engine.contracts import command_text, freeze, task_contract
-from harness_local.core.engine.planning import deterministic_task
-from harness_local.core.engine.prompts import builtin_catalog, output_schema, render_attempt
-from harness_local.services.local_config import load_local_config
+from my_harness.core.engine.contracts import command_text, freeze, task_contract
+from my_harness.core.engine.planning import deterministic_task
+from my_harness.core.engine.prompts import builtin_catalog, output_schema, render_attempt
+from my_harness.services.local_config import load_local_config
 from test_agent_roles import journey, v2
 from test_engine import PHASE_ID, PLAN, TASK_ID, context, edit, harness, review  # noqa: F401 (fixture)
 from test_local_config import launches, setup, write  # noqa: F401 (fixture)

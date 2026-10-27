@@ -6,7 +6,7 @@ de esquema ni datos de autoridad nuevos. `init-db` crea; `serve` comprueba la re
 ```mermaid
 sequenceDiagram
     actor U as Operador
-    participant CLI as harness-local migrate
+    participant CLI as my-harness migrate
     participant DB as SQLite existente
     participant C as Directorio de copias
     U->>U: Detener el servicio y los escritores, instalar el wheel

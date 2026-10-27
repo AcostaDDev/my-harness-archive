@@ -10,7 +10,7 @@ processes, fake agents and synthetic data unless stated otherwise. First local v
 described in the [supported scope](../README.md#supported-scope-and-limits); package `0.1.0`, not yet released.
 The real validation originally deferred in D151 now has the bounded evidence below.
 
-- **Engine.** Package `harness_local` with an explicit context per project, frozen task contracts, planning by the
+- **Engine.** Package `my_harness` with an explicit context per project, frozen task contracts, planning by the
   reviewer or deterministic from `NEXT_STEPS`, the execute → format → validate → review loop with a correction limit,
   acceptance bound to the exact content and a reconcilable commit made by the harness (D052, D056, D129, D133).
 - **Persistence and recovery.** SQLite schema `0027_profile_proposals` managed by Alembic; idempotent job queue
@@ -52,8 +52,8 @@ The real validation originally deferred in D151 now has the bounded evidence bel
   ([flow](flows/backup-consultation.md)).
 - **Distribution and operation.** Wheel and sdist with UI, migrations, catalogs and license/notice files, checked
   member by member with `SHA256SUMS`; `init-db`, `serve`, `migrate`, `check-config`, backup, retention,
-  `metrics-backfill` and `diagnose-cli`; `scripts/dev` for development (D043, D051). Synthetic GitHub Actions CI on
-  macOS, not yet run remotely; versioning policy in the [changelog](../CHANGELOG.md).
+  `metrics-backfill` and `diagnose-cli`; `scripts/dev` for development (D043, D051). No hosted CI: the suites and
+  package checks run locally (D230); versioning policy in the [changelog](../CHANGELOG.md).
 - **Real-provider evidence.** Historical evidence before `cli-14`: first real use to a closed phase, four
   reviewer/executor combinations COMMITTED (D071), and Django recipe creation through four tasks and phase closure
   on macOS ARM64/Python 3.13. Current-adapter evidence (October 2026, same platform): Claude Code 2.1.310 reviewer

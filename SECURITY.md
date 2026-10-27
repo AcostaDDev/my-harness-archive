@@ -1,6 +1,6 @@
 # Security policy
 
-Harness Local runs locally and can launch development tools with access to
+My Harness runs locally and can launch development tools with access to
 registered projects. CLI permissions and cooperative checks have limits; use
 only projects and tools you trust.
 

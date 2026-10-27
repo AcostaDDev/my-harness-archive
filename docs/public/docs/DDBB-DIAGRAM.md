@@ -1,7 +1,7 @@
 # Data diagram — my_harness
 
 SQLite schema of the local service: Alembic head `0027_profile_proposals`, 54 tables, defined in
-`src/harness_local/storage/models.py`. Any change to the models or migrations updates this document in the same task
+`src/my_harness/storage/models.py`. Any change to the models or migrations updates this document in the same task
 (parity rule, [D088](DECISIONS.md#d088--unified-documentation-contract)).
 
 Conventions: `PK` primary key, `FK` declared foreign key, `UK` single-column uniqueness; "null" marks optional

@@ -6,14 +6,14 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.core.engine.commit import CommitIntent
-from harness_local.core.engine.definition import required_documents, definition_layout
-from harness_local.services.local_config import _profile
-from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict
-from harness_local.storage.models import PhaseRow, ProjectImportRow
-from harness_local.storage.onboarding_commit import OnboardingRepository
+from my_harness.core.engine.commit import CommitIntent
+from my_harness.core.engine.definition import required_documents, definition_layout
+from my_harness.services.local_config import _profile
+from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict
+from my_harness.storage.models import PhaseRow, ProjectImportRow
+from my_harness.storage.onboarding_commit import OnboardingRepository
 from onboarding_helpers import checkout_state
 from test_onboarding_conversation import World, DRAFTS, world  # noqa: F401
 from onboarding_helpers import answer
@@ -24,7 +24,7 @@ from test_project_onboarding import DJANGO, TYPESCRIPT, checkout, git
 def ready(world, replacements=None):
     cid = world.create()
     # The selected composition is explicit operator authority, never a profile installed by the agent.
-    from harness_local.adapters.project_onboarding import read_inventory
+    from my_harness.adapters.project_onboarding import read_inventory
     proposal = read_inventory(world.context.root)['profile_proposal']
     name, profile = next(iter(proposal['profiles'].items()))
     world.context = replace(world.context, profile=_profile(name, profile))

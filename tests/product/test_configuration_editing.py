@@ -7,9 +7,9 @@ import pytest
 from sqlalchemy.orm import Session
 
 from session_client import TestClient
-from harness_local.core.engine.contracts import AgentResult, freeze
-from harness_local.services.configuration_assistance import ConfigurationAssistance
-from harness_local.storage.models import ConfigurationOperationRow as Operation
+from my_harness.core.engine.contracts import AgentResult, freeze
+from my_harness.services.configuration_assistance import ConfigurationAssistance
+from my_harness.storage.models import ConfigurationOperationRow as Operation
 from test_configuration import setup, active_global
 from test_configuration_api import app_for, store, request_for
 from test_project_configuration import journey, documents, save_profile, prepare, activation, BASE
@@ -161,7 +161,7 @@ def assistance(setup, monkeypatch):
         return fake
     monkeypatch.setattr(ConfigurationAssistance, 'adapter', adapter)
     with TestClient(app_for(repo)) as http:
-        http.headers['X-Harness-Local'] = '1'
+        http.headers['X-My-Harness'] = '1'
         yield http, fake, repo
 
 
@@ -231,7 +231,7 @@ def test_assistance_rejects_unknown_context_and_security_boundaries(assistance):
     assert http.post(ASSIST + '/preview', json={**body, 'documents': ['../outside']}).status_code == 422
     assert http.post(ASSIST + '/preview', json={**body, 'role': 'shell'}).status_code == 422
     assert http.post(ASSIST + '/preview', json=body, headers={'Origin': 'https://foreign.invalid'}).status_code == 403
-    del http.headers['X-Harness-Local']
+    del http.headers['X-My-Harness']
     assert http.post(ASSIST + '/preview', json=body).status_code == 403
     assert not fake.calls
 
@@ -341,7 +341,7 @@ def test_assistance_native_transport_journals_synthetic_process_before_go(setup,
     data['git']['executable'] = shutil.which('git')
     active_global(repo, data)
     with TestClient(app_for(repo)) as http:
-        http.headers['X-Harness-Local'] = '1'
+        http.headers['X-My-Harness'] = '1'
         body = assistance_body(http, role)
         confirmed, result = confirm_assistance(http, body)
         assert result['status'] == 'APPLIED', result

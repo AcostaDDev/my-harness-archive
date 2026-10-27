@@ -1,6 +1,6 @@
 # Roadmap — my_harness
 
-The repository opens with the first local version of Harness Local already built: [STATE](STATE.md) describes that
+The repository opens with the first local version of My Harness already built: [STATE](STATE.md) describes that
 starting baseline, including guided installation/configuration, and [DECISIONS](DECISIONS.md) the decisions behind it. That earlier work is not replayed here as
 phases; phases are numbered from P001 in this repository.
 

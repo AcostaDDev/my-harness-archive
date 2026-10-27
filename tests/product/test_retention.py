@@ -10,11 +10,11 @@ import sqlite3
 from session_client import TestClient
 import pytest
 
-from harness_local.api.app import create_app
-from harness_local.cli import main
-from harness_local.core.engine.contracts import Attempt, stop_history
-from harness_local.storage.backup import BackupError, create_backup, restore_backup, verify_bundle
-from harness_local.storage.retention import apply_retention, preview_retention, inspect_logs
+from my_harness.api.app import create_app
+from my_harness.cli import main
+from my_harness.core.engine.contracts import Attempt, stop_history
+from my_harness.storage.backup import BackupError, create_backup, restore_backup, verify_bundle
+from my_harness.storage.retention import apply_retention, preview_retention, inspect_logs
 from test_backup import db_path, dump_rows, reseal_database, seal, LOCAL
 from test_cli_agents import adapter, setup_invocation
 from test_managed import context, repository
@@ -113,7 +113,7 @@ def test_open_owner_and_unknown_group_refuse_application(sealed, monkeypatch):
     with pytest.raises(ValueError, match='Open service owner'):
         apply(sealed)
     mutate(sealed[0], 'UPDATE managed_jobs SET owner_closed=1')
-    monkeypatch.setattr('harness_local.adapters.processes.liveness', lambda *a, **kw: 'unknown')
+    monkeypatch.setattr('my_harness.adapters.processes.liveness', lambda *a, **kw: 'unknown')
     assert not any(i['eligible'] for i in preview(sealed)['items'])
     with pytest.raises(ValueError, match='uncertain'):
         apply(sealed)
@@ -298,7 +298,7 @@ def test_http_explicit_inspection_distinguishes_retained_missing_and_corrupt(sea
 
 
 def test_shared_reference_is_preserved(sealed, monkeypatch):
-    from harness_local.storage import retention
+    from my_harness.storage import retention
     original = retention._references
     def shared(db):
         refs = original(db)
@@ -315,7 +315,7 @@ def test_shared_reference_is_preserved(sealed, monkeypatch):
 
 @pytest.mark.parametrize('limit', ['files', 'total', 'file'])
 def test_limits_are_explicit_and_never_purge_excluded_bytes(sealed, monkeypatch, limit):
-    from harness_local.storage import retention
+    from my_harness.storage import retention
     if limit == 'files':
         monkeypatch.setattr(retention, 'MAX_FILES', 1)
         with pytest.raises(ValueError, match='Too many'):

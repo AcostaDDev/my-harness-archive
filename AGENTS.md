@@ -1,6 +1,6 @@
 # my_harness — instrucciones para agentes
 
-Harness Local: aplicación local que orquesta agentes de desarrollo. Este repositorio se desarrolla a mano con Codex y
+My Harness: aplicación local que orquesta agentes de desarrollo. Este repositorio se desarrolla a mano con Codex y
 Claude Code; los roles revisor y ejecutor describen el producto, no estas sesiones. Ambas herramientas pueden analizar,
 implementar y revisar cuando el usuario lo pide.
 

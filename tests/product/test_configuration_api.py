@@ -9,16 +9,16 @@ from sqlalchemy.orm import Session
 
 from session_client import TestClient
 from fastapi.testclient import TestClient as AnonymousClient
-from harness_local.api.app import create_app
-from harness_local.services.managed_runtime import ManagedConfig
-from harness_local.storage.backup import RESTORED_USER_VERSION
-from harness_local.storage.configuration import ConfigurationConflict
-from harness_local.storage.models import ConfigurationOperationRow as Operation
+from my_harness.api.app import create_app
+from my_harness.services.managed_runtime import ManagedConfig
+from my_harness.storage.backup import RESTORED_USER_VERSION
+from my_harness.storage.configuration import ConfigurationConflict
+from my_harness.storage.models import ConfigurationOperationRow as Operation
 from test_configuration import setup, dumps  # noqa: F401
 from test_cli_diagnostics import config as fake_cli, calls  # noqa: F401
 
 BASE = '/api/managed/configuration'
-LOCAL = {'X-Harness-Local': '1'}
+LOCAL = {'X-My-Harness': '1'}
 
 
 def app_for(repo, **kwargs):
@@ -95,7 +95,7 @@ def test_first_setup_separates_save_activation_and_restart(setup, monkeypatch):
 def test_guards_cover_setup_and_openapi_before_any_detection(setup, monkeypatch):
     repo, _, _ = setup
     app = app_for(repo)
-    monkeypatch.setattr('harness_local.services.configuration_setup.shutil.which',
+    monkeypatch.setattr('my_harness.services.configuration_setup.shutil.which',
                         lambda *a, **k: pytest.fail('Unauthenticated detection'))
     with AnonymousClient(app, base_url='http://127.0.0.1') as http:
         assert http.get(BASE).status_code == 401
@@ -205,8 +205,8 @@ def test_read_only_archive_never_reads_source_or_detects(setup, monkeypatch):
     repo, _, _ = setup
     with repo.managed.engine.begin() as connection:
         connection.exec_driver_sql(f'PRAGMA user_version={RESTORED_USER_VERSION}')
-    monkeypatch.setattr('harness_local.api.app.verify_bundle', lambda path: None)
-    monkeypatch.setattr('harness_local.services.configuration_setup.legacy._read',
+    monkeypatch.setattr('my_harness.api.app.verify_bundle', lambda path: None)
+    monkeypatch.setattr('my_harness.services.configuration_setup.legacy._read',
                         lambda *a: pytest.fail('Archive read original TOML'))
     with TestClient(app_for(repo, config_source=Path('/missing/private/config.toml'))) as http:
         assert http.get(BASE).json()['mode'] == 'READ_ONLY_ARCHIVE'

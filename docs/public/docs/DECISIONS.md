@@ -5,7 +5,7 @@ accepted, superseded by DMMM or rejected). Decisions are never deleted: they are
 
 ## Starting baseline
 
-The decisions below were taken before this repository's first public snapshot, while Harness Local was developed
+The decisions below were taken before this repository's first public snapshot, while My Harness was developed
 privately. They are restated here in English, self-contained and in their current form; the original records,
 phases and evidence are not part of this repository and are not needed to work on it. Their numbers are kept because
 the code cites them (`D088`, `D167`…), so gaps are expected: the missing numbers were superseded, internal to the
@@ -79,7 +79,7 @@ compare-and-swap, reconciled if it already points to the READY commit, and never
 
 Status: accepted; implemented by D034, D035 and D083.
 
-The Host/Origin/`X-Harness-Local` guard protects every mutation. An unattended batch authorization may chain exact
+The Host/Origin/`X-My-Harness` guard protects every mutation. An unattended batch authorization may chain exact
 tasks and confirm the commit of each eligible acceptance, stopping at the first block, question, expiry or
 revocation, and never checks or closes the phase. Chat runs as new read-only turns with structured output.
 Reconciliation by an agent is a normal task limited to the phase documents. The tag kind is configurable per project
@@ -152,8 +152,8 @@ Status: accepted; existing databases are upgraded through D150.
 `scripts/build_distribution.py` builds the UI from the npm lock offline and stages an sdist and a wheel with the UI
 assets, templates, migrations and license files, plus the production dependencies exported from `uv.lock` as a
 `pylock.toml` (PEP 751: URL and hash of every wheel, installable offline from the cache) and `SHA256SUMS`.
-`harness-local init-db` creates a new SQLite database at an absolute path and refuses existing targets.
-`harness-local serve` requires a prepared schema and assets, and serves UI and API through Uvicorn on `127.0.0.1` with
+`my-harness init-db` creates a new SQLite database at an absolute path and refuses existing targets.
+`my-harness serve` requires a prepared schema and assets, and serves UI and API through Uvicorn on `127.0.0.1` with
 one worker; it never creates or migrates a database on startup and needs neither Node nor the checkout.
 
 ## D051 — Real use from the installed wheel, never from the development checkout
@@ -617,7 +617,7 @@ covers. Run views, metrics and export previews never decode the history; backups
 
 Status: accepted.
 
-`harness-local migrate --database PATH --snapshots DIR --writers-stopped` upgrades an existing database of a known
+`my-harness migrate --database PATH --snapshots DIR --writers-stopped` upgrades an existing database of a known
 revision: absolute paths without links, a snapshot directory outside Git checkouts and persisted roots, a
 declaration that the service and the writers are stopped (checked against persisted owners of jobs, preparations,
 CLI groups and validations), a verified `premigration-1` SQLite snapshot (integrity, revision, SHA-256, fsync) before
@@ -685,7 +685,7 @@ other fingerprinted resources stay byte for byte as historical compatibility; v2
 
 Status: accepted.
 
-Harness Local is licensed under the MIT license, copyright 2026 David Acosta. Third-party components keep their own
+My Harness is licensed under the MIT license, copyright 2026 David Acosta. Third-party components keep their own
 licenses and notices (`NOTICE.md`, `NOTICE-THIRD-PARTY.md`). Vulnerabilities are reported through GitHub's private
 vulnerability reporting, as described in `SECURITY.md`.
 
@@ -721,7 +721,7 @@ Migration `0024_product_preferences` adds a singleton row `product-preferences-1
 version 1) and hash-chained events with idempotency keys. Reading never creates or repairs it; an invalid row reads
 as English with status `invalid` and blocks admissions (409 `preferences_invalid`) until it is saved again.
 `GET/PUT /api/managed/preferences` use compare-and-swap. Every new action captures the current interface language in
-its job; continuations of the same run copy the first job's value. JSON catalogs in Python (`harness_local/i18n`)
+its job; continuations of the same run copy the first job's value. JSON catalogs in Python (`my_harness/i18n`)
 and React (typed keys, interpolation as text, `Intl` formats) fall back to English.
 
 ## D167 — Immutable work language per root; language pair per job and attempt
@@ -768,7 +768,7 @@ Status: accepted.
 Every React text comes from typed en/es catalogs; sentences with elements split the template before inserting values;
 numbers, dates, sizes and costs use `Intl` for the language. HTTP diagnostics of the API's own guards and router are
 emitted in the saved interface language; codes and statuses do not change. The line
-`Harness Local: access key at <path>` is fixed technical output read by scripts.
+`My Harness: access key at <path>` is fixed technical output read by scripts.
 
 ## D171 — Service and CLI texts in the language of each emission
 
@@ -952,3 +952,17 @@ before confirming/promoting the whole set on restart. Historical recipes/receipt
 backup inventories TOML versions, working copies, partial intents and referenced evidence. Query-only restore
 reads bundle bytes without original roots/clients and rejects all configuration effects. Format 1 without the new
 configuration remains readable.
+
+## D230 — Public name My Harness and no hosted CI
+
+Status: accepted.
+
+The product is published as **My Harness**: distribution and CLI `my-harness`, Python package `my_harness`, default
+directories `~/Library/Application Support/My Harness` and `~/Library/Caches/My Harness`, CSRF header `X-My-Harness`
+and release asset `my-harness-<version>-distribution.tar.gz`. Identifiers persisted in existing data keep the earlier
+name and are never renamed: the managed block markers `harness-local:managed-<name>`, the formats
+`harness-local/onboarding-inventory/1`, `harness-local/managed-mode/1` and `harness-local/migration-manifest/1`, and
+the engine version `harness-local-<engine>` frozen in job contracts.
+
+The repository has no hosted CI. The offline suites and package checks listed in the README run locally before each
+change, and the release package is built and verified locally from the tagged commit.

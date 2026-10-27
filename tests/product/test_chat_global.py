@@ -7,14 +7,14 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.chat_snapshot import HeadSnapshot, snapshot_path
-from harness_local.adapters.cli_agents import CLIConfig, argv_for
-from harness_local.core.engine.chat_commands import COMMANDS, parse
-from harness_local.core.engine.contracts import AgentRequest, Selection, context_snapshot
-from harness_local.services.managed import LocalSupervisor
-from harness_local.storage.chat import ChatRepository
-from harness_local.storage.managed import Conflict, SQLiteManagedRepository
-from harness_local.storage.models import CheckoutLockRow, ManagedJobRow, ChatTurnRow
+from my_harness.adapters.chat_snapshot import HeadSnapshot, snapshot_path
+from my_harness.adapters.cli_agents import CLIConfig, argv_for
+from my_harness.core.engine.chat_commands import COMMANDS, parse
+from my_harness.core.engine.contracts import AgentRequest, Selection, context_snapshot
+from my_harness.services.managed import LocalSupervisor
+from my_harness.storage.chat import ChatRepository
+from my_harness.storage.managed import Conflict, SQLiteManagedRepository
+from my_harness.storage.models import CheckoutLockRow, ManagedJobRow, ChatTurnRow
 from test_chat import Chat, answer, chat, jobs  # noqa: F401
 from test_managed import repository  # noqa: F401
 from test_managed_api import PLAN, VERSIONS, git, client, config, Ports, settle
@@ -179,7 +179,7 @@ def test_http_commands_have_no_effect_until_explicit_proposal_acceptance(tmp_pat
             assert preview.status_code == 200 and preview.json()['name'] == name
         assert http.get('/api/managed/projects/synthetic/runs').json()['items'] == []
         denied = http.post(f'/api/managed/conversations/{cid}/commands/preview',
-            json={'expected_version': 0, 'text': '/estado'}, headers={'X-Harness-Local': '0'})
+            json={'expected_version': 0, 'text': '/estado'}, headers={'X-My-Harness': '0'})
         assert denied.status_code == 403
         job = http.post(f'/api/managed/conversations/{cid}/messages',
             json={'expected_version': 0, 'text': '/tarea Ajusta texto'}, headers={'Idempotency-Key': 'cmd'}).json()
@@ -191,7 +191,7 @@ def test_http_commands_have_no_effect_until_explicit_proposal_acceptance(tmp_pat
 
 def test_service_chat_lane_answers_while_writer_agent_is_still_running(world, chat):
     from threading import Event
-    from harness_local.services.managed_runtime import SupervisorWorker
+    from my_harness.services.managed_runtime import SupervisorWorker
     started, release, answered = Event(), Event(), Event()
     def slow_writer(context, request):
         started.set()
@@ -225,7 +225,7 @@ def test_old_chat_jobs_keep_the_writer_lock_semantics(world, chat):
         row = session.get(ManagedJobRow, job.id)
         request = json.loads(row.request_json)
         request['action'] = 'chat_turn'
-        from harness_local.core.engine.contracts import freeze
+        from my_harness.core.engine.contracts import freeze
         row.request_json = freeze(request)
     assert world.repository.claim(lane='chat') is None
     claim = world.repository.claim(lane='writer')

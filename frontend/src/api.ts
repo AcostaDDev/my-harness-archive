@@ -11,7 +11,7 @@ const SAFE = new Set(["GET", "HEAD", "OPTIONS"]);
 // Every mutation carries the local CSRF header required by the service guard (D033).
 export async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const method = (options?.method ?? "GET").toUpperCase();
-  const init = SAFE.has(method) ? options : { ...options, headers: { ...(options?.headers as Record<string, string> | undefined), "X-Harness-Local": "1" } };
+  const init = SAFE.has(method) ? options : { ...options, headers: { ...(options?.headers as Record<string, string> | undefined), "X-My-Harness": "1" } };
   const response = await fetch(path, init);
   sessionResponse(response);
   if (!response.ok) {

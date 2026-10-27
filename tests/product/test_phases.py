@@ -9,17 +9,17 @@ import pytest
 from sqlalchemy import inspect, select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.cli_agents import CLIConfig, argv_for
-from harness_local.core.engine.commit import CommitUncertain
-from harness_local.core.engine.contracts import AgentRequest, ContractError, Selection
-from harness_local.core.engine.journal import JournalError
-from harness_local.core.engine.phases import digest, phase_definition, validate_phase_result
-from harness_local.core.engine.validation import CommandResult
-from harness_local.services.managed import LocalSupervisor
-from harness_local.storage.managed import Conflict, SQLiteManagedRepository
-from harness_local.storage.managed_views import SQLiteManagedViews
-from harness_local.storage.models import ManagedAttemptRow, PhaseEventRow
-from harness_local.storage.phases import PhaseRepository
+from my_harness.adapters.cli_agents import CLIConfig, argv_for
+from my_harness.core.engine.commit import CommitUncertain
+from my_harness.core.engine.contracts import AgentRequest, ContractError, Selection
+from my_harness.core.engine.journal import JournalError
+from my_harness.core.engine.phases import digest, phase_definition, validate_phase_result
+from my_harness.core.engine.validation import CommandResult
+from my_harness.services.managed import LocalSupervisor
+from my_harness.storage.managed import Conflict, SQLiteManagedRepository
+from my_harness.storage.managed_views import SQLiteManagedViews
+from my_harness.storage.models import ManagedAttemptRow, PhaseEventRow
+from my_harness.storage.phases import PhaseRepository
 from test_managed import repository  # noqa: F401  (fixture)
 from test_managed_api import (
     PLAN, VERSIONS, Ports, client, edit, git, make_context, review, settle,
@@ -99,7 +99,7 @@ class World:
         return self.phases.create(self.context, definition(self.context, **kwargs))
 
     def get(self, pid):
-        from harness_local.core.engine.phases import document_hashes
+        from my_harness.core.engine.phases import document_hashes
         root, data = self.phases.definition(pid)
         return self.phases.get(pid, document_hashes(self.context, data['documents']),
                                document_hashes(self.context, self.phases.closure_files(pid)))
@@ -284,7 +284,7 @@ def test_pending_commit_intent_blocks_close(world):
     world.accept_task()
     pid = world.create()
     _, ready = world.check(pid, phase_review())
-    from harness_local.storage.models import ManagedCommitRow
+    from my_harness.storage.models import ManagedCommitRow
     with Session(world.repository.engine) as session, session.begin():
         session.scalars(select(ManagedCommitRow)).one().status = 'INTENT'  # synthetic intention not reconciled
     with pytest.raises(Conflict, match='awaits reconciliation'):
@@ -632,7 +632,7 @@ def test_migration_roundtrip_preserves_runs(migrated_database, world):
 
 
 def test_http_phase_flow_with_guards_confirmation_and_server_actions(tmp_path, migrated_database, checkout, monkeypatch):
-    from harness_local.services.managed_runtime import CONFIG_ENV
+    from my_harness.services.managed_runtime import CONFIG_ENV
     from test_managed_api import config
     monkeypatch.delenv(CONFIG_ENV, raising=False)
     ports = Ports([edit, review(), phase_review()])
@@ -645,7 +645,7 @@ def test_http_phase_flow_with_guards_confirmation_and_server_actions(tmp_path, m
         assert settle(http, job['run_id'])['status'] == 'COMMITTED'
         body = {'code': 'P001', 'objective': 'HTTP phase', 'exit_criteria': CRITERIA, 'tasks': ['P001-T001'],
                 'tag': 'phase-P001-complete'}
-        denied = http.post('/api/managed/projects/synthetic/phases', json=body, headers={'X-Harness-Local': '0'})
+        denied = http.post('/api/managed/projects/synthetic/phases', json=body, headers={'X-My-Harness': '0'})
         assert denied.status_code == 403
         created = http.post('/api/managed/projects/synthetic/phases', json=body)
         assert created.status_code == 201, created.text
@@ -683,7 +683,7 @@ def test_http_phase_flow_with_guards_confirmation_and_server_actions(tmp_path, m
 
 def test_http_without_git_writer_reads_but_does_not_queue_phase_operations(tmp_path, migrated_database, checkout,
                                                                          monkeypatch):
-    from harness_local.services.managed_runtime import CONFIG_ENV
+    from my_harness.services.managed_runtime import CONFIG_ENV
     from test_managed_api import config
     monkeypatch.delenv(CONFIG_ENV, raising=False)
     with client(migrated_database[0], tmp_path, config(checkout, Ports([]), commit=False, supervisor=False)) as http:

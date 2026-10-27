@@ -12,11 +12,11 @@ import tomllib
 
 import pytest
 
-from harness_local.adapters.git import GitWorktrees
-from harness_local.core.engine.journal import JournalError
-from harness_local.core.engine.serialization import restore_context
-from harness_local.services.local_config import LocalConfigError, build, load_local_config, summary
-from harness_local.services.managed import LocalSupervisor
+from my_harness.adapters.git import GitWorktrees
+from my_harness.core.engine.journal import JournalError
+from my_harness.core.engine.serialization import restore_context
+from my_harness.services.local_config import LocalConfigError, build, load_local_config, summary
+from my_harness.services.managed import LocalSupervisor
 from test_git import git
 from test_local_config import PROBE, USER, dumps, launches, setup, write  # noqa: F401 (fixture)
 from test_project_registry import v3
@@ -150,7 +150,7 @@ def test_python_django_profile_from_the_example_composes_without_processes(djang
 
 
 def test_check_config_validates_the_declared_profile_and_rejects_shell(django, capsys):
-    from harness_local.cli import main
+    from my_harness.cli import main
     checkout, data, tmp_path = django
     assert main(['check-config', str(write(tmp_path / 'operator', data))]) == 0
     result = json.loads(capsys.readouterr().out)
@@ -219,7 +219,7 @@ def mutate(data, change):
 def test_invalid_declared_profiles_are_rejected_without_effects(django, change):
     checkout, data, tmp_path = django
     with pytest.raises(LocalConfigError):
-        build(mutate(data, change), tmp_path / 'operator/harness-local.toml')
+        build(mutate(data, change), tmp_path / 'operator/my-harness.toml')
     assert not launches(tmp_path) and not tools(tmp_path)
 
 

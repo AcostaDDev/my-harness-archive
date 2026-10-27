@@ -10,15 +10,15 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local import i18n
-from harness_local.services.local_config import LocalConfigError, load_local_config, summary
-from harness_local.services.managed_runtime import ManagedRuntime
-from harness_local.services.project_registry import RegistryError
-from harness_local.storage import work_language
-from harness_local.storage.backup import create_backup, restore_backup
-from harness_local.storage.database import make_engine
-from harness_local.storage.models import ManagedAttemptRow, ManagedJobRow
-from harness_local.storage.preferences import PreferencesRepository
+from my_harness import i18n
+from my_harness.services.local_config import LocalConfigError, load_local_config, summary
+from my_harness.services.managed_runtime import ManagedRuntime
+from my_harness.services.project_registry import RegistryError
+from my_harness.storage import work_language
+from my_harness.storage.backup import create_backup, restore_backup
+from my_harness.storage.database import make_engine
+from my_harness.storage.models import ManagedAttemptRow, ManagedJobRow
+from my_harness.storage.preferences import PreferencesRepository
 from test_local_config import launches, setup, write  # noqa: F401  (fixture)
 from test_managed import context, repository, submit, worker  # noqa: F401  (fixtures)
 from test_managed_api import client

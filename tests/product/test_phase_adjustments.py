@@ -10,12 +10,12 @@ import pytest
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from harness_local.api.app import create_app
-from harness_local.core.engine.commit import CommitUncertain
-from harness_local.core.engine.journal import JournalError
-from harness_local.services.managed_runtime import ManagedConfig, ManagedProject
-from harness_local.storage.managed import Conflict
-from harness_local.storage.models import ManagedAttemptRow, PhaseDefinitionRow
+from my_harness.api.app import create_app
+from my_harness.core.engine.commit import CommitUncertain
+from my_harness.core.engine.journal import JournalError
+from my_harness.services.managed_runtime import ManagedConfig, ManagedProject
+from my_harness.storage.managed import Conflict
+from my_harness.storage.models import ManagedAttemptRow, PhaseDefinitionRow
 from test_managed import repository  # noqa: F401  (fixture)
 from test_managed_api import IDENTITY, LOCAL, PLAN, VERSIONS, Ports, client, git, review, settle
 from test_phases import (  # noqa: F401  (fixtures)
@@ -61,24 +61,24 @@ def test_h0_h1_mutations_reject_foreign_host_origin_and_missing_header(migrated_
     url, _ = migrated_database
     body = {'title': 'Simulación sintética'}
     with TestClient(create_app(url, tmp_path), base_url="http://testserver") as foreign:  # Host: testserver
-        rejected = foreign.post('/api/simulations', json=body, headers={'X-Harness-Local': '1'})
+        rejected = foreign.post('/api/simulations', json=body, headers={'X-My-Harness': '1'})
         assert rejected.status_code == 403 and rejected.json()['detail']['code'] == 'host_rejected'
         assert foreign.put('/api/legacy/projects/x/observation', json={'enabled': True},
-                           headers={'X-Harness-Local': '1'}).json()['detail']['code'] == 'host_rejected'
+                           headers={'X-My-Harness': '1'}).json()['detail']['code'] == 'host_rejected'
         assert foreign.get('/api/simulations').status_code == 403  # H5.6 covers reads too
     with TestClient(create_app(url, tmp_path), base_url=LOCAL) as local:
         missing = local.post('/api/simulations', json=body)
         assert missing.status_code == 403 and missing.json()['detail']['code'] == 'csrf_header_required'
-        cross = local.post('/api/simulations', json=body, headers={'X-Harness-Local': '1',
+        cross = local.post('/api/simulations', json=body, headers={'X-My-Harness': '1',
                                                                    'Origin': 'https://attacker.example'})
         assert cross.status_code == 403 and cross.json()['detail']['code'] == 'origin_rejected'
         put = local.put('/api/legacy/projects/x/observation', json={'enabled': True})
         assert put.status_code == 403 and put.json()['detail']['code'] == 'csrf_header_required'
         # The guard precedes the lookup: with the header, the unknown project gives 404.
         assert local.put('/api/legacy/projects/x/observation', json={'enabled': True},
-                         headers={'X-Harness-Local': '1', 'Origin': LOCAL}).status_code == 404
+                         headers={'X-My-Harness': '1', 'Origin': LOCAL}).status_code == 404
         assert local.get('/api/simulations').json() == []  # no rejection created rows
-        created = local.post('/api/simulations', json=body, headers={'X-Harness-Local': '1',
+        created = local.post('/api/simulations', json=body, headers={'X-My-Harness': '1',
                                                                      'Origin': LOCAL})
         assert created.status_code == 201
 
@@ -166,7 +166,7 @@ def test_crash_in_unattended_batch_requires_explicit_recovery_and_repeats_nothin
     with Session(world.repository.engine) as session:
         attempts = session.scalars(select(ManagedAttemptRow)).all()
         assert len(attempts) == 1
-    from harness_local.storage.models import ManagedJobRow
+    from my_harness.storage.models import ManagedJobRow
     with Session(world.repository.engine) as session:
         held = session.scalars(select(ManagedJobRow).where(ManagedJobRow.status == 'RECOVERY_REQUIRED')).one()
         job_id, token, run_id = held.id, held.owner_token, held.run_id
@@ -287,7 +287,7 @@ def test_annotated_tag_fixes_message_identity_and_date_in_the_intent(world):
     assert f'tagger {IDENTITY.name} <{IDENTITY.email}>' in body
     assert f"Harness-Ready-Binding: {ready['ready']['binding_sha256']}" in body
     with Session(world.repository.engine) as session:
-        from harness_local.storage.models import PhaseOperationRow
+        from my_harness.storage.models import PhaseOperationRow
         op = session.get(PhaseOperationRow, closed['operations'][-1]['id'])
         intent = op.request['tag_intent']
     assert intent['kind'] == 'annotated' and intent['object'] == tag['object']
@@ -424,7 +424,7 @@ def test_migration_0011_backfills_definitions_and_refuses_lossy_downgrade(migrat
 
 
 def test_http_h34_phase_actions_with_annotated_project_and_guards(tmp_path, migrated_database, checkout, monkeypatch):
-    from harness_local.services.managed_runtime import CONFIG_ENV
+    from my_harness.services.managed_runtime import CONFIG_ENV
     monkeypatch.delenv(CONFIG_ENV, raising=False)
     checkout = replace(checkout, documents='v2')
     # P008-T007: with the unified layout every attempt requires AGENTS.md.
@@ -446,7 +446,7 @@ def test_http_h34_phase_actions_with_annotated_project_and_guards(tmp_path, migr
                 'reason': 'HTTP unattended batch', 'confirmed': True, 'chain_commits': True}
         assert http.post(f'/api/managed/phases/{pid}/authorizations', json=body).status_code == 422  # no plan
         assert http.post(f'/api/managed/phases/{pid}/authorizations', json={**body, 'text': PLAN},
-                         headers={'X-Harness-Local': '0'}).status_code == 403
+                         headers={'X-My-Harness': '0'}).status_code == 403
         authorized = http.post(f'/api/managed/phases/{pid}/authorizations', json={**body, 'text': PLAN})
         assert authorized.status_code == 201, authorized.text
         auth = authorized.json()['authorizations'][0]

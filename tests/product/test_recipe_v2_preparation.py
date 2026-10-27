@@ -11,15 +11,15 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from harness_local.core.engine.journal import JournalError
-from harness_local.recipes import django, django_2, typescript_web, typescript_web_2
-from harness_local.services.local_config import load_local_config
-from harness_local.services.managed_runtime import ManagedRuntime
-from harness_local.services.project_preparation import DjangoRecipe, DjangoRecipe2, TypeScriptRecipe2
-from harness_local.services.project_registry import RegistryError, digest
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import Conflict
-from harness_local.storage.preparation import admit
+from my_harness.core.engine.journal import JournalError
+from my_harness.recipes import django, django_2, typescript_web, typescript_web_2
+from my_harness.services.local_config import load_local_config
+from my_harness.services.managed_runtime import ManagedRuntime
+from my_harness.services.project_preparation import DjangoRecipe, DjangoRecipe2, TypeScriptRecipe2
+from my_harness.services.project_registry import RegistryError, digest
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import Conflict
+from my_harness.storage.preparation import admit
 from test_project_creation import select_root, request
 from test_project_registry import POLICY, v3, operator  # noqa: F401
 from test_local_config import setup, web, write, launches  # noqa: F401

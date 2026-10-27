@@ -6,17 +6,17 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from harness_local.adapters.git import GitWorkspace
-from harness_local.core.engine.documents import DOCUMENT_LAYOUT, base_section, blocks, plan_tasks
-from harness_local.storage.managed import Conflict
-from harness_local.storage.documents import DocumentsRepository
-from harness_local.storage.models import PhaseRow
-from harness_local.storage.phase_plan import PhasePlanRepository
-from harness_local.storage.transition import TransitionRepository
+from my_harness.adapters.git import GitWorkspace
+from my_harness.core.engine.documents import DOCUMENT_LAYOUT, base_section, blocks, plan_tasks
+from my_harness.storage.managed import Conflict
+from my_harness.storage.documents import DocumentsRepository
+from my_harness.storage.models import PhaseRow
+from my_harness.storage.phase_plan import PhasePlanRepository
+from my_harness.storage.transition import TransitionRepository
 from test_managed import repository  # noqa: F401
 from test_managed_api import VERSIONS, git, client
 from test_documents import V2World, v2checkout, STATE, PLAN_P002, confirm, queue_edit  # noqa: F401
-from harness_local.core.engine.journal import JournalError
+from my_harness.core.engine.journal import JournalError
 from test_phases import head, phase_review
 
 
@@ -139,7 +139,7 @@ def test_closure_recovery_reuses_tag_commit_and_successor(unified, point, monkey
     elif point == 'commit':
         patch(GitWorkspace, 'execute')
     else:
-        import harness_local.storage.phases as module
+        import my_harness.storage.phases as module
         patch(module, 'settle')
     with pytest.raises((RuntimeError, JournalError), match='synthetic'):
         world.run()
@@ -279,7 +279,7 @@ def test_http_closure_and_confirmed_plan_use_the_current_protocol(unified, tmp_p
 def test_sealed_legacy_transition_recovers_with_layout_version_upgrade(unified, monkeypatch, previous):
     world = unified
     pid = ready(world)
-    from harness_local.storage import closure
+    from my_harness.storage import closure
     with monkeypatch.context() as legacy:
         legacy.setattr(closure, 'prepare', lambda *args: None)
         queue(world, pid)
@@ -323,7 +323,7 @@ def test_active_empty_phase_accepts_its_conversation_plan(unified):
     queue(world, pid)
     world.run()
     following = world.phases.by_code(str(world.context.root), 'P002')
-    from harness_local.storage.planning import PlanningRepository
+    from my_harness.storage.planning import PlanningRepository
     from test_definition import planning_answer
     planning = PlanningRepository(world.repository)
     cid = planning.create(world.context, kind='phase_planning', title='Plan active P002', phase_id=following)

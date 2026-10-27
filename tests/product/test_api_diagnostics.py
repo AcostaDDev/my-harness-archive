@@ -6,8 +6,8 @@ import ast
 from pathlib import Path
 import re
 
-from harness_local import i18n
-from harness_local.api import session as session_module
+from my_harness import i18n
+from my_harness.api import session as session_module
 from test_managed import context, repository, submit, worker  # noqa: F401  (fixtures)
 from test_managed_api import client, config, repo, task, url  # noqa: F401  (fixtures)
 
@@ -27,7 +27,7 @@ def test_guard_and_router_diagnostics_follow_the_visual_language(url, tmp_path, 
     with client(url, tmp_path, config(task)) as http:
         for language in ('en', 'es'):
             save_language(http, language)
-            unguarded = http.put(PREFERENCES, json={}, headers={'X-Harness-Local': ''})
+            unguarded = http.put(PREFERENCES, json={}, headers={'X-My-Harness': ''})
             assert unguarded.status_code == 403
             assert unguarded.json()['detail'] == {'code': 'csrf_header_required',
                                                   'diagnostic': i18n.message('api.csrf_header_required', language)}
@@ -44,7 +44,7 @@ def test_guard_and_router_diagnostics_follow_the_visual_language(url, tmp_path, 
 def test_the_access_key_line_is_fixed_technical_output():
     # Maintainer scripts read the key path from this line; it is never localized.
     source = (API / 'session.py').read_text()
-    assert "print(f'Harness Local: access key at {self.path}', flush=True)" in source
+    assert "print(f'My Harness: access key at {self.path}', flush=True)" in source
     for script in ('scripts/dev.py', 'scripts/check_distribution.py'):
         assert 'access key at' in (API.parents[2] / script).read_text(), script
 

@@ -11,17 +11,17 @@ import sys
 
 import pytest
 
-from harness_local.adapters import cli_agents
-from harness_local.adapters.cli_agents import CLIConfig, CLIProcessAdapter, argv_for
-from harness_local.adapters.engine_fake import ScriptedCommandRunner
-from harness_local.adapters.git import GitWorkspace
-from harness_local.core.engine.contracts import AgentRequest, Selection, context_snapshot, freeze
-from harness_local.core.engine.journal import JournalError
-from harness_local.core.engine.prompts import digest, output_schema
-from harness_local.services.managed import LocalSupervisor
-from harness_local.storage.database import make_engine
-from harness_local.storage.managed import SQLiteManagedRepository
-from harness_local.storage.planning import PlanningRepository
+from my_harness.adapters import cli_agents
+from my_harness.adapters.cli_agents import CLIConfig, CLIProcessAdapter, argv_for
+from my_harness.adapters.engine_fake import ScriptedCommandRunner
+from my_harness.adapters.git import GitWorkspace
+from my_harness.core.engine.contracts import AgentRequest, Selection, context_snapshot, freeze
+from my_harness.core.engine.journal import JournalError
+from my_harness.core.engine.prompts import digest, output_schema
+from my_harness.services.managed import LocalSupervisor
+from my_harness.storage.database import make_engine
+from my_harness.storage.managed import SQLiteManagedRepository
+from my_harness.storage.planning import PlanningRepository
 from test_definition import BRIEF, answer
 from test_managed_api import IDENTITY, VERSIONS, make_context
 from test_local_config import PROBE

@@ -2,7 +2,7 @@
 
 Canonical source for agents; `CLAUDE.md` and `GEMINI.md` import it. For people, `README.md`.
 
-Harness Local: a local application that orchestrates development agents. Its reviewer and executor roles describe
+My Harness: a local application that orchestrates development agents. Its reviewer and executor roles describe
 the product, not the session that edits this repository. The repository is developed by hand, with or without
 agents; its work language is English.
 
