@@ -117,9 +117,10 @@ los estados parciales de esos snapshots conservan su procedencia.
 
 El siguiente paso es la apertura que autorice el usuario sobre el
 [expediente de P013](archive/phase-013/P013_EXPEDIENTE_APERTURA.md): faltan owner/repo, visibilidad, identidad
-pública y permisos concretos. Candidato P013 y paquete T013 verificados, sin Git. `my_harness_dist` contiene
-desde D234 el árbol con la guía de instalación nueva (445 archivos, `c5936662…5e44b8`, modos verificados);
-`my_harness_dist_p013` conserva el árbol T013 y el paquete de la Release se construirá desde el commit publicado;
+pública y permisos concretos. Candidato P013 y paquete T013 verificados, sin Git. Tras D234/D235 el producto se
+llama My Harness (`my-harness`/`my_harness`, sin CI alojada) y `my_harness_dist` contiene el árbol exportado de
+`fc98b9c` (444 archivos, `bca61d8d…1fa295`, modos verificados; suites completas en verde). `my_harness_dist_p013`
+conserva el árbol T013; el paquete de la Release se construirá desde el commit publicado;
 ninguna creación remota, push, CI remota, visibilidad pública, tag o Release ejecutados. Expedientes P011/P012 y
 [suplemento D214](archive/phase-013/2026-10-26_ACTUALIZACION_CANDIDATO.md) históricos y sustituidos.
 Después del primer push el repositorio público será la fuente principal (D157); este conserva la historia privada.

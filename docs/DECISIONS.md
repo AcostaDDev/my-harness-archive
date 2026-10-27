@@ -6945,5 +6945,7 @@ equivalente: D230 de `docs/public/docs/DECISIONS.md`. Precedentes: D157, D163, D
   Los comprobadores archivados se ejecutan con alias `harness_local` → `my_harness` y la regla congelada
   «IDs < D230» aplicada solo a la baseline, sin modificar sus bytes.
 - Checks: 2048 pytest/29 subtests (dos opt-in omitidas), 8 unittest, 155 Node, tipos/build, Alembic en base
-  temporal y documentación pública (32 documentos/273 enlaces). Crear el repositorio privado, el commit inicial
+  temporal y documentación pública (32 documentos/273 enlaces). Árbol exportado de `fc98b9c` con el adaptador T013:
+  444 archivos/6.386.334 bytes, manifiesto `bca61d8d…1fa295`, sin nombre antiguo en ningún archivo; sustituye
+  `my_harness_dist` ([manifiesto](phase/2026-10-27_CANDIDATO_MY_HARNESS_MANIFIESTO_PUBLICO.sha256)). Crear el repositorio privado, el commit inicial
   del usuario, el push y la Release están autorizados por el usuario y se registran al ejecutarse.
