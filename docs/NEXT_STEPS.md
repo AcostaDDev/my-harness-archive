@@ -7,13 +7,11 @@ P013 cierra el 2026-10-27 tras el dictamen favorable de sus ocho criterios, con 
 El [plan original](archive/phase-013/NEXT_STEPS.md) conserva sus bytes y estados al terminar T014;
 T015 queda completada en el [registro de cierre](archive/phase-013/P013_CIERRE.md).
 
-El siguiente paso corresponde al usuario: autorizar los pasos concretos del
-[expediente de apertura P013](archive/phase-013/P013_EXPEDIENTE_APERTURA.md), precisando owner/repo,
-visibilidad, identidad pública y permisos. Árbol actual My Harness en `my_harness_dist` (D235, `fc98b9c`,
-manifiesto `bca61d8d…1fa295`); repositorio `AcostaDDev/my-harness`, push y Release autorizados por el usuario;
-expedientes P011/P012 y suplemento D214 sustituidos. Sin autorización concedida para crear repositorio,
-push, CI remota, tag, Release o publicación. Tras el primer push, el repositorio público será la fuente
-principal (D157).
+Apertura en curso ([D236](DECISIONS.md#d236--repositorio-privado-my-harness-push-inicial-y-release-v010)):
+repositorio privado [AcostaDDev/my-harness](https://github.com/AcostaDDev/my-harness) con el commit raíz `1dac555`
+y la Release `v0.1.0`. Siguiente paso del usuario: hacer público el repositorio y habilitar después el reporte
+privado de vulnerabilidades. Desde el primer push el repositorio público es la fuente principal (D157); sin CI
+alojada (D235). Los cambios de producto siguientes se hacen allí, no copiando árboles desde este checkout.
 
 No se crea sucesora privada. Modo continuo v0.2.0 tras la apertura (D156), todavía sin tareas;
 [candidatas sin fase](ROADMAP.md#candidatas-sin-fase-asignada). No operar este repositorio con el harness

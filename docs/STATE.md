@@ -115,18 +115,17 @@ local completada en el alcance de D151/D153; apertura pública preparada con exp
 [registro](archive/phase-013/P013_CIERRE.md)). Originales congelados con manifiesto respecto de T014;
 los estados parciales de esos snapshots conservan su procedencia.
 
-El siguiente paso es la apertura que autorice el usuario sobre el
-[expediente de P013](archive/phase-013/P013_EXPEDIENTE_APERTURA.md): faltan owner/repo, visibilidad, identidad
-pública y permisos concretos. Candidato P013 y paquete T013 verificados, sin Git. Tras D234/D235 el producto se
-llama My Harness (`my-harness`/`my_harness`, sin CI alojada) y `my_harness_dist` contiene el árbol exportado de
-`fc98b9c` (444 archivos, `bca61d8d…1fa295`, modos verificados; suites completas en verde). `my_harness_dist_p013`
-conserva el árbol T013; el paquete de la Release se construirá desde el commit publicado;
-ninguna creación remota, push, CI remota, visibilidad pública, tag o Release ejecutados. Expedientes P011/P012 y
-[suplemento D214](archive/phase-013/2026-10-26_ACTUALIZACION_CANDIDATO.md) históricos y sustituidos.
-Después del primer push el repositorio público será la fuente principal (D157); este conserva la historia privada.
+**Apertura en curso (D236).** Tras D234/D235 el producto se llama My Harness (`my-harness`/`my_harness`, sin CI
+alojada). Repositorio **privado** [AcostaDDev/my-harness](https://github.com/AcostaDDev/my-harness): commit raíz
+`1dac555` del usuario, idéntico al árbol exportado de `fc98b9c` (444 archivos, `bca61d8d…1fa295`), y Release
+`v0.1.0` con `my-harness-0.1.0-distribution.tar.gz` (`ddee32c3…`) y su `.sha256`; wheel `3225a4a5…`. Paquete
+verificado con check_distribution e instalación/arranque desde el archivo sin Node. `my_harness_dist` es el clon
+de trabajo del repositorio público; `my_harness_dist_p013` conserva el árbol T013.
+
+Pendiente del usuario: hacer público el repositorio y, después, habilitar el reporte privado de vulnerabilidades.
+Desde el primer push el repositorio público es la fuente principal (D157); este conserva la historia privada.
+Expedientes P011/P012 y [suplemento D214](archive/phase-013/2026-10-26_ACTUALIZACION_CANDIDATO.md) históricos.
 Modo continuo v0.2.0 posterior a la apertura, sin tareas definidas (D156);
 [candidatas sin fase](ROADMAP.md#candidatas-sin-fase-asignada).
 
-Cierre manual separado del READY del producto. Este repositorio sigue sin registrarse ni ejecutarse con el
-harness. Sin cambios de producto, modelos, API, dependencias, instalaciones o configuración global; sin
-nuevos servicios, proveedores o permisos operativos.
+Este repositorio sigue sin registrarse ni ejecutarse con el harness; sin proveedores ni configuración global.

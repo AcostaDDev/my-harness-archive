@@ -247,6 +247,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D233](#d233--my_harness_dist-sustituido-por-el-candidato-p013) | my_harness_dist sustituido por el candidato P013 | Sin fase |
 | [D234](#d234--guía-de-instalación-y-paquete-de-release-autocontenido) | Guía de instalación y paquete de Release autocontenido | Sin fase |
 | [D235](#d235--nombre-público-my-harness-recetas-reemitidas-y-sin-ci) | Nombre público My Harness, recetas reemitidas y sin CI | Sin fase |
+| [D236](#d236--repositorio-privado-my-harness-push-inicial-y-release-v010) | Repositorio privado my-harness, push inicial y Release v0.1.0 | Sin fase |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6949,3 +6950,26 @@ equivalente: D230 de `docs/public/docs/DECISIONS.md`. Precedentes: D157, D163, D
   444 archivos/6.386.334 bytes, manifiesto `bca61d8d…1fa295`, sin nombre antiguo en ningún archivo; sustituye
   `my_harness_dist` ([manifiesto](phase/2026-10-27_CANDIDATO_MY_HARNESS_MANIFIESTO_PUBLICO.sha256)). Crear el repositorio privado, el commit inicial
   del usuario, el push y la Release están autorizados por el usuario y se registran al ejecutarse.
+
+## D236 — Repositorio privado my-harness, push inicial y Release v0.1.0
+
+Estado: ejecutado el 2026-10-27 por instrucción explícita del usuario, sin fase nueva. Precedentes: D157, D231,
+D234, D235. Evidencia: [paquete](phase/2026-10-27_RELEASE_V0.1.0_PAQUETE.sha256),
+[archivo](phase/2026-10-27_RELEASE_V0.1.0_ARCHIVO.sha256) y [notas](phase/2026-10-27_RELEASE_V0.1.0_NOTAS.md).
+
+- El usuario pide crear el repositorio en privado, fijar su URL, `git init`, hacer él el commit inicial con el
+  mensaje propuesto, y subir repositorio y paquete. `gh` autenticado como AcostaDDev; el nombre `my-harness`
+  redirigía al repositorio privado renombrado `my-harness-archive`, cuyo remoto en este checkout es directo.
+- `gh repo create AcostaDDev/my-harness --private` con la descripción de pyproject. `my_harness_dist`: `git init -b
+  main` y remoto `origin`. Commit raíz del usuario `1dac555` «Initial public snapshot of My Harness 0.1.0»: único
+  commit, sin tags, 444 rutas con blobs y modos iguales al manifiesto `bca61d8d…1fa295`. Push a `main`; el
+  repositorio no tiene workflows.
+- Paquete construido offline desde `git archive 1dac555` en `my_harness_release_v0.1.0`: 13 archivos distribution-1,
+  wheel `3225a4a5…`, sdist `8a1450dd…`, pylock `20a327c3…` (igual que T013). check_distribution correcto
+  (miembros, metadatos, checksums, wheel aislado y recorrido sintético). Archivo `my-harness-0.1.0/` →
+  `my-harness-0.1.0-distribution.tar.gz` `ddee32c3…`; recorrido README desde el archivo: `.sha256`, extracción,
+  `scripts/install --dist "$PWD"` sin Node (caché local en lugar de red), `scripts/start`, clave, UI 200 y Ctrl-C.
+- Release `v0.1.0` (tag sobre `1dac555`, no borrador) con ambos assets; digest publicado igual al local. Es
+  privada mientras lo sea el repositorio. Sin PyPI ni CI.
+- Pendiente del usuario: visibilidad pública y, después, reporte privado de vulnerabilidades. Desde el primer push
+  el repositorio público es la fuente principal (D157); los cambios siguientes se hacen allí.
