@@ -9,8 +9,8 @@ T015 queda completada en el [registro de cierre](archive/phase-013/P013_CIERRE.m
 
 El siguiente paso corresponde al usuario: autorizar los pasos concretos del
 [expediente de apertura P013](archive/phase-013/P013_EXPEDIENTE_APERTURA.md), precisando owner/repo,
-visibilidad, identidad pública y permisos. Candidato P013 en `my_harness_dist` (D233) y `my_harness_dist_p013`,
-paquete T013 conservado;
+visibilidad, identidad pública y permisos. Árbol actual en `my_harness_dist` (D234, solo README/CHANGELOG/flujo
+público distintos de `my_harness_dist_p013`); paquete de la Release por construir desde el commit publicado;
 expedientes P011/P012 y suplemento D214 sustituidos. Sin autorización concedida para crear repositorio,
 push, CI remota, tag, Release o publicación. Tras el primer push, el repositorio público será la fuente
 principal (D157).

@@ -245,6 +245,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D231](#d231--p013-t014-dictamen-favorable-y-expediente-de-apertura-actualizado) | P013-T014: dictamen favorable y expediente de apertura actualizado | P013 |
 | [D232](#d232--cierre-documental-de-p013-e-instalación-guiada-archivada) | Cierre documental de P013 e instalación guiada archivada | P013 |
 | [D233](#d233--my_harness_dist-sustituido-por-el-candidato-p013) | my_harness_dist sustituido por el candidato P013 | Sin fase |
+| [D234](#d234--guía-de-instalación-y-paquete-de-release-autocontenido) | Guía de instalación y paquete de Release autocontenido | Sin fase |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6895,3 +6896,26 @@ Estado: aplicado el 2026-10-27 por petición explícita del usuario, sin fase nu
   ya no se puede repetir. `my_harness_dist_p013`, P011/P012 y paquetes no cambian.
 - Sin `git init`, commit raíz, remoto, push, CI, visibilidad, tag ni Release: siguen pendientes de la
   autorización concreta del expediente P013, con owner/repo e identidad pública por decidir.
+
+## D234 — Guía de instalación y paquete de Release autocontenido
+
+Estado: aplicado el 2026-10-27 por petición del usuario y respuestas HITL, sin fase nueva.
+[Manifiesto público](phase/2026-10-27_CANDIDATO_README_MANIFIESTO_PUBLICO.sha256) y
+[correspondencia privada](phase/2026-10-27_CANDIDATO_README_MANIFIESTO_PRIVADO.tsv). Precedentes: D157, D219, D230–D233.
+
+- El usuario pide README claros para la primera instalación en el proyecto de desarrollo y en `my_harness_dist`.
+  README.md/README.es.md guían dos vías: clon (`scripts/install --allow-network`) y paquete publicado, con
+  herramientas, directorios por defecto, red en la primera instalación, clave de acceso y reinicio que activa.
+  El instalador exige rutas absolutas: la guía usa `--dist "$PWD"`. Se retira la frase «candidato pendiente».
+- HITL: los artefactos construidos nunca se commitean. Una Release adjunta como asset
+  `harness-local-<versión>-distribution.tar.gz` (carpeta `harness-local-<versión>/` con los 13 archivos de
+  distribution-1, incluido scripts/) y su `.sha256`; wheel/sdist/pylock/SHA256SUMS sueltos son opcionales.
+  Concreta el formato de transporte que el expediente P013 dejó abierto; CHANGELOG lo recoge.
+- Commit `ffb7898` exportado con el adaptador T013 sin modificarlo: 445 archivos/6.394.463 bytes, manifiesto
+  `c5936662…5e44b8`, cero problemas; difiere de T013 solo en README.md, README.es.md, CHANGELOG.md y
+  docs/flows/configuration-setup.md (enlace al ancla nueva). Rutas, hashes y modos verificados; documentación
+  pública 50 documentos/405 enlaces. Sustituye el contenido de `my_harness_dist`; `my_harness_dist_p013` intacto.
+- HITL: sin repetir suites de código, por ser un cambio documental; ningún test lee el contenido de los README.
+  El README es metadato del wheel, por lo que el paquete T013 ya no corresponde a esta fuente: el de la Release
+  se construirá y verificará desde el commit publicado. Expediente P013 archivado sin reescribir.
+- Sin `git init` del árbol, remoto, push, CI, tag ni Release; siguen pendientes de autorización concreta.
