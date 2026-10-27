@@ -307,7 +307,8 @@ ausente/inválida al asistente API protegido, sin supervisor consumidor; UI entr
 Locks de instancia/instalación retenidos por wrapper e hijo excluyen otro arranque y actualización incluso si muere el wrapper. SIGINT/SIGTERM se reenvían y se espera al hijo; sin borrar datos,
 limpiar locks de jobs ni acreditar muerte de escritores. Reinicio no instala ni sobrescribe TOML; puede promover la activación pendiente confirmada.
 [Opciones, comprobaciones y límites](phase/P013-T003_ARRANQUE.md). Pruebas sintéticas de orquestación y
-señales; primer uso instalado sintético verificado en T012; candidato final pendiente T013. `scripts/dev` conserva su flujo de desarrollo.
+señales; primer uso instalado sintético verificado en T012; [candidato final y paquete verificados en T013](phase/P013-T013_CANDIDATO.md).
+`scripts/dev` conserva su flujo de desarrollo.
 Los paquetes P011/P012 previos no contienen este material y no se adaptan ni reescriben.
 
 Actualización (D150): detener el servicio y los escritores, instalar el nuevo wheel y ejecutar

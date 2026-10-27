@@ -1,0 +1,30 @@
+Using CPython 3.14.4 interpreter at: .venv/bin/python
+Creating virtual environment at: <temporary-path>
+Activate with: source <temporary-path>
+warning: The `--pylock` option is experimental and may change without warning. Pass `--preview-features pylock` to disable this warning.
+Using Python 3.14.4 environment at: <temporary-path>
+Installed 18 packages in 186ms
+ + alembic==1.20.0
+ + annotated-doc==0.0.5
+ + annotated-types==0.8.0
+ + anyio==4.15.1
+ + click==8.5.0
+ + fastapi==0.143.0
+ + h11==0.16.0
+ + idna==3.20
+ + mako==1.4.3
+ + markupsafe==3.0.4
+ + opentelemetry-api==1.45.1
+ + pydantic==2.14.0
+ + pydantic-core==2.50.0
+ + sqlalchemy==2.1.4
+ + starlette==1.7.0
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+ + uvicorn==0.54.0
+Using Python 3.14.4 environment at: <temporary-path>
+Resolved 1 package in 4ms
+Prepared 1 package in 17ms
+Installed 1 package in 85ms
+ + harness-local==0.1.0 (from file://<qualification-area>/package/harness_local-0.1.0-py3-none-any.whl)
+Artifacts: exact members, metadata, licenses and SHA256SUMS. Isolated wheel: UI/assets/API, session, D088 definition/task/commit/restart, errors and restored evidence OK.

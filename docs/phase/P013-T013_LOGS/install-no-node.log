@@ -1,0 +1,86 @@
+{
+  "plan": {
+    "source": "<qualification-area>/package",
+    "source_kind": "dist",
+    "source_sha256": "0d7cab5e3901985962c39b95cb621d8e2024141f6b3b7d9f6e312be14bae2edb",
+    "install_dir": "<qualification-area>/Installed with spaces/installation",
+    "data_dir": "<qualification-area>/Installed with spaces/data",
+    "config_dir": "<qualification-area>/Installed with spaces/configuration",
+    "cache_dir": "<qualification-area>/cache",
+    "python": "<qualification-area>/runtime-bin/python3.14",
+    "python_version": "3.14",
+    "python_sha256": "02a8df1726463faedb3adef289b3d1bdeabb7785c837fd8c174023aeeeb4d312",
+    "uv": "<qualification-area>/runtime-bin/uv",
+    "uv_sha256": "7522b8347a9d65188592b04ffacaf97d57b6623e795d82b8162e66331f0d5bff"
+  },
+  "network": "disabled",
+  "verification": "isolated synthetic service/agents only; no operator configuration",
+  "migration": "never; existing databases require a separate D150 command"
+}
++ <qualification-area>/runtime-bin/uv venv --offline --no-python-downloads --python <qualification-area>/runtime-bin/python3.14 <qualification-area>/Installed with spaces/installation/generations/gen-1ff1bc2f4e0044f9bf79103bb16c818c/venv
+Using CPython 3.14.4 interpreter at: /opt/homebrew/opt/python@3.14/bin/python3.14
+Creating virtual environment at: venv
+Activate with: source venv/bin/activate
++ <qualification-area>/runtime-bin/uv pip sync --offline --link-mode copy --require-hashes --only-binary :all: --python <qualification-area>/Installed with spaces/installation/generations/gen-1ff1bc2f4e0044f9bf79103bb16c818c/venv/bin/python <qualification-area>/Installed with spaces/installation/generations/gen-1ff1bc2f4e0044f9bf79103bb16c818c/distribution/pylock.toml
+warning: The `--pylock` option is experimental and may change without warning. Pass `--preview-features pylock` to disable this warning.
+Using Python 3.14.4 environment at: venv
+Installed 18 packages in 153ms
+ + alembic==1.20.0
+ + annotated-doc==0.0.5
+ + annotated-types==0.8.0
+ + anyio==4.15.1
+ + click==8.5.0
+ + fastapi==0.143.0
+ + h11==0.16.0
+ + idna==3.20
+ + mako==1.4.3
+ + markupsafe==3.0.4
+ + opentelemetry-api==1.45.1
+ + pydantic==2.14.0
+ + pydantic-core==2.50.0
+ + sqlalchemy==2.1.4
+ + starlette==1.7.0
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+ + uvicorn==0.54.0
++ <qualification-area>/runtime-bin/uv pip install --offline --link-mode copy --no-deps --python <qualification-area>/Installed with spaces/installation/generations/gen-1ff1bc2f4e0044f9bf79103bb16c818c/venv/bin/python <qualification-area>/Installed with spaces/installation/generations/gen-1ff1bc2f4e0044f9bf79103bb16c818c/distribution/harness_local-0.1.0-py3-none-any.whl
+Using Python 3.14.4 environment at: venv
+Resolved 1 package in 0.65ms
+Prepared 1 package in 18ms
+Installed 1 package in 86ms
+ + harness-local==0.1.0 (from file://<qualification-area>/Installed%20with%20spaces/installation/generations/gen-1ff1bc2f4e0044f9bf79103bb16c818c/distribution/harness_local-0.1.0-py3-none-any.whl)
++ <qualification-area>/runtime-bin/python3.14 -E -s -B <qualification-area>/Installed with spaces/installation/generations/gen-1ff1bc2f4e0044f9bf79103bb16c818c/distribution/scripts/check_distribution.py --dist <qualification-area>/Installed with spaces/installation/generations/gen-1ff1bc2f4e0044f9bf79103bb16c818c/distribution --python <qualification-area>/runtime-bin/python3.14 --uv <qualification-area>/runtime-bin/uv --cache-dir <qualification-area>/cache/uv
+Using CPython 3.14.4 interpreter at: /opt/homebrew/opt/python@3.14/bin/python3.14
+Creating virtual environment at: tmp/harness-installed-41r7x06i/venv
+Activate with: source tmp/harness-installed-41r7x06i/venv/bin/activate
+warning: The `--pylock` option is experimental and may change without warning. Pass `--preview-features pylock` to disable this warning.
+Using Python 3.14.4 environment at: tmp/harness-installed-41r7x06i/venv
+Installed 18 packages in 179ms
+ + alembic==1.20.0
+ + annotated-doc==0.0.5
+ + annotated-types==0.8.0
+ + anyio==4.15.1
+ + click==8.5.0
+ + fastapi==0.143.0
+ + h11==0.16.0
+ + idna==3.20
+ + mako==1.4.3
+ + markupsafe==3.0.4
+ + opentelemetry-api==1.45.1
+ + pydantic==2.14.0
+ + pydantic-core==2.50.0
+ + sqlalchemy==2.1.4
+ + starlette==1.7.0
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+ + uvicorn==0.54.0
+Using Python 3.14.4 environment at: tmp/harness-installed-41r7x06i/venv
+Resolved 1 package in 0.67ms
+Installed 1 package in 92ms
+ + harness-local==0.1.0 (from file://<qualification-area>/Installed%20with%20spaces/installation/generations/gen-1ff1bc2f4e0044f9bf79103bb16c818c/distribution/harness_local-0.1.0-py3-none-any.whl)
+Artifacts: exact members, metadata, licenses and SHA256SUMS. Isolated wheel: UI/assets/API, session, D088 definition/task/commit/restart, errors and restored evidence OK.
++ <qualification-area>/runtime-bin/uv pip check --offline --python <qualification-area>/Installed with spaces/installation/generations/gen-1ff1bc2f4e0044f9bf79103bb16c818c/venv/bin/python
+Using Python 3.14.4 environment at: venv
+Checked 19 packages in 0.41ms
+All installed packages are compatible
+Installed and verified: <qualification-area>/Installed with spaces/installation/current.json. Database/configuration files were not changed.

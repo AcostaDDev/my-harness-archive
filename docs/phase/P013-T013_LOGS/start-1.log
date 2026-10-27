@@ -1,0 +1,11 @@
+No global TOML: starting the protected configuration assistant at /setup.
+Starting installed Harness Local at http://127.0.0.1:50657; database: <qualification-area>/Installed with spaces/data/harness.sqlite3.
+INFO:     Started server process [19622]
+INFO:     Waiting for application startup.
+Harness Local: access key at <private session key file>
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:50657 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [19622]

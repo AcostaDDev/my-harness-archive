@@ -1,6 +1,6 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-Estado: fase activa el 2026-10-26; T001 diseñada, T002–T012 completadas; candidato/revisión/cierre pendientes T013–T015.
+Estado: fase activa desde el 2026-10-26; T001 diseñada, T002–T013 completadas (T013 el 2026-10-27); revisión/cierre pendientes T014–T015.
 Decisión: [D215](../DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui).
 Objetivo y salida en [ROADMAP](../ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui);
 tareas ejecutables en [NEXT_STEPS](../NEXT_STEPS.md).
@@ -77,8 +77,8 @@ Una tarea cada vez, según dependencias de NEXT_STEPS. T001 entrega el [contrato
 y D216–D218, con especificación/arquitectura/flujos en paridad como diseño pendiente de implementación.
 T002 entrega el [instalador y verificación autocontenida](P013-T002_INSTALACION.md) (D219), con pruebas de
 orquestación sintética; T003 entrega el [arranque instalado](P013-T003_ARRANQUE.md) (D220), con procesos
-sintéticos y señales. Recorrido instalado sintético verificado en T012; candidato final pendiente T013. T004–T010 entregan autoridad, asistentes, alta/preparación/activación
-y edición/asistencia con evidencia sintética propia. T011 entrega [compatibilidad/backup](P013-T011_COMPATIBILIDAD.md) (D228). T012 verifica [primer uso/QA/documentación](P013-T012_PRIMER_USO.md) y consolida la [matriz](P013_MATRIZ_ACEPTACION.md). Siguiente: **P013-T013**. Si una entrega
+sintéticos y señales. Recorrido instalado sintético verificado en T012; candidato final verificado en T013. T004–T010 entregan autoridad, asistentes, alta/preparación/activación
+y edición/asistencia con evidencia sintética propia. T011 entrega [compatibilidad/backup](P013-T011_COMPATIBILIDAD.md) (D228). T012 verifica [primer uso/QA/documentación](P013-T012_PRIMER_USO.md) y consolida la [matriz](P013_MATRIZ_ACEPTACION.md). T013 verifica el [candidato/paquete exactos](P013-T013_CANDIDATO.md) (D230). Siguiente: **P013-T014**. Si una entrega
 revela contradicción no resuelta, se consulta al usuario antes de cambiar el diseño.
 
 ## 5. Verificación de la fase
@@ -106,7 +106,7 @@ de apertura como siguiente paso tras P012; no reabre ni cambia el dictamen de es
 de P012 y el suplemento D214 conservan su procedencia como base anterior a P013.
 
 `my_harness_dist`, sus originales P011/P012 y los paquetes actuales no se modifican en esta planificación.
-T013 preparará un candidato nuevo con manifiesto y evidencia propios, preservando los anteriores; cualquier
+T013 entrega un candidato nuevo con manifiesto y evidencia propios, preservando los anteriores; cualquier
 sustitución de la ruta del candidato se concretará sobre el resultado revisable y la autorización disponible.
 T014 emitirá un expediente nuevo y T015 archivará la fase. El cierre no ejecuta la apertura: seguirán haciendo
 falta owner/repo, identidad pública, visibilidad y autorización de las acciones remotas concretas.

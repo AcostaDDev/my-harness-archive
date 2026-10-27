@@ -1,0 +1,10 @@
+{
+  "origin": "revision 984c287ab9f21ba7976fc7cdb5df86b4f235b118",
+  "sources": 853,
+  "candidate_files": 445,
+  "excluded": 408,
+  "public_baseline": 26,
+  "candidate_bytes": 6389580,
+  "public_manifest_sha256": "ea0f74e9099f1383128ba5e6e2e92ac298447cab54bd7336909d66f0f800c428",
+  "problems": []
+}

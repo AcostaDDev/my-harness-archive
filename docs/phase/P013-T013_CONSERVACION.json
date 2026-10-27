@@ -1,0 +1,50 @@
+{
+  "my_harness_dist": {
+    "files": 401,
+    "entries": 440,
+    "inventory_sha256": "7845eeea3464d4f4e4c21935b24499b8d3c2981fadeb792ba26d7c68a120a78d",
+    "unchanged_bytes_paths_modes": true
+  },
+  "my_harness_dist_p011_74cc9141": {
+    "files": 387,
+    "entries": 425,
+    "inventory_sha256": "d12c1f8c70912fecd3a9c9832120fdf63866b6792bb52f556f70ac65dc61fa73",
+    "unchanged_bytes_paths_modes": true
+  },
+  "my_harness_dist_p012_cf191a40": {
+    "files": 401,
+    "entries": 440,
+    "inventory_sha256": "5ba581ba741298aee0f6d0d2b27876b3ce952aabcf8cede23b888318d8eff0e0",
+    "unchanged_bytes_paths_modes": true
+  },
+  "docs/archive": {
+    "files": 335,
+    "entries": 352,
+    "inventory_sha256": "7085e343ae19a81765334a761a1e4c63d162343bf4976b124a47a2d19e2d1126",
+    "unchanged_bytes_paths_modes": true
+  },
+  ".local/p011-t015/package": {
+    "files": 5,
+    "entries": 6,
+    "inventory_sha256": "da807dd341464368c8e87984b901acafcd043d2550d1fa7f31993653508a361e",
+    "unchanged_bytes_paths_modes": true
+  },
+  ".local/p011-t015/package-repeat": {
+    "files": 5,
+    "entries": 6,
+    "inventory_sha256": "da807dd341464368c8e87984b901acafcd043d2550d1fa7f31993653508a361e",
+    "unchanged_bytes_paths_modes": true
+  },
+  ".local/p012-t005/package": {
+    "files": 5,
+    "entries": 6,
+    "inventory_sha256": "78f372aa02cb25ab047e7d43d4a089d1fa8e108d24df4601d76f257f94f8f839",
+    "unchanged_bytes_paths_modes": true
+  },
+  "dist": {
+    "files": 4,
+    "entries": 5,
+    "inventory_sha256": "4b50ce77cfe8f60a656c74e512ae032ceb151ebad8e4a2c10d6f591fafd4dc7b",
+    "unchanged_bytes_paths_modes": true
+  }
+}

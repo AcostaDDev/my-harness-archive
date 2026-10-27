@@ -241,6 +241,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D227](#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto) | P013-T010: edición posterior, asistencia congelada e impacto conjunto | P013 |
 | [D228](#d228--p013-t011-conversión-explícita-y-backup-de-configuración) | P013-T011: conversión explícita y backup de configuración | P013 |
 | [D229](#d229--p013-t012-primer-uso-instalado-y-documentación-pública) | P013-T012: primer uso instalado y documentación pública | P013 |
+| [D230](#d230--p013-t013-candidato-público-y-paquete-aislado-verificados) | P013-T013: candidato público y paquete aislado verificados | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6793,3 +6794,30 @@ Estado: implementada y verificada el 2026-10-26; evidencia sintética instalada/
 - QA en/es, claro/oscuro, escritorio/móvil y Tab/Enter muestreados con límites explícitos; no certifica accesibilidad
   completa ni proveedores/plataformas adicionales. Suites, hashes propios y omisiones en entrega. T013–T015
   siguen pendientes: paquete de ensayo no es candidato público final, y la versión sigue en 0.1.0.
+
+## D230 — P013-T013: candidato público y paquete aislado verificados
+
+Estado: completada el 2026-10-27 con suites offline y servicios/agentes sintéticos. Fase: P013.
+[Entrega](phase/P013-T013_CANDIDATO.md), [resultados](phase/P013-T013_RESULTS.json),
+[manifiesto](phase/P013-T013_MANIFIESTO_PUBLICO.sha256) y [conservación](phase/P013-T013_CONSERVACION.json).
+Concreta D178/D215/D229 sin cambiar producto ni el alcance real anterior.
+
+- Encargo de siguiente tarea/commit y autorización general acotados a área nueva, exportación, construcción,
+  instalación y servicios sintéticos offline. Sin proveedores reales, credenciales, configuración global del
+  equipo, operación de este repositorio con el harness, bases previas, red ni acciones remotas.
+- Fuente exacta `984c287`, versión candidata 0.1.0 conservada. Lista positiva P012 y baseline pública T012:
+  445 archivos/6.389.580 bytes, manifiesto `ea0f74e9…00c428`. Destino nuevo `my_harness_dist_p013`, sin sustituir
+  D214/P011/P012. Diff D214: 325 idénticos, 44 añadidos, 76 modificados, sin eliminados ni cambios de modos.
+- El adaptador privado de exportación corrige solo el falso positivo de `/home/` dentro de la prosa
+  `logs/reports/home/temp`; conserva el scanner para rutas personales absolutas y el exportador archivado.
+  Intento rechazado y fallo Node por dependencias aún no instaladas conservados. Guion corregido para construir
+  antes de Node; retoma con checkpoints sin repetir backend válido, verificando revisión/bytes de nuevo.
+- Copia exacta aislada: 2048 pytest y 29 subtests, 8 unittest y 155 Node correctos, dos opt-in omitidas;
+  tipos/build, Alembic temporal, documentación y distribución correctos. Wheel nuevo `2416672d…47076`, sdist,
+  pylock y checksums propios. Checker instalado sin fuentes/Node hasta tarea/commit y consulta restaurada;
+  instalador exportado desde paquete/replay y dos arranques/reinicio sin Node/proveedores, sin TOML ni supervisor.
+- Manifiestos canónicos anteriores verificados; candidato nuevo y ocho entradas protegidas (incluidos archivos
+  archivados y paquetes previos) conservan bytes/rutas/modos. Servicios propios detenidos; logs saneados y
+  procedencia propios. No traslada al paquete nuevo resultados reales o QA visual de paquetes anteriores.
+- T013 completada; siguiente T014 para dictamen/expediente, T015 para cierre. P013 sigue abierta y publicación
+  aplazada. No CI remota, tag, push, Release ni publicación; v0.2.0 y D157 siguen reservados según lo decidido.

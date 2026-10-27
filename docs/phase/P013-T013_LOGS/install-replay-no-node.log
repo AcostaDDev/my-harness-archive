@@ -1,0 +1,20 @@
+{
+  "plan": {
+    "source": "<qualification-area>/package",
+    "source_kind": "dist",
+    "source_sha256": "0d7cab5e3901985962c39b95cb621d8e2024141f6b3b7d9f6e312be14bae2edb",
+    "install_dir": "<qualification-area>/Installed with spaces/installation",
+    "data_dir": "<qualification-area>/Installed with spaces/data",
+    "config_dir": "<qualification-area>/Installed with spaces/configuration",
+    "cache_dir": "<qualification-area>/cache",
+    "python": "<qualification-area>/runtime-bin/python3.14",
+    "python_version": "3.14",
+    "python_sha256": "02a8df1726463faedb3adef289b3d1bdeabb7785c837fd8c174023aeeeb4d312",
+    "uv": "<qualification-area>/runtime-bin/uv",
+    "uv_sha256": "7522b8347a9d65188592b04ffacaf97d57b6623e795d82b8162e66331f0d5bff"
+  },
+  "network": "disabled",
+  "verification": "isolated synthetic service/agents only; no operator configuration",
+  "migration": "never; existing databases require a separate D150 command"
+}
+Already installed and verified: <qualification-area>/Installed with spaces/installation/current.json

@@ -1,6 +1,6 @@
 # Estado — my_harness
 
-Actualizado: 2026-10-26. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
+Actualizado: 2026-10-27. Sin bloques gestionados mientras el repositorio no esté registrado en el harness (D088).
 
 ## Base acumulada
 
@@ -128,10 +128,10 @@ Sustitución verificada por rutas, hashes y modos; checksums de los artefactos o
 
 ## Fase activa — P013 Instalación guiada y configuración desde la UI
 
-**P013 activa; T001 diseñada y T002–T012 completadas el 2026-10-26.**
+**P013 activa; T001 diseñada y T002–T013 completadas (T013 el 2026-10-27).**
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
 [plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo](flows/configuration-setup.md).
-Tres tareas pendientes. **Siguiente: P013-T013**, candidato público y paquete nuevos.
+Dos tareas pendientes. **Siguiente: P013-T014**, revisión de salida y expediente actualizado.
 
 | Entrega | Resultado y procedencia |
 |---|---|
@@ -160,13 +160,22 @@ QA en/es, claro/oscuro, escritorio y móvil con Tab/Enter muestreados, capturas 
 uv con ruta absoluta, configuración npm duplicada, .gitignore inesperado de uv, verificador desactualizado,
 precheck de puerto en TIME_WAIT y claves React duplicadas al alternar altas. Sin cambiar modelos/API/TOML.
 **2048 pytest y 29 subtests, 155 Node, 8 unittest correctos; dos opt-in omitidas**; build/tipos y documentación
-verificados. El wheel de ensayo y sus hashes son propios; no acredita el candidato final pendiente T013.
+verificados. El wheel de ensayo y sus hashes son propios; el candidato final tiene su evidencia separada en T013.
 No usa proveedores reales, credenciales, bases P012 ni ejecuta este checkout con el harness. Servicios sintéticos
 parados al terminar; originales/ensayos fallidos conservados, sin modificar configuración global del equipo.
 
+[T013](phase/P013-T013_CANDIDATO.md), [D230](DECISIONS.md#d230--p013-t013-candidato-público-y-paquete-aislado-verificados):
+candidato nuevo `my_harness_dist_p013` desde `984c287`, **445 archivos/6.389.580 bytes**, manifiesto
+`ea0f74e9…00c428`; D214/P011/P012 y paquetes/snapshots intactos. Copia exacta aislada: **2048 pytest y 29 subtests,
+8 unittest y 155 Node correctos**, dos opt-in omitidas; tipos/build, Alembic temporal y documentación correctos.
+Wheel `2416672d…47076`, sdist/pylock/checksums propios; checker instalado sintético hasta commit/consulta,
+instalación/replay y arranque/reinicio sin Node. Corrige falso positivo del scanner privado y orden del guion;
+intentos fallidos conservados, sin cambios de producto ni nueva QA/proveedores reales. Servicios propios parados.
+T013 no sustituye el candidato anterior ni cierra/publica: dictamen/expediente y archivo pendientes T014/T015.
+
 **Publicación aplazada hasta cerrar P013.** Candidato D214, expedientes/paquetes/snapshots P011/P012 intactos;
-[suplemento](phase/2026-10-26_ACTUALIZACION_CANDIDATO.md) conserva su procedencia. T013 preparará nuevo
-candidato/paquete/manifiestos, T014 dictamen/expediente y T015 archivo/cierre. No se transfieren consentimientos
+[suplemento](phase/2026-10-26_ACTUALIZACION_CANDIDATO.md) conserva su procedencia. T013 entrega nuevo
+candidato/paquete/manifiestos; pendientes T014 dictamen/expediente y T015 archivo/cierre. No se transfieren consentimientos
 anteriores. D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0,
 fuera de P013. Owner/repo, visibilidad, identidad pública y acciones remotas siguen sin acordarse en esta fase;
 ningún ensayo ni commit local autoriza push, CI remota, tag o publicación.

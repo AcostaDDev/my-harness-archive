@@ -1,0 +1,210 @@
+node:internal/modules/package_json_reader:301
+  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+        ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'typescript' imported from <qualification-area>/verification-copy/frontend/tests/helpers/tsx.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+    at packageResolve (node:internal/modules/esm/resolve:764:81)
+    at moduleResolve (node:internal/modules/esm/resolve:855:18)
+    at defaultResolve (node:internal/modules/esm/resolve:988:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:697:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:714:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:746:52)
+    at #resolve (node:internal/modules/esm/loader:679:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:599:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:162:33) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+Node.js v24.15.0
+✖ <qualification-area>/verification-copy/frontend/tests/archive.test.mjs (30.654ms)
+✔ slash syntax is routed to the deterministic server, including unknown commands (1.150625ms)
+✔ commands reuse the equivalent phase control without dispatching an effect (1.092916ms)
+node:internal/modules/package_json_reader:301
+  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+        ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'typescript' imported from <qualification-area>/verification-copy/frontend/tests/helpers/tsx.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+    at packageResolve (node:internal/modules/esm/resolve:764:81)
+    at moduleResolve (node:internal/modules/esm/resolve:855:18)
+    at defaultResolve (node:internal/modules/esm/resolve:988:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:697:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:714:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:746:52)
+    at #resolve (node:internal/modules/esm/loader:679:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:599:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:162:33) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+Node.js v24.15.0
+✖ <qualification-area>/verification-copy/frontend/tests/configuration.test.mjs (35.0785ms)
+✔ identical texts have no diff; new and deleted files are explicit (0.629041ms)
+✔ hunks keep three lines of context and merge when close (0.544083ms)
+✔ a change of the final newline is shown, never hidden (0.134166ms)
+✔ random edits round-trip through the diff (5.602208ms)
+✔ documents too large to compare return null instead of an approximation (1.066958ms)
+✔ cycle diff pages accumulate in order to the exact text (5.049792ms)
+✔ a page that does not continue the loaded diff is refused, never mixed (0.139583ms)
+✔ an empty diff is a single complete page (0.1385ms)
+✔ byte sizes use binary units (12.654667ms)
+✔ both catalogs cover the same keys, parameters and plural variants (3.475125ms)
+✔ interpolation replaces named fields as text and keeps absent ones visible (16.720292ms)
+✔ missing translations fall back to English and missing keys stay visible (0.085583ms)
+✔ plural variants follow Intl.PluralRules for each language (0.743208ms)
+✔ only en and es are languages; anything else is rejected rather than normalized (0.080875ms)
+✔ segments split a message at its fields so elements are placed as values, never parsed as markup (0.133959ms)
+✔ own errors outside React carry a catalog key, translated when shown (0.099709ms)
+✔ a command duration is a localized number, not the raw float (0.216416ms)
+✔ every attempt outcome stored by the adapters has its own label in both languages (0.100333ms)
+✔ the Spanish catalog keeps protocol literals untranslated (0.136208ms)
+✔ double send after an immediate acknowledgement reuses key; changed version gets another (3.607083ms)
+✔ network failure preserves exact pending envelope across reload and explicit retry (15.9875ms)
+✔ conflicts preserve code and diagnostic; all managed mutations carry CSRF header (0.343417ms)
+✔ a problem without a diagnostic keeps status and code only; the interface adds its own sentence (0.652416ms)
+✔ H0/H1 mutations carry the local CSRF header; reads do not need it (1.237375ms)
+✔ 401 notifies the session gate once and never retries a mutation or changes its envelope (1.598583ms)
+✔ lost acknowledgement then expired session keeps one identity until explicit authenticated resend (4.113708ms)
+✔ conversation creation reuses its key until acknowledged, then starts another (0.471542ms)
+✔ a definitive rejection forgets the creation key (0.192583ms)
+✔ folder/project confirmation survives reload and a lost acknowledgement with its exact envelope (0.327916ms)
+✔ confirmation preserves expired-session envelope and forgets a definitive conflict (0.188ms)
+node:internal/modules/package_json_reader:301
+  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+        ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'markdown-it' imported from <qualification-area>/verification-copy/frontend/src/markdown.ts
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+    at packageResolve (node:internal/modules/esm/resolve:764:81)
+    at moduleResolve (node:internal/modules/esm/resolve:855:18)
+    at defaultResolve (node:internal/modules/esm/resolve:988:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:697:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:714:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:746:52)
+    at #resolve (node:internal/modules/esm/loader:679:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:599:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:162:33) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+Node.js v24.15.0
+✖ <qualification-area>/verification-copy/frontend/tests/markdown.test.mjs (74.947875ms)
+✔ null renders as «sin dato» / "no data", never zero (1.479125ms)
+✔ coverage of a sum by the attempts that contribute to it (0.626584ms)
+✔ round axes from zero, with integer ticks for counts (0.729375ms)
+✔ readable formats (0.309333ms)
+✔ root label: project id or last segment (0.27675ms)
+✔ recovery starts at the first unaccredited step, including an uncertain spawn (13.438958ms)
+✔ texts follow the frozen recipe: Django keeps its wording, TypeScript web names npm and the cache (0.501083ms)
+✔ v2 recipes keep their texts and name their steps by stable id in the visual language (0.821541ms)
+✔ lost preparation confirmation retains exact consent and key until acknowledged (17.459917ms)
+node:internal/modules/package_json_reader:301
+  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+        ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'typescript' imported from <qualification-area>/verification-copy/frontend/tests/helpers/tsx.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+    at packageResolve (node:internal/modules/esm/resolve:764:81)
+    at moduleResolve (node:internal/modules/esm/resolve:855:18)
+    at defaultResolve (node:internal/modules/esm/resolve:988:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:697:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:714:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:746:52)
+    at #resolve (node:internal/modules/esm/loader:679:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:599:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:162:33) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+Node.js v24.15.0
+✖ <qualification-area>/verification-copy/frontend/tests/project-profile.test.mjs (45.560666ms)
+node:internal/modules/package_json_reader:301
+  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+        ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'typescript' imported from <qualification-area>/verification-copy/frontend/tests/helpers/tsx.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+    at packageResolve (node:internal/modules/esm/resolve:764:81)
+    at moduleResolve (node:internal/modules/esm/resolve:855:18)
+    at defaultResolve (node:internal/modules/esm/resolve:988:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:697:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:714:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:746:52)
+    at #resolve (node:internal/modules/esm/loader:679:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:599:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:162:33) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+Node.js v24.15.0
+✖ <qualification-area>/verification-copy/frontend/tests/registration-page.test.mjs (46.684709ms)
+node:internal/modules/package_json_reader:301
+  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+        ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'typescript' imported from <qualification-area>/verification-copy/frontend/tests/helpers/tsx.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+    at packageResolve (node:internal/modules/esm/resolve:764:81)
+    at moduleResolve (node:internal/modules/esm/resolve:855:18)
+    at defaultResolve (node:internal/modules/esm/resolve:988:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:697:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:714:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:746:52)
+    at #resolve (node:internal/modules/esm/loader:679:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:599:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:162:33) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+Node.js v24.15.0
+✖ <qualification-area>/verification-copy/frontend/tests/registry.test.mjs (33.76375ms)
+✔ every route of D072 §7 parses and round-trips through href (0.94825ms)
+✔ trailing and repeated slashes do not change the route (0.064041ms)
+✔ codes with spaces, dots or unicode are encoded and decoded exactly (0.078875ms)
+✔ unknown, malformed or ambiguous paths are not found instead of guessed (0.082708ms)
+✔ trail links each level to its own page and ends at the current one (8.9835ms)
+✔ run reads map to their canonical URL; runs outside a registered project have none (0.091709ms)
+✔ the registration page is not a project and keeps its own trail (0.078708ms)
+✔ document paths keep each segment exact and never climb out of the checkout (0.118167ms)
+✔ creation and phase planning routes (H6.2 E4) keep their trail and refuse ambiguous paths (0.17ms)
+✔ statistics: global page and project page with their own trail (H6.2 E6) (0.128709ms)
+✔ global preferences page and the English trail (P011-T007) (0.102666ms)
+✔ removed legacy and import routes are not found (0.056833ms)
+✔ onboarding keeps private draft URLs and refuses traversal (0.109166ms)
+✔ phases and tasks come from the document, narrowed to what the page fixes (0.658917ms)
+✔ a chosen task sends its literal text and hash; blank notes are omitted (0.118584ms)
+ℹ tests 62
+ℹ suites 0
+ℹ pass 56
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 164.189291
+
+✖ failing tests:
+
+test at frontend/tests/archive.test.mjs:1:1
+✖ <qualification-area>/verification-copy/frontend/tests/archive.test.mjs (30.654ms)
+  'test failed'
+
+test at frontend/tests/configuration.test.mjs:1:1
+✖ <qualification-area>/verification-copy/frontend/tests/configuration.test.mjs (35.0785ms)
+  'test failed'
+
+test at frontend/tests/markdown.test.mjs:1:1
+✖ <qualification-area>/verification-copy/frontend/tests/markdown.test.mjs (74.947875ms)
+  'test failed'
+
+test at frontend/tests/project-profile.test.mjs:1:1
+✖ <qualification-area>/verification-copy/frontend/tests/project-profile.test.mjs (45.560666ms)
+  'test failed'
+
+test at frontend/tests/registration-page.test.mjs:1:1
+✖ <qualification-area>/verification-copy/frontend/tests/registration-page.test.mjs (46.684709ms)
+  'test failed'
+
+test at frontend/tests/registry.test.mjs:1:1
+✖ <qualification-area>/verification-copy/frontend/tests/registry.test.mjs (33.76375ms)
+  'test failed'

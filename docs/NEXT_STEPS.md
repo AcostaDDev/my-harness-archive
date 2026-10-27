@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase activa; T001 diseñada y T002–T012 completadas el 2026-10-26, tres tareas pendientes.
-**Siguiente: P013-T013**, candidato público nuevo y paquete verificado.
+**Estado:** fase activa; T001 diseñada y T002–T013 completadas (T013 el 2026-10-27), dos tareas pendientes.
+**Siguiente: P013-T014**, revisión de salida y expediente de apertura actualizado.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -52,7 +52,7 @@ parsers, enlaces y dependencias. Sin migraciones ni proveedores.
 
 ## P013-T002 — Instalación automatizada y cachés configurables
 
-**Estado:** completada (2026-10-26); orquestación sintética, recorrido instalado sintético verificado en T012; candidato final pendiente T013.
+**Estado:** completada (2026-10-26); orquestación sintética, recorrido instalado sintético en T012; candidato final verificado en T013.
 [Entrega y validación](phase/P013-T002_INSTALACION.md), D219. **Depende de:** T001.
 **Objetivo:** instalar sin copiar la secuencia de construcción/venv/pip del README.
 **Rutas permitidas:** `scripts/**`, empaquetado si lo exige T001, pruebas específicas y documentación vigente.
@@ -72,7 +72,7 @@ parsers, enlaces y dependencias. Sin migraciones ni proveedores.
 
 ## P013-T003 — Arranque automatizado del paquete instalado
 
-**Estado:** completada (2026-10-26); orquestación/señales sintéticas, recorrido instalado sintético verificado en T012; candidato final pendiente T013.
+**Estado:** completada (2026-10-26); orquestación/señales sintéticas, recorrido instalado sintético en T012; candidato final verificado en T013.
 [Entrega y validación](phase/P013-T003_ARRANQUE.md), D220. **Depende de:** T001–T002.
 **Objetivo:** arrancar con una entrada corta y opciones editables/documentadas.
 **Rutas permitidas:** `scripts/**`, pruebas específicas y documentación vigente.
@@ -263,7 +263,9 @@ correcciones de producto se acotan antes de ampliar rutas.
 
 ## P013-T013 — Candidato público nuevo y paquete verificado
 
-**Estado:** pendiente. **Depende de:** T012 y correcciones obligatorias.
+**Estado:** completada (2026-10-27), candidato exacto y paquete instalado verificados offline con agentes falsos.
+[Entrega](phase/P013-T013_CANDIDATO.md), [resultados](phase/P013-T013_RESULTS.json), D230.
+**Depende de:** T012 y correcciones obligatorias.
 **Objetivo:** preparar el árbol exacto que se propondrá publicar tras P013.
 **Rutas permitidas:** empaquetado/exportación, `docs/phase/` y área nueva acotada en su guion;
 originales D214/P011/P012 solo lectura; sustitución del destino según autorización disponible.

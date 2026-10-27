@@ -1,0 +1,452 @@
+{
+  "base": "D214",
+  "new_source": "984c287ab9f21ba7976fc7cdb5df86b4f235b118",
+  "unchanged": 325,
+  "added": [
+    "docs/flows/configuration-setup.md",
+    "frontend/src/configuration.ts",
+    "frontend/src/pages/Configuration.tsx",
+    "frontend/src/pages/ConfigurationAssistance.tsx",
+    "frontend/src/pages/ProjectProfile.tsx",
+    "frontend/src/project-profile.ts",
+    "frontend/tests/configuration.test.mjs",
+    "frontend/tests/project-profile.test.mjs",
+    "frontend/tests/registration-page.test.mjs",
+    "scripts/distribution_artifacts.py",
+    "scripts/install",
+    "scripts/install.py",
+    "scripts/start",
+    "scripts/start.py",
+    "src/harness_local/api/configuration.py",
+    "src/harness_local/api/configuration_assistance.py",
+    "src/harness_local/api/project_configuration.py",
+    "src/harness_local/core/engine/profile_schema.py",
+    "src/harness_local/core/engine/templates/define-project-profile.md",
+    "src/harness_local/core/engine/templates/onboard-project-profile.md",
+    "src/harness_local/migrations/versions/0026_configuration.py",
+    "src/harness_local/migrations/versions/0027_profile_proposals.py",
+    "src/harness_local/services/configuration.py",
+    "src/harness_local/services/configuration_assistance.py",
+    "src/harness_local/services/configuration_editing.py",
+    "src/harness_local/services/configuration_import.py",
+    "src/harness_local/services/configuration_setup.py",
+    "src/harness_local/services/profile_preparation.py",
+    "src/harness_local/services/profile_proposal.py",
+    "src/harness_local/services/project_configuration.py",
+    "src/harness_local/storage/configuration.py",
+    "src/harness_local/storage/configuration_backup.py",
+    "src/harness_local/storage/configuration_files.py",
+    "src/harness_local/storage/profile_intake.py",
+    "tests/product/test_configuration.py",
+    "tests/product/test_configuration_api.py",
+    "tests/product/test_configuration_backup.py",
+    "tests/product/test_configuration_editing.py",
+    "tests/product/test_configuration_import.py",
+    "tests/product/test_install_command.py",
+    "tests/product/test_profile_preparation.py",
+    "tests/product/test_profile_proposals.py",
+    "tests/product/test_project_configuration.py",
+    "tests/product/test_start_command.py"
+  ],
+  "removed": [],
+  "modified": [
+    {
+      "path": "AGENTS.md",
+      "before": "087df335ca13523bb3cd69c79a616be2d000d287d08a0acddb858d794850d84d",
+      "after": "e8d4e89bb749c0efe7f3e82f3aa039cd20e7c38793dd26e556ef725b01a73c0d"
+    },
+    {
+      "path": "README.es.md",
+      "before": "df23c6bb8755eff65414ad1eed5108a615f4bb43c7383d4d850dc127d01dce07",
+      "after": "ddd70256e1e824b12a004032fc87a7c5e4d22a9e783cb068b49709f885fe4ebb"
+    },
+    {
+      "path": "README.md",
+      "before": "9ced1ae52413535c4762bbde58f54108e213869c9fbb1fb7d59a4d251b81f203",
+      "after": "371e0c6c422519a3fa8fd62db04beb6f9b288b95f988c02e0ef0504b7650f462"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "before": "2b9f2333298133409e756520dff5a85ec7ef7c4360c0e7afff1c10e512740b9f",
+      "after": "40daf5c5134d4c976963a5b275b3bd9cce8bde8e7891439759ee69cc56fd720d"
+    },
+    {
+      "path": "docs/DDBB-DIAGRAM.md",
+      "before": "2b1578f34e7a3050efbee23d53e6a801ed52cce742d465b1e58752bd00cb061c",
+      "after": "6586c8424f51aedf741dc5b608fccd27c5642ce9f5eaf047d51c26946e365369"
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "before": "7d4af26102829a47f05c96bf61da71efc548ad092604ca7baefd1de2ecf8b4da",
+      "after": "0eb9e16700877711a6f552b4abbcb5726fbfe47791de7e6ef2ecba189d7e7261"
+    },
+    {
+      "path": "docs/NEXT_STEPS.md",
+      "before": "321a7e3c67165edd2a08d8a0b38aedb68713ba20bec99f19c99781c23dd58a49",
+      "after": "ae185e9ab12b3b8d5998c8b0e74053965e4885e5bd2b1901612f76693e743d0f"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "before": "c7e763448589f67d566792017104d6507873f418b29d302b77749fdbfa18f9cf",
+      "after": "3189528c03e1c22f8aa7644d8290b25bff23f3a0e6cf5f4e84f14bec983078c9"
+    },
+    {
+      "path": "docs/SPECIFICATION.md",
+      "before": "73d38fc7d5e88954402168bcbfd647d06c0a9e9f0af6e9cc14ecb2e2a18a6ee4",
+      "after": "8d68e0851c18beb627e3722b250944089cce4333805177bf3db743cc5cefc128"
+    },
+    {
+      "path": "docs/STATE.md",
+      "before": "808c0b6a16ad54d8dbeb6e763f38442674a844b839b502fe5e0e7c73580b0ea7",
+      "after": "f3470ae8cf5b80342d299e46d6e6fb91a63a7def17cbea8292f8ebe71322c705"
+    },
+    {
+      "path": "docs/flows/project-creation.md",
+      "before": "a498b0fe54bd0d34d54c0eae0d8ac9d7dbc48f92f05c75e73dbc03dae9cd49e2",
+      "after": "9b80c7175abddaa4c57ac4bcb45691e6010bb805822f40bdd48d239a98027233"
+    },
+    {
+      "path": "docs/flows/project-definition.md",
+      "before": "34bd9ef8e7fff792ae0a8d951e0599e6dd7fa1238a7eb12aa93f1af625fe683a",
+      "after": "ce30b6870a9646a12f25cedd3c247b440365bdf624fc3d30acd963e44d391bcc"
+    },
+    {
+      "path": "docs/flows/project-onboarding.md",
+      "before": "1e4e2f7d01bb0bcffe60a7d33081954cad6fac78255932305d0d49a44e9297cb",
+      "after": "2cbf004fcb79753f05ab9af7f04fdbe546b5241c0e67ccc08705a5bb691efbe3"
+    },
+    {
+      "path": "docs/flows/project-preparation.md",
+      "before": "16cbed5e95a767fad7edb7c5d6a3ec1d1d7ddcca2aeed1f30f1c14f8e164759d",
+      "after": "650ffb6bed242b994cf1d8a48ad1837f94b37f11f9dc26c486f1c823963e8e54"
+    },
+    {
+      "path": "frontend/openapi.json",
+      "before": "518afa551fadddb4478996d7d97a856895d9a1208a4609cf3bbfe885315addab",
+      "after": "0f71deb9e2b19a09bf8859e44099096d38998fae1ff837deaa3a40b9303b80c8"
+    },
+    {
+      "path": "frontend/src/Page.tsx",
+      "before": "72f81924eabf4d11d049cc8b9fbe4fc2eda26ec614a3f534edc3dbb1fb726953",
+      "after": "02c19efa3349bf07a02aae99c51bc03e439b3a1e6637eb01e5da764541405e27"
+    },
+    {
+      "path": "frontend/src/Shell.tsx",
+      "before": "d25596d51bdf4e96ce9419cb4048dd12ca78b9bce48ed4349b0a8af93e1035de",
+      "after": "f535566cc1bf98978594e40b0e96a9de1e26de2f309c83f18afcc7e3c4498c07"
+    },
+    {
+      "path": "frontend/src/api.generated.ts",
+      "before": "2d5c7d326b77b9eadc2510162f427a9aec18ab9e15827cda911d5810aab09ae1",
+      "after": "5d8e4aaf8cb0e1ac4cdfd7515610c10b7463163be022df5b666d85d154016f38"
+    },
+    {
+      "path": "frontend/src/i18n/en.json",
+      "before": "5ca56e6ebe123bee9079d6d0a353a77ddf0189936122be8cd03a8f11948257c5",
+      "after": "f05e3e44c08019c6887002bf126da177d32a067187a32529671e37236c27839f"
+    },
+    {
+      "path": "frontend/src/i18n/es.json",
+      "before": "3849f347aaf90759bcfade7d2d1270b841ae30e908770efe6ec75809de8004ac",
+      "after": "e69bf921b927d401438c5358b1309abbae49ad3bcb9854bc5d3a9f499e38f6fc"
+    },
+    {
+      "path": "frontend/src/pages/Archive.tsx",
+      "before": "1e7f835e6ea5a5bfc15732ed0a5a37aab59a8c3cb6468ab8f07e3a5268f73cbf",
+      "after": "405808e8ca67ee86e582ed7122b1bf099d3aabb2a709724144ab71ca81efe766"
+    },
+    {
+      "path": "frontend/src/pages/AttemptMetrics.tsx",
+      "before": "8e8c5ff1c946f0164ea4db8ea0902fe2a8090204190b83bd028aa42f568255b2",
+      "after": "47868cd8c32e6f8a7b0e72a4bcdfce7938ed0a44a1205b96d2b9e2b03785da13"
+    },
+    {
+      "path": "frontend/src/pages/Planning.tsx",
+      "before": "3a427059af027fb0d1c9f2b13059a725ed4ff6e054fcbcef2e8cd72ee597c969",
+      "after": "9332239ff5b9dfa1801dca62dc43d07dba13f62182c25df3fce64045a4125bd3"
+    },
+    {
+      "path": "frontend/src/pages/Preparation.tsx",
+      "before": "d8ea38a7288e25a06b24c2c43729a4781e4751d9098a8625132d78698548e935",
+      "after": "6837856efd85ac53b7a4febb303477bf5656e878a8838b311f475822dd90562f"
+    },
+    {
+      "path": "frontend/src/pages/Project.tsx",
+      "before": "91c7e3accc1d96fc57435acd85338b23d1d8639ee30a00db13c3c8e34f17c2be",
+      "after": "1074aed7db6fabe8cee90e887f97a2490e97c0097cdf10bf34c8cf616beac7fc"
+    },
+    {
+      "path": "frontend/src/pages/Registry.tsx",
+      "before": "1e9dfc53e82abfc01875983acfe062f8d2bb4d0f1ec0eb165c277a863fc08a08",
+      "after": "16c9c7c6dc7a11a14c90e98ac1d58f6413ffc2e1a27fb98cb480285f6117c99e"
+    },
+    {
+      "path": "frontend/src/pages/shared.tsx",
+      "before": "005504fe116ef6bf8037545b2728d63ee5ce5d993e77fe0d1eddf7a6e5c6ccf9",
+      "after": "cd9fe66cae270e25eea4714047a7b79284ee6fb1e7a688a189c1de8c47d2cc21"
+    },
+    {
+      "path": "frontend/src/router.ts",
+      "before": "705002b21ed13b3f542057027d2b8baf42061d5681264075da4984d0f0ccde64",
+      "after": "e860df9b3d723fbdf226e78fafc429277d84b0aa9f3b5b8261132a8aa45d24b7"
+    },
+    {
+      "path": "frontend/src/styles.css",
+      "before": "26b0bcceb4a86e92b96ccc86b72999f214e1a897211d8c58f3c081e5609f74d2",
+      "after": "ead63e41f597ab9d2d144e892d8e84f8208040af9c8c14ab532514b675bc4400"
+    },
+    {
+      "path": "frontend/tests/archive.test.mjs",
+      "before": "3be69aea6c421f4e33febf53cc7f45a532888411811730cc471a77b17e12dcc9",
+      "after": "df965684fcfa81ad33a42ba8794568147518e88f9c19e40320e55be4069e2302"
+    },
+    {
+      "path": "frontend/tests/helpers/jsx-hooks.mjs",
+      "before": "9ace466379f9adffdd1ac30d12f884cdd3f28915c8c8d492644f28b199e7d581",
+      "after": "2d349e48c2a5c27aad8eb24497977a9fb6e57447b9f0c7b42808f4208a002cad"
+    },
+    {
+      "path": "frontend/tests/registry.test.mjs",
+      "before": "20b8cc04ad5b736c8001a93d949a7d0f9d8d037b50a55eb5807736b903eb7418",
+      "after": "64bc5a8f64c66b10e1df515268a8510cd6a4e7b649a93b313d9b70549d20f7b1"
+    },
+    {
+      "path": "frontend/tests/router.test.mjs",
+      "before": "63c00accb408febfe059cdf5ca4df6525bfde3a38f9723d08e799a72df70c9d5",
+      "after": "c77d1048e10967f8bc784fa4060ec8ce2aeb2513fea01591b0b1b725932c76ab"
+    },
+    {
+      "path": "scripts/build_distribution.py",
+      "before": "703fd53847ec747b9028a2b1008bc5990f01441c2fd5fec8f80cfcf0614eac2c",
+      "after": "82793b1ace88358d8e65ccb4cbf43157b3f0c055f9977327e73c05823cf31fb4"
+    },
+    {
+      "path": "scripts/check_distribution.py",
+      "before": "2676eff1630b90d35cab33de0c1d1179e667effeb3d54958a397c2cac628d902",
+      "after": "2ec801cbb30066aff921e46e6cb7c43938ad12588f97aa4be93a0dbb29c9fd7e"
+    },
+    {
+      "path": "scripts/toolchain.py",
+      "before": "b062149f5c4b0309302de720b35940446f98d6a042e639eca53211ed2298e6c9",
+      "after": "1fbd48ea7728960dbf2b1aaac75aa891debed02e3608073b0e068f9a4d9f11ab"
+    },
+    {
+      "path": "src/harness_local/adapters/cli_agents.py",
+      "before": "42618f597c146e3dedac0508255226b2c32749d58a36700e5b5385e024546eef",
+      "after": "8ec74549673ea4e762fbfc6194441ab6954018ea18332b2f363e1fac0ea55030"
+    },
+    {
+      "path": "src/harness_local/adapters/preparation.py",
+      "before": "7cdf2cf1f3c31c9dfcf1614f24ac8022f80e39d0724953960e60e2f79fc6658e",
+      "after": "5b8c07bc681f15df3e80230b1ebc3325d7d543cbaf4a0acda162e5390342128f"
+    },
+    {
+      "path": "src/harness_local/api/app.py",
+      "before": "2b6fdf7506a848848fb127109af0b48de8a0dd60f17b88712d898754e4ab8eb3",
+      "after": "0fe4ea7ffca8abe2ea1860bae60d419413b56eb849bf854687e737f365157f69"
+    },
+    {
+      "path": "src/harness_local/api/managed.py",
+      "before": "077b35e5bb2163afe95b87b7518b8baa0666294723356e87ed9e236699e19508",
+      "after": "ce2defb8ff58423c3135767090a80129ff03a0b2fea303df273b92674e8a0cc5"
+    },
+    {
+      "path": "src/harness_local/api/schemas.py",
+      "before": "6fe107849bf2e8fc983145fc87f101caf36c6649073ea9d6b3cd9a683568bfc4",
+      "after": "7d3ce1783313b11fbb31b577d4af0cee2fd3f28d18a3e498911827309b436614"
+    },
+    {
+      "path": "src/harness_local/cli.py",
+      "before": "be413921fdc13dcdc7ed17728d07d3ba2ebbdab2f46ba591a096143ba203a364",
+      "after": "18e889d6dd9721eaae87b45162d932ead74baf71df262ad0f22d8601b703abee"
+    },
+    {
+      "path": "src/harness_local/core/engine/context.py",
+      "before": "2016725510289b177afc8af644787e02b49f42b878c465de685be680857a37f2",
+      "after": "a2b05d13d463bb82aee507780413d1b0c5feabac3fd88221f180c5a3d8d1862e"
+    },
+    {
+      "path": "src/harness_local/core/engine/contracts.py",
+      "before": "163b3a018da9fd02664eadc1aba74545ec3228b6bcf683cd59a48fa691e6a8e8",
+      "after": "77b446575f354dd4478e1d65cbab40663b7fa0f00bed67cf009f8b1755f89fe1"
+    },
+    {
+      "path": "src/harness_local/core/engine/definition.py",
+      "before": "7dd5b4cf6b6bff8d17e227d5ccb78c1a2ee90c8175902d7ef384e11c2679cee4",
+      "after": "930588d9a444722f3da99d7f0846919fb159813d4a5b5d3b67e59cb81e13f252"
+    },
+    {
+      "path": "src/harness_local/core/engine/prompts.py",
+      "before": "f10c15d1dce9d79c0bf1820a1226c5c5472aad666e18c015f8f824ea8af58751",
+      "after": "98d9d0283607f68d85294555bd2aefc52c3d45fbfcabb065b93b107105c26f4f"
+    },
+    {
+      "path": "src/harness_local/core/engine/serialization.py",
+      "before": "a8bbec720d185d3a578f721eebf97bddb4c303003b13a3808e739d1d1a7110b2",
+      "after": "4ae06e4f27b765716618b0a657556c2e82c8548c5a5c7863dfe864927a1f018c"
+    },
+    {
+      "path": "src/harness_local/core/engine/workflow.py",
+      "before": "42997aff6eefc1cb5822384e664fd4a86cb72ecee0a84c35b8ade5f79b6eb276",
+      "after": "ae820f2df53853b92fe15822981de498ffe92c8c3b403326354c55ba441e3ce0"
+    },
+    {
+      "path": "src/harness_local/i18n/en.json",
+      "before": "7ebf3a40c6756ab7c42c6b61cb050f518b4b9efc68d2aa9a4bd93f2681697324",
+      "after": "90c602654d9be458a716c01fee2d847b0396eaa304c03de5a793f6516f41716c"
+    },
+    {
+      "path": "src/harness_local/i18n/es.json",
+      "before": "8ec004f827793474c674c16a280807389fe89ab7bb3e9d205bc4e09725fefa9f",
+      "after": "ed71c5ffd6337f58dd94b4a8a98ec9485ead656570fa6405223be583bc837501"
+    },
+    {
+      "path": "src/harness_local/launcher.py",
+      "before": "77fc2ce8aaaf9c4c989bfa18a84d5d6ce2336e0a95e134c20a6e2a423609c017",
+      "after": "9f2412c39c8e14f7213e62a5ac4d7355ebf7c11322f064e2b6acfaf538e84d99"
+    },
+    {
+      "path": "src/harness_local/migrations/versions/0021_project_creation.py",
+      "before": "ef01ad7283aef66fb5473f7fa5c0870fb5d4afd3aec8db23ee85f9d057c46d1c",
+      "after": "63a20ed78b0df395c902fc55d33c5d75cf2719031338e2e1b77f6a118b699cbc"
+    },
+    {
+      "path": "src/harness_local/recipes/__init__.py",
+      "before": "40084f52060e62c6461634497c28046f8f1621ae06134b94ad47bb836d8fbe02",
+      "after": "a4fb8a4507a7781ded7a8c5b871baa20085fa40fa679b7f699bbfe9dacf2844b"
+    },
+    {
+      "path": "src/harness_local/services/local_config.py",
+      "before": "0c1079cdda40ff3590c90e504e3284ae52122da3a68ea746125ce1a03ce21955",
+      "after": "5f078b23834869c355b716aa4fcfcf6201ed608bb54175abfa9d94cd5f77f807"
+    },
+    {
+      "path": "src/harness_local/services/managed.py",
+      "before": "5cfded989753892ae4f3e22eb09c43d4a40ed8d0c07d0b80a5d58d7c8cb2a911",
+      "after": "d5bcf8f25402c518736b55e521c0c9dff72a59746f83ed9fe4bf1976c1245147"
+    },
+    {
+      "path": "src/harness_local/services/managed_runtime.py",
+      "before": "54a9f6d14f583b763005b2fe45720bea7c736bc574ba8a6a086aa2be7cca3b77",
+      "after": "f3dcc9bb30010d55614a83d05b866b6e86f2bdf273ba756230fff2d8882f8feb"
+    },
+    {
+      "path": "src/harness_local/services/project_creation.py",
+      "before": "fb11ba6140f59e36a5905a93e7df4b84308dfdb16b6af5f5098efec5c4f80530",
+      "after": "f23893929ddafff9b89fa4ee9c7402103c201bd02e54e42afe3e1bda7b0d4b43"
+    },
+    {
+      "path": "src/harness_local/services/project_preparation.py",
+      "before": "554c0f078055ae0db464fcf56699d803b17bb5085c0fc91377b88b200c568ac5",
+      "after": "c55f525bfdecc9265b6e064de39eb16d2e6b0cf40c23536ebc96d13654575b88"
+    },
+    {
+      "path": "src/harness_local/services/project_registry.py",
+      "before": "281843652ad7855a23cac34f66c00f0558bcaf3e8072f0710c7561ea14df88c3",
+      "after": "e5cbdc581cbed05e05ea8d741f6c004152c8b88398f9a4e56992c75228b32252"
+    },
+    {
+      "path": "src/harness_local/storage/backup.py",
+      "before": "e46ed0905ca083a6dea3c1a246819bb9b516c3e89d6c91fc26d9c845ca702160",
+      "after": "461503ed96543c3c4cf4be4c2592770488658ded896208006104646294e32a2b"
+    },
+    {
+      "path": "src/harness_local/storage/bootstrap.py",
+      "before": "ef0eb12356653a0260155dc6b81a6e22356a058bb312fa3ce27238fecf0d5c0d",
+      "after": "17cdeef8170a34999403a5677a3d324f075ff3d89e86d370095d88f6673d3c47"
+    },
+    {
+      "path": "src/harness_local/storage/managed.py",
+      "before": "6a495b8fc517f49d14aa20009190a63131a88a0f2ffdfa8853105ab35da541f7",
+      "after": "715d66263e0623e7d513588c64c7152a68047a2f38cd4d0b1dea864c16965ee4"
+    },
+    {
+      "path": "src/harness_local/storage/models.py",
+      "before": "fb8862aaca3e6e3017adc3549064eb303ab8bc3c7ee763409a1b29fb2e2d6a3b",
+      "after": "24bd4f58ebbe5c2575aaef2220ad0a0a987703252b135429a0ec9f1de6201c96"
+    },
+    {
+      "path": "src/harness_local/storage/planning.py",
+      "before": "f1b332e753132fb46e3210b59d8af8bc1464a7085cf651b996e022c8cc867e3e",
+      "after": "aad20457cf2690fc200366a7f84cc0aac0e426ac5ad4d4111b3279d6b81c8c95"
+    },
+    {
+      "path": "src/harness_local/storage/preparation.py",
+      "before": "6843f2a64bdd8b1c550e846b4f4bb759988ade811790d578ca9ae3c44bd9aa7d",
+      "after": "4b470192ff7ed848fd4939560d9594471c27bd1b95259b052bfaf7f06124af66"
+    },
+    {
+      "path": "src/harness_local/storage/project_import.py",
+      "before": "0d824abff7c4e8854e06b26070e84da5ad4858f2a1b86dae175a04fe984c8434",
+      "after": "2da0603fe9361c92cb2789fc8fdeea0ef907eab5b115063576b172ebe29cebf1"
+    },
+    {
+      "path": "src/harness_local/storage/prompts.py",
+      "before": "0c19da7dddcd0f017e323371762fba15421ed87ae7d4d9f087a58e6fb050cff6",
+      "after": "e31a81c3ebfff198aaa185658be99f7efcae7496dda4feefc109654d5905db45"
+    },
+    {
+      "path": "src/harness_local/storage/schema.py",
+      "before": "eb126e71fc2cd963ac957794d4935492c0174b1bddcc75d39a33a3acbb602eed",
+      "after": "49b7fabe8e57fd535ce7e6925f5b4aec8d40a0f935cd29893d94d46a5f73caf4"
+    },
+    {
+      "path": "tests/fixtures/service_texts/english.json",
+      "before": "95cba80438dc05906179a4d4ef97756174b16a31c5149aea51cdf5c0afb308ad",
+      "after": "6786fd2f42a88ad5e388f891d081f3502aa0c70b5ea75b93d0fe5655359f5310"
+    },
+    {
+      "path": "tests/product/cli_process_probe.py",
+      "before": "21b3bacc347cc323a01bf724e24b69b62792ae6901556bd3affe7162dc80a695",
+      "after": "60301b79c8168f742b4913fe9ec2218140c5bd26295a962ddf5784eb6b528d49"
+    },
+    {
+      "path": "tests/product/test_backup.py",
+      "before": "5083276533f9239bf85af412835ecc87a176b7d04adc48b5af6aa06ad739b3a3",
+      "after": "a128e869fc17f44350e74ec72052c77d5e9848084f1c6f3da93517c01c30a807"
+    },
+    {
+      "path": "tests/product/test_junit.py",
+      "before": "af6b4675a41480f640816b2220952a4ee66996bfd3fd14d3eec81e65db0e831a",
+      "after": "ebc944160e844d4938e48adaa2b85d5c717161696244ff82b1169bde004154b3"
+    },
+    {
+      "path": "tests/product/test_legacy_retirement.py",
+      "before": "b3d174d8af36df931e932b646c15f441172c2b7da7071b47ff3cfb5b5da2d6b3",
+      "after": "47a3cadc93dbb6f33dfe57b6c1946fbbd7a0a77a8e18e554addf33564a9be508"
+    },
+    {
+      "path": "tests/product/test_managed_api.py",
+      "before": "a356453288e9e473e1cb9333774371b88fc59b777f530df6820458f6a5f06bdf",
+      "after": "44a2b997b5481b9f15b15fc42672df86cb41ac53e96c8593ea898d61e3bc47f2"
+    },
+    {
+      "path": "tests/product/test_project_preparation.py",
+      "before": "73a6fa86a4874c9faecb0c73014daac612a28a5c9b1a779b0f0af3e6eaf72c74",
+      "after": "ea7f35b7c7bda4826aabcbf5a5e8a3e290d73d708888adf72d9ae7021520e1af"
+    },
+    {
+      "path": "tests/product/test_storage_api.py",
+      "before": "238518fa523399380dd2298a4489f64230a29b50c20fefda612aeb45cfbde0c4",
+      "after": "5a48d66415727b5755766044f450f627c328ff6da96f5880ddab5ce105df007d"
+    }
+  ],
+  "mode_changes": [],
+  "old_candidates": {
+    "D214": {
+      "files": 401,
+      "manifest_sha256": "5ef17ff3043d1b5842608528fb272e5b9184ef71a5e5382d5fd781a9954d4c55",
+      "matches_manifest": true
+    },
+    "P012": {
+      "files": 401,
+      "manifest_sha256": "cf191a40914095aeb3fbbeea0e6485878cc3218754361fa78d314b87dc19362a",
+      "matches_manifest": true
+    },
+    "P011": {
+      "files": 387,
+      "manifest_sha256": "74cc9141da0295a0a658dc10673a454c93eae3fd3cfe86e3df5aa7b9a172ea71",
+      "matches_manifest": true
+    }
+  }
+}
