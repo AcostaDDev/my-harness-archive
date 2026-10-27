@@ -1,4 +1,24 @@
-# My Harness
+# My Harness — development archive (discontinued)
+
+> [!IMPORTANT]
+> **This repository is a historical archive and is no longer maintained.** The official, maintained version of My
+> Harness is **[github.com/AcostaDDev/my-harness](https://github.com/AcostaDDev/my-harness)**. Install it, report
+> issues and contribute there.
+>
+> This repository keeps the original development process before the first public release: its commit history,
+> phases, decisions, discovery notes and evidence. The public repository was started from a reviewed snapshot with a
+> fresh Git history, so this history does not continue there. Everything below, including versions, installation
+> instructions and commands, describes the state of the project at that time. It is not current documentation. No
+> new releases, fixes or support will be published from here.
+>
+> Before this archive was published, its history was rewritten to remove personal data. The author's home directory
+> appears as `$HOME`, and a private project that served as an early read-only reference is named `reference_project`
+> (`ReferenceProject` in prose). Commit dates, messages, structure and all other content are unchanged.
+
+The original README follows unchanged.
+
+---
+
 
 My Harness is a local application that runs a development harness with AI coding agents over your own Git
 repositories. A **reviewer** agent plans and reviews in read-only mode; an **executor** agent is the only writer.

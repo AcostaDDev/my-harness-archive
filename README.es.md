@@ -1,4 +1,25 @@
-# My Harness (español)
+# My Harness (español) — archivo de desarrollo (descontinuado)
+
+> [!IMPORTANT]
+> **Este repositorio es un archivo histórico y ya no se mantiene.** La versión oficial y mantenida de My Harness es
+> **[github.com/AcostaDDev/my-harness](https://github.com/AcostaDDev/my-harness)**. Instálala, reporta incidencias
+> y contribuye allí.
+>
+> Este repositorio conserva el proceso de desarrollo original anterior a la primera versión pública: su historial de
+> commits, fases, decisiones, notas de descubrimiento y evidencias. El repositorio público se creó a partir de una
+> instantánea revisada con un historial Git nuevo, así que este historial no continúa allí. Todo lo que sigue
+> (versiones, instrucciones de instalación y comandos) describe el estado del proyecto en aquel momento. No es
+> documentación vigente. Desde aquí no se publicarán nuevas versiones, correcciones ni soporte.
+>
+> Antes de publicar este archivo se reescribió su historial para eliminar datos personales. El directorio personal
+> del autor aparece como `$HOME`, y un proyecto privado que sirvió de referencia de solo lectura al principio se
+> llama `reference_project` (`ReferenceProject` en el texto). Las fechas, mensajes, estructura de commits y el resto
+> del contenido no cambian.
+
+El README original sigue sin cambios.
+
+---
+
 
 My Harness es una aplicación local que ejecuta un harness de desarrollo con agentes de IA sobre tus propios
 repositorios Git. Un agente **revisor** planifica y revisa en solo lectura; un agente **ejecutor** es el único que
