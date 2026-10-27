@@ -1,0 +1,91 @@
+{
+  "base": "ff5109df44d65665db1e33a6f3f99f241d3928a0",
+  "phase": "P013",
+  "originals_preserved": 74,
+  "originals_bytes": 1498064,
+  "previous_archive_files_preserved": 334,
+  "phase_directory_empty": true,
+  "phase_contracts_preserved": 13,
+  "p013_exit_criteria": 8,
+  "active_tasks": 0,
+  "archived_tasks": 15,
+  "decisions": 232,
+  "previous_decision_bodies_preserved_except_navigation": 231,
+  "sizes": {
+    "state": 12409,
+    "base": 10782,
+    "next_steps": 1397
+  },
+  "live_documents": 36,
+  "live_documents_identical_except_navigation": 27,
+  "live_relative_links": 1164,
+  "snapshot_documents": 23,
+  "snapshot_links_in_original_context": 245,
+  "live_mermaid_blocks_preserved": 42,
+  "private_docs_only": true,
+  "public_manifest_sha256": "ea0f74e9099f1383128ba5e6e2e92ac298447cab54bd7336909d66f0f800c428",
+  "public_sources_unchanged": true,
+  "candidate": {
+    "files": 445,
+    "bytes": 6389580,
+    "manifest_sha256": "ea0f74e9099f1383128ba5e6e2e92ac298447cab54bd7336909d66f0f800c428",
+    "exact_paths_hashes": true,
+    "modes": true
+  },
+  "candidate_public_documents": {
+    "documents": 50,
+    "links": 403,
+    "layout": {
+      "phases": [
+        "P001"
+      ],
+      "tasks": 0,
+      "decisions": 93,
+      "sizes": {
+        "state": 9660,
+        "base": 6964,
+        "next_steps": 615
+      }
+    },
+    "code_decisions": 67
+  },
+  "previous_candidates": {
+    "D214": {
+      "files": 401,
+      "bytes": 5481629,
+      "manifest_sha256": "5ef17ff3043d1b5842608528fb272e5b9184ef71a5e5382d5fd781a9954d4c55",
+      "exact_paths_hashes": true,
+      "modes": false
+    },
+    "P012": {
+      "files": 401,
+      "bytes": 5480755,
+      "manifest_sha256": "cf191a40914095aeb3fbbeea0e6485878cc3218754361fa78d314b87dc19362a",
+      "exact_paths_hashes": true,
+      "modes": false
+    },
+    "P011": {
+      "files": 387,
+      "bytes": 5402952,
+      "manifest_sha256": "74cc9141da0295a0a658dc10673a454c93eae3fd3cfe86e3df5aa7b9a172ea71",
+      "exact_paths_hashes": true,
+      "modes": false
+    }
+  },
+  "protected_inventories": 7,
+  "package_sha256": {
+    "distribution-1.json": "35931df4ac58bb51104edd4ed0c1b30e1730d5055d964310a0c51a02aadc6827",
+    "pylock.toml": "20a327c3a97484892280c6dec6d2176202c2a88ebd638878e0808eeadfdf2cf9",
+    "harness_local-0.1.0.tar.gz": "31c9ab33a50a196ff7c2b0852d90bdf98eeabfb3f5ead427713c4b5049b5b22c",
+    "harness_local-0.1.0-py3-none-any.whl": "2416672d69b54524544d8560b41a54f49cb9747164faa1c82ac777672ad47076",
+    "SHA256SUMS": "0d7cab5e3901985962c39b95cb621d8e2024141f6b3b7d9f6e312be14bae2edb",
+    "scripts/distribution_artifacts.py": "5e6f583ec9353ab1a5dd04d283299c61a2beb1322b7b8be47c33080e5c422d46",
+    "scripts/install": "21daee4b6f3972320338decd57c2a85533b63a7ae29d4e44207bf2116924007a",
+    "scripts/installed_config.py": "e8f6e4dc1afa12faa9a6999b7116241f12a151d7bd73f48c3cf869a3c25d9485",
+    "scripts/start": "883e85cd923d5c01942ae00a295160c206ecb4fb3647387eda58e94792508397",
+    "scripts/start.py": "e0c70c8bebf2de7a590c1a0d26e1a586be69c7630ec1a0e317775fea2267347a",
+    "scripts/toolchain.py": "1fbd48ea7728960dbf2b1aaac75aa891debed02e3608073b0e068f9a4d9f11ab",
+    "scripts/install.py": "5b3ad0ea1a834989ee58aa862457785b7c0607687a74f5d75d9fe02a03578011",
+    "scripts/check_distribution.py": "2ec801cbb30066aff921e46e6cb7c43938ad12588f97aa4be93a0dbb29c9fd7e"
+  }
+}

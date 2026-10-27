@@ -35,7 +35,7 @@ estado vacío anterior si no hay proyecto. [Flujo operativo de run](task-run.md#
 
 ## Ampliación diseñada en P013-T001
 
-El [contrato P013](../phase/P013-T001_CONTRATO.md) y el [flujo de configuración](configuration-setup.md)
+El [contrato P013](../archive/phase-013/P013-T001_CONTRATO.md) y el [flujo de configuración](configuration-setup.md)
 concretan el recorrido futuro sin composición previa, guardado/activación versionados, preparación y backup.
 **Diseñado, no implementado:** este documento conserva el flujo vigente hasta las entregas T004–T011.
 Commit documental previo al técnico; perfil/recibo confirmado antes de tareas en el carril nuevo; formatos,
@@ -46,7 +46,7 @@ ningún agente obtiene escritura general de configuración global. Consulta D040
 ## Configuración entregada en P013-T011
 
 [D228](../DECISIONS.md#d228--p013-t011-conversión-explícita-y-backup-de-configuración),
-[validación](../phase/P013-T011_COMPATIBILIDAD.md). El formato 2 añade inventario de ámbitos/revisiones/operaciones,
+[validación](../archive/phase-013/P013-T011_COMPATIBILIDAD.md). El formato 2 añade inventario de ámbitos/revisiones/operaciones,
 TOML inmutables/copias de trabajo y publicaciones parciales referenciadas, además de evidencia CLI de asistencia/
 preparación. Originales bajo roots explícitos y permisos privados; conjunto revalidado antes de COMPLETE.
 Intenciones/estados inciertos se conservan, sin repararlos. Formato 1 anterior sigue permitido sin configuración nueva.

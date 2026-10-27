@@ -1,10 +1,10 @@
 # Flujo — instalación y configuración guiadas (P013)
 
 **Instalación T002, arranque T003, persistencia T004, API/arranque global T005, UI T006, propuesta de perfil T007 y preparación genérica T008 y alta/activación T009 y edición/asistencia T010 y compatibilidad/backup T011 implementados; primer uso/QA instalada T012 verificados con CLI/herramientas falsas.**
-[Entrega T002](../phase/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
-[Entrega T003](../phase/P013-T003_ARRANQUE.md), D220; procesos/señales sintéticos, sin servicio instalado real.
-[Contrato](../phase/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
-[plan](../phase/P013_PLAN.md) y [tareas](../NEXT_STEPS.md).
+[Entrega T002](../archive/phase-013/P013-T002_INSTALACION.md), D219; validación con herramientas falsas, sin recorrido instalado nuevo.
+[Entrega T003](../archive/phase-013/P013-T003_ARRANQUE.md), D220; procesos/señales sintéticos, sin servicio instalado real.
+[Contrato](../archive/phase-013/P013-T001_CONTRATO.md), D216–D218 en [DECISIONS](../DECISIONS.md),
+[plan](../archive/phase-013/P013_PLAN.md) y [tareas](../archive/phase-013/NEXT_STEPS.md).
 TOML 1–8 conserva su entrada. T005 consume global v9 por referencia activa; T007 añade altas documentales/propuestas; preparación genérica entregada en T008; alta/activación integradas entregadas en T009.
 
 ## Instalación y primer arranque
@@ -80,12 +80,12 @@ Cambiar candidato/base exige preview y confirmación nuevas. Tras respuesta perd
 el mismo sobre/clave; recuperación inspecciona hashes y exige declaración de escritores detenidos.
 Activación usa solo la guardada validada con su preview y confirmación separados; muestra activa/guardada/
 pendiente y orden de reinicio explícita, sin arrancarlo desde UI. Cancelar fija id/versión revisados. Legacy
-muestra importación pendiente T011; consulta restaurada nunca monta el editor. [Entrega](../phase/P013-T006_ASISTENTE_UI.md), D223.
+muestra importación pendiente T011; consulta restaurada nunca monta el editor. [Entrega](../archive/phase-013/P013-T006_ASISTENTE_UI.md), D223.
 
 ## Persistencia y recuperación
 
 Primitivas T004 implementadas ([D221](../DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
-[entrega](../phase/P013-T004_CONFIGURACION.md)): `preview/save`, `activation_preview/activate`,
+[entrega](../archive/phase-013/P013-T004_CONFIGURACION.md)): `preview/save`, `activation_preview/activate`,
 `promote_pending/cancel_pending`, `recovery_preview/recover` y descarte/importación explícitos de cambios externos.
 Endpoints globales y consumo global v9 en T005, UI global en T006; consumo/UI de perfiles propios entregados en T009.
 Guardado con barrera SQLite y flock de instalación; intención ligada
@@ -127,7 +127,7 @@ bytes/hashes, no solo rutas; restore conserva consulta sin repararlos ni activar
 ### Propuesta entregada en T007
 
 [D224](../DECISIONS.md#d224--p013-t007-contexto-documental-sin-stack-y-propuesta-de-perfil),
-[entrega](../phase/P013-T007_PROPUESTA_PERFIL.md). API de registro v9 admite una raíz existente confiada
+[entrega](../archive/phase-013/P013-T007_PROPUESTA_PERFIL.md). API de registro v9 admite una raíz existente confiada
 sin composición ni perfil. `IntakeContext` solo lleva raíz, política/pareja/idioma y layout; no hay runner
 ni comandos de stack. El registro sigue ACTIVE a efectos de identidad, pero la disponibilidad operativa
 es `PROFILE_REQUIRED`. Definición nueva admite carpeta vacía ya elegida; B usa inventario estático/HEAD y
@@ -205,7 +205,7 @@ API/UI, reinicios y matriz de fallos está en el contrato; diagrama de datos se 
 ## API global inicial entregada en T005
 
 [D222](../DECISIONS.md#d222--p013-t005-asistente-api-y-arranque-con-autoridad-global-versionada),
-[API efectiva y checks](../phase/P013-T005_ASISTENTE_API.md). `start` fija directorios del recibo; preflight valida
+[API efectiva y checks](../archive/phase-013/P013-T005_ASISTENTE_API.md). `start` fija directorios del recibo; preflight valida
 esquema/consulta y deja TOML ausente/inválido al servicio protegido. `serve` pasa directorios/entrada explícita a
 `ConfigurationSetup`, sin leer TOML antes de resolver D040. Sin autoridad no reconcilia altas/preparaciones ni
 inicia consumidor; preferencias y editor siguen accesibles con sesión/Host/Origin/CSRF.
@@ -228,7 +228,7 @@ explícita T011, conservando originales. Asistente UI T006 entregado; sin QA vis
 ### Preparación genérica entregada en T008
 
 [D225](../DECISIONS.md#d225--p013-t008-preparación-genérica-confirmada-y-recibo-propio),
-[entrega y checks](../phase/P013-T008_PREPARACION.md). T008 entregó el carril de servicio/API; T009 añade el handoff documental/configuración y la UI/activación. Las pruebas siembran esas precondiciones,
+[entrega y checks](../archive/phase-013/P013-T008_PREPARACION.md). T008 entregó el carril de servicio/API; T009 añade el handoff documental/configuración y la UI/activación. Las pruebas siembran esas precondiciones,
 sin atribuirles un alta completa ya implementada. Recetas y recibos anteriores mantienen su carril propio.
 
 1. Revisor puede añadir `preparation_plan` a la propuesta: archivos/prefijos concretos, local ignorado, entorno
@@ -258,7 +258,7 @@ no un sandbox nuevo; offline nunca cambia automáticamente a red.
 ### Alta y activación entregadas en T009
 
 [D226](../DECISIONS.md#d226--p013-t009-alta-documental-y-activación-del-perfil-propio),
-[entrega](../phase/P013-T009_ALTA_UI.md). Probado con HTTP/UI sintéticos y Git/SQLite temporales; sin proveedores.
+[entrega](../archive/phase-013/P013-T009_ALTA_UI.md). Probado con HTTP/UI sintéticos y Git/SQLite temporales; sin proveedores.
 
 1. Creación conserva padre/reserva/identidad/idioma y permite hijo sin composición; B registra raíz confiada.
    Conversación, preguntas y borradores siguen el contexto documental T007, sin runner de stack.
@@ -291,7 +291,7 @@ pendientes. Consulta D040 no edita/prepara/activa. Formatos 1–8 y sus hashes/r
 ## Edición y asistencia entregadas en T010
 
 [D227](../DECISIONS.md#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto),
-[entrega](../phase/P013-T010_EDICION_ASISTIDA.md). Perfil ACTIVE mantiene editor. Preparar edición toma HEAD
+[entrega](../archive/phase-013/P013-T010_EDICION_ASISTIDA.md). Perfil ACTIVE mantiene editor. Preparar edición toma HEAD
 limpio/documentos confirmados y plan anterior; cambios de perfil requieren actualización documental previa.
 Guardar conserva activa y jobs; candidato técnico distinto → nueva preparación T008 → recibo exacto → preview
 con diff/evidencia → activación sin reinicio y recomposición. Clientes candidatos no sustituyen la pareja que
@@ -320,7 +320,7 @@ restaurada rechaza este carril antes de leer rutas o descubrir clientes. Sin mig
 ## Compatibilidad y backup entregados en T011
 
 [D228](../DECISIONS.md#d228--p013-t011-conversión-explícita-y-backup-de-configuración),
-[entrega](../phase/P013-T011_COMPATIBILIDAD.md). Conversión de TOML del producto, distinta de incorporar B.
+[entrega](../archive/phase-013/P013-T011_COMPATIBILIDAD.md). Conversión de TOML del producto, distinta de incorporar B.
 
 ```mermaid
 flowchart TD
@@ -352,7 +352,7 @@ permanecen bloqueados. No se acredita parada de escritores por consultar un arch
 
 ## Primer uso instalado verificado en T012
 
-[Entrega](../phase/P013-T012_PRIMER_USO.md), D229. El recorrido usa paquete instalado fuera del checkout,
+[Entrega](../archive/phase-013/P013-T012_PRIMER_USO.md), D229. El recorrido usa paquete instalado fuera del checkout,
 formulario real para la global y HTTP protegido para las altas/perfiles Go sintéticos, hasta COMMITTED.
 No acredita proveedores reales ni el futuro candidato T013. El verificador conserva un asistente INVALID
 protegido, con supervisor cerrado y sin consumir trabajo. Npm usa archivos de configuración global/usuario

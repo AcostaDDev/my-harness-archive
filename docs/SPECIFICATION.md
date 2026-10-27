@@ -353,14 +353,14 @@ con autorización inicial y parada por error/HITL/límites. No está implementad
 ## 14. Ampliación planificada — P013
 
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) abre P013 antes de publicar.
-**T001 completa el diseño; T002–T011 implementan instalación/arranque/empaquetado, persistencia, asistentes, perfil, preparación, edición y compatibilidad/backup; T012 verifica primer uso/QA sintéticos; T013 cualifica candidato/paquete exactos; T014 emite dictamen favorable. Cierre pendiente T015.**
-Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](phase/P013-T001_CONTRATO.md), [flujo](flows/configuration-setup.md),
-[plan](phase/P013_PLAN.md) y [tareas](NEXT_STEPS.md). D216–D218 concretan:
+**T001 completa el diseño; T002–T011 implementan instalación/arranque/empaquetado, persistencia, asistentes, perfil, preparación, edición y compatibilidad/backup; T012 verifica primer uso/QA sintéticos; T013 cualifica candidato/paquete exactos; T014 emite dictamen favorable; T015 cierra y archiva la fase el 2026-10-27 ([resumen](archive/phase-013/SUMMARY.md), D232).**
+Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](archive/phase-013/P013-T001_CONTRATO.md), [flujo](flows/configuration-setup.md),
+[plan](archive/phase-013/P013_PLAN.md) y [tareas](archive/phase-013/NEXT_STEPS.md). D216–D218 concretan:
 
 - Instalador T002 entregado ([D219](DECISIONS.md#d219--p013-t002-instalador-por-generaciones-y-paquete-autocontenido),
-  [validación sintética](phase/P013-T002_INSTALACION.md)): clon o paquete verificado, con venv/generaciones
+  [validación sintética](archive/phase-013/P013-T002_INSTALACION.md)): clon o paquete verificado, con venv/generaciones
   aisladas y rutas/cachés elegibles. Offline por defecto y red explícita, sin instalar herramientas globales;
-  paquete sin Node/checkout. Arranque corto T003 entregado ([validación sintética](phase/P013-T003_ARRANQUE.md),
+  paquete sin Node/checkout. Arranque corto T003 entregado ([validación sintética](archive/phase-013/P013-T003_ARRANQUE.md),
   D220): inicializa solo base ausente; migración de existente por D150 aparte, con parada y copia previa.
   Sin TOML o con archivo inválido habilita el asistente API protegido de T005 y UI de T006.
 - Asistente inicial autenticado sin TOML completo, composición ni modelos. Detectar clientes no otorga permisos;
@@ -369,12 +369,12 @@ Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](p
   `/settings/configuration`, formularios y TOML con campos avanzados conservados, errores por campo en/es,
   diff y confirmaciones exactas separadas. Candidato y solicitud idempotente permanecen en la pestaña ante
   conflicto/recarga; reenvío solo explícito. Activar no reinicia desde HTTP; cancelar no recarga configuración.
-  [Entrega y límites](phase/P013-T006_ASISTENTE_UI.md), D223; QA visual Chrome integrada verificada en T012, con sus límites.
+  [Entrega y límites](archive/phase-013/P013-T006_ASISTENTE_UI.md), D223; QA visual Chrome integrada verificada en T012, con sus límites.
 - Global v9 y perfil/composición propios por proyecto v1, privados fuera de checkouts. Contenido en TOML
   versionado y activación por referencia/hash en SQLite. Guardar es distinto de activar; diff, CAS, intención
   recuperable y confirmación exacta. Edición externa no recarga autoridad ni cambia contratos congelados.
-  Primitivas T004 implementadas ([entrega](phase/P013-T004_CONFIGURACION.md), D221); API y arranque global
-  T005 entregados ([contrato efectivo y checks](phase/P013-T005_ASISTENTE_API.md), D222). T007 entrega registro
+  Primitivas T004 implementadas ([entrega](archive/phase-013/P013-T004_CONFIGURACION.md), D221); API y arranque global
+  T005 entregados ([contrato efectivo y checks](archive/phase-013/P013-T005_ASISTENTE_API.md), D222). T007 entrega registro
   documental sin perfil y propuestas; T008 entrega preparación genérica; alta/activación integradas entregadas en T009;
   legacy se importa expresamente en T011.
   T011 entrega el backup formato 2 con TOML/versiones/intenciones e inventario verificable; formato 1
@@ -389,7 +389,7 @@ Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](p
   T007 implementa contexto de alta sin perfil ejecutable, propuesta estructurada con herramientas diferidas y
   evidencia por comando; preview/confirmación adoptan borrador, sin TOML ni comandos. Registro v9 de raíz
   existente confiada; `PROFILE_REQUIRED`/`PROFILE_PROPOSED` no habilitan tareas. HEAD/documentos/preguntas/
-  contexto obsoletos bloquean confirmar. [Entrega](phase/P013-T007_PROPUESTA_PERFIL.md), D224. Commit
+  contexto obsoletos bloquean confirmar. [Entrega](archive/phase-013/P013-T007_PROPUESTA_PERFIL.md), D224. Commit
   documental, creación de carpeta propia y activación integrados entregados en T009; preparación genérica entregada en T008.
 - Ejemplos/recetas Django/TypeScript opcionales. Preparación genérica con ejecutor acotado y validaciones
   significativas del harness; agentes sin escritura general de TOML global ni ajustes del equipo. Aplicación
@@ -398,7 +398,7 @@ Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](p
   dependencias/red/scripts, selección del ejecutor y argv/límites. Primitivas/API con journal/locks/leases,
   cancelación y recuperación enlazada, JUnit fresco, commit técnico conciliable y recibo propio. Sin activación
   por efecto de preparar; T009 entrega el handoff de commit documental/TOML y el alta/UI. Contención nativa
-  cooperativa, sin sandbox nuevo. [Entrega y límites](phase/P013-T008_PREPARACION.md), D225.
+  cooperativa, sin sandbox nuevo. [Entrega y límites](archive/phase-013/P013-T008_PREPARACION.md), D225.
 - Edición posterior manual/formulario/TOML o asistida, reutilizando guardado/preparación/activación. Ayuda IA
   solo con pareja activa congelada; no adopta los clientes propuestos en la propia sesión. UI/diagnósticos en/es.
 - V1–v8 siguen leyendo/operando con sus hashes; importación al editor explícita y originales intactos. Backup
@@ -407,14 +407,14 @@ Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](p
 
 T009 entrega la excepción de §8: la aplicación guarda TOML privado fuera del checkout mediante el carril
 confirmado T004/T007–T009. Los agentes conservan sus ámbitos y no reciben escritura de configuración global.
-[Entrega T009](phase/P013-T009_ALTA_UI.md), [flujo](flows/configuration-setup.md#alta-y-activación-entregadas-en-t009), D226.
+[Entrega T009](archive/phase-013/P013-T009_ALTA_UI.md), [flujo](flows/configuration-setup.md#alta-y-activación-entregadas-en-t009), D226.
 Alta nueva/B sella propuesta aceptada en el commit documental, guarda perfil exacto y solo activa tras recibo,
 HEAD limpio, diff/confirmación independiente y barrera D118. Primera tarea bloqueada hasta activar; reenvío no
 duplica versiones, alta, preparación ni commits. Edición previa versiona otro candidato con evidencia/documentos
 vigentes; ejemplos copiables opcionales. Formulario/TOML, estado y evidencia en/es, con borrador/base/sobre
 conservados ante conflicto y sin reenvío automático. Recorrido sintético; QA visual instalada verificada en T012, con sus límites.
 T010 entrega edición posterior y asistencia opcional ([D227](DECISIONS.md#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto),
-[entrega](phase/P013-T010_EDICION_ASISTIDA.md)). Perfil activo mantiene formulario/TOML; edición técnica parte
+[entrega](archive/phase-013/P013-T010_EDICION_ASISTIDA.md)). Perfil activo mantiene formulario/TOML; edición técnica parte
 de HEAD/documentos confirmados y plan explícito. Cambiar perfil exige actualizar documentación primero;
 cambiar perfil/comandos/herramientas/plan exige nueva preparación. Agentes/política/global pueden reutilizar
 solo evidencia técnica idéntica, verificada y seleccionada por la activación; no se reescribe el recibo.
@@ -426,10 +426,10 @@ proyecto sigue T008. Reenvío consulta el mismo turno, sin otra invocación. Rec
 exige parada acreditada. Pruebas sintéticas; compatibilidad/backup e integración instalada acreditados en T011–T012, con sus límites.
 
 README/docs públicas, QA, candidato/paquete y expediente nuevos se entregan en T012–T015. Publicación aplazada
-hasta cerrar P013; su cierre no ejecuta acciones remotas ni renueva permisos P012.
+hasta cerrar P013, cerrada el 2026-10-27; su cierre no ejecuta acciones remotas ni renueva permisos P012.
 
 
-T011 entrega [compatibilidad/backup](phase/P013-T011_COMPATIBILIDAD.md), D228: conversión explícita de la
+T011 entrega [compatibilidad/backup](archive/phase-013/P013-T011_COMPATIBILIDAD.md), D228: conversión explícita de la
 configuración TOML 1–8 del producto con preview/hash y perfiles propios DRAFT. El usuario confirmó preparación
 nueva antes de activar. Configuración antigua conserva autoridad hasta validar/preparar todos los perfiles,
 confirmar conjunto y reiniciar seleccionando solo almacén gestionado; originales/snapshots/recibos intactos.
@@ -438,8 +438,8 @@ intenciones parciales e inventario consistente; restore de consulta lee evidenci
 rechaza mutaciones. Fuentes/registro ambiguos o permisos sin resolver bloquean, sin elegir autoridad por fecha.
 
 
-T012 verifica el [primer uso instalado y QA](phase/P013-T012_PRIMER_USO.md) y actualiza README/baseline pública.
-La [matriz](phase/P013_MATRIZ_ACEPTACION.md) conserva el alcance; [T013](phase/P013-T013_CANDIDATO.md) verifica
-candidato/paquete exactos y [T014](phase/P013_REVIEW.md) emite dictamen favorable y expediente. Cierre T015 pendiente;
+T012 verifica el [primer uso instalado y QA](archive/phase-013/P013-T012_PRIMER_USO.md) y actualiza README/baseline pública.
+La [matriz](archive/phase-013/P013_MATRIZ_ACEPTACION.md) conserva el alcance; [T013](archive/phase-013/P013-T013_CANDIDATO.md) verifica
+candidato/paquete exactos y [T014](archive/phase-013/P013_REVIEW.md) emite dictamen favorable y expediente. T015 cierra y archiva P013;
 ninguna de esas entregas autoriza publicación, amplía evidencia con proveedores reales o cambia los contratos
 de configuración, datos o permisos.

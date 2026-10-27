@@ -7,7 +7,7 @@ locks/procesos compartidos (D119). [Diseño de partida](archive/phase-009/P009-T
 
 Convenciones: `PK` clave primaria, `FK` clave ajena declarada, `UK` unicidad de columna; «null» marca columnas opcionales. Las unicidades compuestas y los índices únicos parciales se listan bajo cada diagrama. Las entidades de otro contexto aparecen solo con las columnas que relacionan. Los artefactos pesados (streams, capturas, copias) viven fuera de SQLite y se referencian por ruta y hash.
 
-P013-T004 implementa el [contrato de configuración versionada](phase/P013-T001_CONTRATO.md#4-archivos-formatos-y-autoridad)
+P013-T004 implementa el [contrato de configuración versionada](archive/phase-013/P013-T001_CONTRATO.md#4-archivos-formatos-y-autoridad)
 y su [flujo](flows/configuration-setup.md) en `0026_configuration`: **54 tablas** de producto, más `alembic_version`.
 Tres tablas aditivas, sin modificar columnas/datos previos; referencias de contenido en archivos TOML privados.
 API/runtime global entregados en T005, propuestas de alta en T007 y preparación genérica en T008;
@@ -16,7 +16,7 @@ alta/activación integradas entregadas en T009; edición/backup nuevo pendientes
 ## Altas documentales y propuestas de perfil (P013-T007)
 
 [D224](DECISIONS.md#d224--p013-t007-contexto-documental-sin-stack-y-propuesta-de-perfil),
-[entrega](phase/P013-T007_PROPUESTA_PERFIL.md). `0027_profile_proposals` conserva 54 tablas y permite
+[entrega](archive/phase-013/P013-T007_PROPUESTA_PERFIL.md). `0027_profile_proposals` conserva 54 tablas y permite
 `registered_projects.composition/profile` null para altas v9 sin stack. `status=ACTIVE` sigue describiendo
 el registro; no acredita perfil ni tareas. Fila/huella/confianza/idioma/eventos conservan D078/D167.
 Reconstrucción SQLite transaccional con comprobación de claves ajenas; auditorías y filas existentes intactas.
@@ -35,7 +35,7 @@ No se crean operaciones de configuración, recibos ni permisos por proponer/conf
 ## Configuración versionada (P013-T004)
 
 [D221](DECISIONS.md#d221--p013-t004-journal-y-referencias-de-configuración),
-[entrega](phase/P013-T004_CONFIGURACION.md). `scope` es `global` o `project:<id>` validado por el servicio.
+[entrega](archive/phase-013/P013-T004_CONFIGURACION.md). `scope` es `global` o `project:<id>` validado por el servicio.
 `directory` liga todos los ámbitos a una instalación; también se sella en la intención antes de crear el primer
 ámbito. `version` es CAS de referencias/guardados; `revision` numera contenido conservado, DRAFT o VALIDATED.
 Heads `saved_revision/active_revision/pending_revision` referencian lógicamente la PK compuesta de revisiones
@@ -991,7 +991,7 @@ sin filas elimina la tabla y la columna.
 ## Preparación genérica (P013-T008)
 
 [D225](DECISIONS.md#d225--p013-t008-preparación-genérica-confirmada-y-recibo-propio),
-[entrega](phase/P013-T008_PREPARACION.md). Sin migración/modelos nuevos: `0027_profile_proposals`, 54 tablas.
+[entrega](archive/phase-013/P013-T008_PREPARACION.md). Sin migración/modelos nuevos: `0027_profile_proposals`, 54 tablas.
 `planning_proposals.content` de kind `profile` puede incluir `candidate.preparation_plan`; propuestas antiguas
 sin ese bloque conservan sus bytes y lectura. El commit documental futuro de T009 sella en su preview
 `profile_proposal_sha256`; preparación exige ese hash y resultado/documentos/P001 de una operación COMPLETED.
@@ -1013,7 +1013,7 @@ Backup con configuración sigue bloqueado hasta T011; no se afirma recuperación
 ## Alta y activación de perfil (P013-T009)
 
 [D226](DECISIONS.md#d226--p013-t009-alta-documental-y-activación-del-perfil-propio),
-[entrega](phase/P013-T009_ALTA_UI.md). Sin migración ni modelos nuevos: `0027_profile_proposals`, **54 tablas**.
+[entrega](archive/phase-013/P013-T009_ALTA_UI.md). Sin migración ni modelos nuevos: `0027_profile_proposals`, **54 tablas**.
 
 - `project_creation_operations.intent` admite `profile/composition=null` en v9; identidad/reserva/idioma y
   `registered_projects`/eventos conservan su contrato. Registro null sigue documental aun tras activar: la
@@ -1035,7 +1035,7 @@ Backup con configuración sigue bloqueado hasta T011; no se afirma recuperación
 ## Edición y asistencia (P013-T010)
 
 [D227](DECISIONS.md#d227--p013-t010-edición-posterior-asistencia-congelada-e-impacto-conjunto),
-[entrega](phase/P013-T010_EDICION_ASISTIDA.md). Esquema **0027 / 54 tablas** sin modelos ni migración nuevos.
+[entrega](archive/phase-013/P013-T010_EDICION_ASISTIDA.md). Esquema **0027 / 54 tablas** sin modelos ni migración nuevos.
 
 - `configuration_operations` admite `kind=ASSIST`: `payload` congela `configuration-assistance-1`, contenido,
   pareja/versiones, selección, ámbito, prompt/esquema, propietario e intento UUID. El mismo journal JSON añade
@@ -1053,7 +1053,7 @@ Backup con configuración sigue bloqueado hasta T011; no se afirma recuperación
 ## Compatibilidad y backup (P013-T011)
 
 [D228](DECISIONS.md#d228--p013-t011-conversión-explícita-y-backup-de-configuración),
-[entrega](phase/P013-T011_COMPATIBILIDAD.md). **0027/54 tablas**, sin modelos ni migración nuevos.
+[entrega](archive/phase-013/P013-T011_COMPATIBILIDAD.md). **0027/54 tablas**, sin modelos ni migración nuevos.
 
 - SAVE de conversión añade `payload.legacy_import`: fuente/hash/formato, snapshot del registro y proyectos TOML/
   versiones efectivas anteriores. Perfiles v1 DRAFT comparten la intención con global v9. Finalizar SAVE añade

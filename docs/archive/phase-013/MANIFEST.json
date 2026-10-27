@@ -1,0 +1,460 @@
+{
+  "phase": "P013",
+  "closed_at": "2026-10-27",
+  "source_commit": "ff5109df44d65665db1e33a6f3f99f241d3928a0",
+  "mode": "manual_documentary_closure",
+  "snapshot_policy": "exact_bytes_original_paths",
+  "files": [
+    {
+      "source": "docs/STATE.md",
+      "target": "docs/archive/phase-013/STATE.md",
+      "size_bytes": 20510,
+      "sha256": "c269ca558956d16e143abc348d50ed3c3873011ca98b0e31db7ddf64173e1f66"
+    },
+    {
+      "source": "docs/NEXT_STEPS.md",
+      "target": "docs/archive/phase-013/NEXT_STEPS.md",
+      "size_bytes": 23309,
+      "sha256": "656123f6d5b2dfb98e83e1751f8d53c3f013165a29e5c1d18407e5f6403423a7"
+    },
+    {
+      "source": "docs/phase/2026-10-26_ACTUALIZACION_CANDIDATO.md",
+      "target": "docs/archive/phase-013/2026-10-26_ACTUALIZACION_CANDIDATO.md",
+      "size_bytes": 5338,
+      "sha256": "bdbc3a007d99e6554f1ccaaaddd3b545a0bb270704e3681e6c1a27e29342c765",
+      "provenance": "post-P012 maintenance without phase (D213/D214), kept as P013 antecedent"
+    },
+    {
+      "source": "docs/phase/2026-10-26_CANDIDATO_DIFF.json",
+      "target": "docs/archive/phase-013/2026-10-26_CANDIDATO_DIFF.json",
+      "size_bytes": 782,
+      "sha256": "509584f69782ea0d4719d131a5eff150e6efb4168a1ae60c5b046c5c328f39fc",
+      "provenance": "post-P012 maintenance without phase (D213/D214), kept as P013 antecedent"
+    },
+    {
+      "source": "docs/phase/2026-10-26_CANDIDATO_MANIFIESTO_PRIVADO.tsv",
+      "target": "docs/archive/phase-013/2026-10-26_CANDIDATO_MANIFIESTO_PRIVADO.tsv",
+      "size_bytes": 128654,
+      "sha256": "c7b0192af1960663b97e850a5168a60a8728a73a078916452fb3ffcf2b06bdfc",
+      "provenance": "post-P012 maintenance without phase (D213/D214), kept as P013 antecedent"
+    },
+    {
+      "source": "docs/phase/2026-10-26_CANDIDATO_MANIFIESTO_PUBLICO.sha256",
+      "target": "docs/archive/phase-013/2026-10-26_CANDIDATO_MANIFIESTO_PUBLICO.sha256",
+      "size_bytes": 41293,
+      "sha256": "5ef17ff3043d1b5842608528fb272e5b9184ef71a5e5382d5fd781a9954d4c55",
+      "provenance": "post-P012 maintenance without phase (D213/D214), kept as P013 antecedent"
+    },
+    {
+      "source": "docs/phase/2026-10-26_CANDIDATO_SUSTITUCION.json",
+      "target": "docs/archive/phase-013/2026-10-26_CANDIDATO_SUSTITUCION.json",
+      "size_bytes": 963,
+      "sha256": "95655109ded586c133f0faec529644c4696258e932c7be1e3d0c8d951aaa793f",
+      "provenance": "post-P012 maintenance without phase (D213/D214), kept as P013 antecedent"
+    },
+    {
+      "source": "docs/phase/2026-10-26_CORRECCION_CI_ARCHIVO.md",
+      "target": "docs/archive/phase-013/2026-10-26_CORRECCION_CI_ARCHIVO.md",
+      "size_bytes": 3439,
+      "sha256": "0e31b4985dca60a991c1d184e23116275dc8549390c1fc2e0831f6a6798af098",
+      "provenance": "post-P012 maintenance without phase (D213/D214), kept as P013 antecedent"
+    },
+    {
+      "source": "docs/phase/2026-10-26_REFRESH_PUBLIC_CANDIDATE.py",
+      "target": "docs/archive/phase-013/2026-10-26_REFRESH_PUBLIC_CANDIDATE.py",
+      "size_bytes": 787,
+      "sha256": "f8e2898609cd96c74950cd7315defeaa5477e0545540e6111a89999cd661e70a",
+      "provenance": "post-P012 maintenance without phase (D213/D214), kept as P013 antecedent"
+    },
+    {
+      "source": "docs/phase/P013-T001_CONTRATO.md",
+      "target": "docs/archive/phase-013/P013-T001_CONTRATO.md",
+      "size_bytes": 35840,
+      "sha256": "dc4b030b8cc86cdebdd5469ec742d93adab1308e03ba627ca814adc4e5843bd3"
+    },
+    {
+      "source": "docs/phase/P013-T001_VALIDACION.md",
+      "target": "docs/archive/phase-013/P013-T001_VALIDACION.md",
+      "size_bytes": 3325,
+      "sha256": "d73b13acc3a8d29bc4b81005a50c06d3aadc4bc96c040ca778937317b6eee128"
+    },
+    {
+      "source": "docs/phase/P013-T002_INSTALACION.md",
+      "target": "docs/archive/phase-013/P013-T002_INSTALACION.md",
+      "size_bytes": 10843,
+      "sha256": "d4e0c8b1ccd263fbf270d4a4e6682f964f80f124779a784aa13d82f70a5799b1"
+    },
+    {
+      "source": "docs/phase/P013-T003_ARRANQUE.md",
+      "target": "docs/archive/phase-013/P013-T003_ARRANQUE.md",
+      "size_bytes": 7833,
+      "sha256": "42a21694d4db624f3293b6943b3ed977584997cc19aa48b0f8e3228e5301ccce"
+    },
+    {
+      "source": "docs/phase/P013-T004_CONFIGURACION.md",
+      "target": "docs/archive/phase-013/P013-T004_CONFIGURACION.md",
+      "size_bytes": 11670,
+      "sha256": "b9ceb2957f3200a16ff32c92d9f209df2abfedeb6b1ecabcce1772bc05df2e4b"
+    },
+    {
+      "source": "docs/phase/P013-T005_ASISTENTE_API.md",
+      "target": "docs/archive/phase-013/P013-T005_ASISTENTE_API.md",
+      "size_bytes": 10719,
+      "sha256": "bd30b821eccbdc20310ba1d4116ed2fb097aac12736a24c0878e9325cf813938"
+    },
+    {
+      "source": "docs/phase/P013-T006_ASISTENTE_UI.md",
+      "target": "docs/archive/phase-013/P013-T006_ASISTENTE_UI.md",
+      "size_bytes": 7925,
+      "sha256": "cf774942f1c0775381fc50efc7f23d4ed72d74d5fafb7647721d863a7fbc251e"
+    },
+    {
+      "source": "docs/phase/P013-T007_PROPUESTA_PERFIL.md",
+      "target": "docs/archive/phase-013/P013-T007_PROPUESTA_PERFIL.md",
+      "size_bytes": 9393,
+      "sha256": "b89bf43a3a3850b2a0020d5218f6427124a99cb234a7dee8589d933125cb6b91"
+    },
+    {
+      "source": "docs/phase/P013-T008_PREPARACION.md",
+      "target": "docs/archive/phase-013/P013-T008_PREPARACION.md",
+      "size_bytes": 11159,
+      "sha256": "6103d2ac1c03fe57c352b97772ef45f8dc3690349c61d4561a60dcf1b4e32b02"
+    },
+    {
+      "source": "docs/phase/P013-T009_ALTA_UI.md",
+      "target": "docs/archive/phase-013/P013-T009_ALTA_UI.md",
+      "size_bytes": 9813,
+      "sha256": "a3e1b633a6ced46d4f94ed2625697aba4a9cca9707a33f03db8cd4f177e46889"
+    },
+    {
+      "source": "docs/phase/P013-T009_CHECK_DOCS.py",
+      "target": "docs/archive/phase-013/P013-T009_CHECK_DOCS.py",
+      "size_bytes": 2666,
+      "sha256": "c09e46c7fdbfaf17a1dea9bc0ccfbe2173c4d57d2a1418c4381a477bb3931d2e"
+    },
+    {
+      "source": "docs/phase/P013-T010_CHECK_DOCS.py",
+      "target": "docs/archive/phase-013/P013-T010_CHECK_DOCS.py",
+      "size_bytes": 2666,
+      "sha256": "0de77feaa145f7d1ad22bf2287c248c3e9d5ac4aa47f9f2edec73e10322a1f94"
+    },
+    {
+      "source": "docs/phase/P013-T010_EDICION_ASISTIDA.md",
+      "target": "docs/archive/phase-013/P013-T010_EDICION_ASISTIDA.md",
+      "size_bytes": 10963,
+      "sha256": "d9746177f33e44a817644c16a6ea46f66cdfe8587c7ae14758b4e364db56477b"
+    },
+    {
+      "source": "docs/phase/P013-T011_CHECK_DOCS.py",
+      "target": "docs/archive/phase-013/P013-T011_CHECK_DOCS.py",
+      "size_bytes": 2699,
+      "sha256": "41c5800fa8d192a514802893b6c5cf98e5d86d9427ebad1609fce63f15d503fa"
+    },
+    {
+      "source": "docs/phase/P013-T011_COMPATIBILIDAD.md",
+      "target": "docs/archive/phase-013/P013-T011_COMPATIBILIDAD.md",
+      "size_bytes": 7829,
+      "sha256": "0fb22420741508a3482c32861b38cfdbfd216a9c94876dd18893b0951da51cf7"
+    },
+    {
+      "source": "docs/phase/P013-T012_CHECK_DOCS.py",
+      "target": "docs/archive/phase-013/P013-T012_CHECK_DOCS.py",
+      "size_bytes": 2708,
+      "sha256": "7333502815e9d7899209e7a6935484af8b40b8db244d25f544dd3e83cde9db53"
+    },
+    {
+      "source": "docs/phase/P013-T012_CHECK_PUBLIC.py",
+      "target": "docs/archive/phase-013/P013-T012_CHECK_PUBLIC.py",
+      "size_bytes": 8655,
+      "sha256": "99d2328a7e8c773076a05e031f5ba5a3c86fc2e5037994040cc2a101a18fc98b"
+    },
+    {
+      "source": "docs/phase/P013-T012_PRIMER_USO.md",
+      "target": "docs/archive/phase-013/P013-T012_PRIMER_USO.md",
+      "size_bytes": 13406,
+      "sha256": "0cc3bb0cfd1ea8611f1be3196e39feb5f8d64f32aaf5897b29f400b8a0fd88fd"
+    },
+    {
+      "source": "docs/phase/P013-T012_QA/en-dark-global-activation.jpg",
+      "target": "docs/archive/phase-013/P013-T012_QA/en-dark-global-activation.jpg",
+      "size_bytes": 71816,
+      "sha256": "4fa2a64dd3ff0a10a8db236c12248df27d6b3766bba3f1c6397a9696e1076439"
+    },
+    {
+      "source": "docs/phase/P013-T012_QA/en-light-320-global.jpg",
+      "target": "docs/archive/phase-013/P013-T012_QA/en-light-320-global.jpg",
+      "size_bytes": 38111,
+      "sha256": "21cf62284aadc516316e81ce96a70bf94d0260080258f9ad13cc1ec168b84371"
+    },
+    {
+      "source": "docs/phase/P013-T012_QA/en-light-desktop-global.jpg",
+      "target": "docs/archive/phase-013/P013-T012_QA/en-light-desktop-global.jpg",
+      "size_bytes": 81430,
+      "sha256": "ac9bab3faed6ee44c1faf6d44feeb88a4fc72c46d16c11151b1b62e397d6ab85"
+    },
+    {
+      "source": "docs/phase/P013-T012_QA/en-light-mobile-creation-fixed.jpg",
+      "target": "docs/archive/phase-013/P013-T012_QA/en-light-mobile-creation-fixed.jpg",
+      "size_bytes": 45163,
+      "sha256": "e0a0d0526987afe546ea80cb67baed80a761f8107ca555ec341d4c7b6b074ae3"
+    },
+    {
+      "source": "docs/phase/P013-T012_QA/en-light-mobile-onboarding-fixed.jpg",
+      "target": "docs/archive/phase-013/P013-T012_QA/en-light-mobile-onboarding-fixed.jpg",
+      "size_bytes": 50828,
+      "sha256": "3e2bea5d18dc5f50c0a5f52f6aad1a911c5b98459a57aafa62b5456bf40c4b26"
+    },
+    {
+      "source": "docs/phase/P013-T012_QA/es-dark-desktop-creation.jpg",
+      "target": "docs/archive/phase-013/P013-T012_QA/es-dark-desktop-creation.jpg",
+      "size_bytes": 83139,
+      "sha256": "a48fbb51f9ffba914d509d617dcffed08a091ce9a74b03f30af83cb2c2432e0f"
+    },
+    {
+      "source": "docs/phase/P013-T012_QA/es-dark-desktop-onboarding-fixed.jpg",
+      "target": "docs/archive/phase-013/P013-T012_QA/es-dark-desktop-onboarding-fixed.jpg",
+      "size_bytes": 87714,
+      "sha256": "83e81b87efce98a2e5396757c280ed392b8d704bc005dd1b75c8dac268dfad44"
+    },
+    {
+      "source": "docs/phase/P013-T012_QA/es-dark-desktop-profile.jpg",
+      "target": "docs/archive/phase-013/P013-T012_QA/es-dark-desktop-profile.jpg",
+      "size_bytes": 102821,
+      "sha256": "ff42fe75f04948d1afb8c9f75beea131cbd8799bb2e628b55e31e2185cc4e070"
+    },
+    {
+      "source": "docs/phase/P013-T012_QA/es-dark-mobile-profile.jpg",
+      "target": "docs/archive/phase-013/P013-T012_QA/es-dark-mobile-profile.jpg",
+      "size_bytes": 60315,
+      "sha256": "58b59bee613ac67206b47b13544d22a0d4860a2e9cf4b8d89e1fc9e458b003a6"
+    },
+    {
+      "source": "docs/phase/P013-T012_QA/es-light-desktop-restored-run.jpg",
+      "target": "docs/archive/phase-013/P013-T012_QA/es-light-desktop-restored-run.jpg",
+      "size_bytes": 69629,
+      "sha256": "42031e99ae77bd0e6ebd917924c3c5a5fdfeb05a83a7bdf7fcb2069d9ebbc395"
+    },
+    {
+      "source": "docs/phase/P013-T012_QA/es-light-mobile-global.jpg",
+      "target": "docs/archive/phase-013/P013-T012_QA/es-light-mobile-global.jpg",
+      "size_bytes": 47406,
+      "sha256": "2eb1d8fef50483dd6fa04e75b2a8c90f3eaf1d427a300356ac2f624e13861fa9"
+    },
+    {
+      "source": "docs/phase/P013-T012_REHEARSAL.py",
+      "target": "docs/archive/phase-013/P013-T012_REHEARSAL.py",
+      "size_bytes": 18762,
+      "sha256": "0c15c0f2d5890246dc82a24408404d6509f39f57d545710da91559386278adc1"
+    },
+    {
+      "source": "docs/phase/P013-T012_RESULTS.json",
+      "target": "docs/archive/phase-013/P013-T012_RESULTS.json",
+      "size_bytes": 1408,
+      "sha256": "0980ad9c5cf2c5ef53fa117a7d240a45583164eaeffd1ce8978b7eb14b93715b"
+    },
+    {
+      "source": "docs/phase/P013-T013_CANDIDATE.py",
+      "target": "docs/archive/phase-013/P013-T013_CANDIDATE.py",
+      "size_bytes": 13944,
+      "sha256": "f2edf143094560c5da1fffcc0b9135e10234ca063bf733787f0820dcfb2cd816"
+    },
+    {
+      "source": "docs/phase/P013-T013_CANDIDATO.md",
+      "target": "docs/archive/phase-013/P013-T013_CANDIDATO.md",
+      "size_bytes": 9710,
+      "sha256": "6348998dd302e4a3c691832e6ece2bb1faf2dcb48dfc2249b570f2009cbd275e"
+    },
+    {
+      "source": "docs/phase/P013-T013_CHECK_DOCS.py",
+      "target": "docs/archive/phase-013/P013-T013_CHECK_DOCS.py",
+      "size_bytes": 2708,
+      "sha256": "231d97e2900623aafe187ad3566a3e610128ed08992eebd11547f7c2052bf9d0"
+    },
+    {
+      "source": "docs/phase/P013-T013_CONSERVACION.json",
+      "target": "docs/archive/phase-013/P013-T013_CONSERVACION.json",
+      "size_bytes": 1619,
+      "sha256": "1d269a5845e0fc4194434f9cad4d5848c463a7b70a1b9091fdab27c4201b89d4"
+    },
+    {
+      "source": "docs/phase/P013-T013_DIFF_PUBLICO.json",
+      "target": "docs/archive/phase-013/P013-T013_DIFF_PUBLICO.json",
+      "size_bytes": 20261,
+      "sha256": "b177b7231e0a727ec28b8894082a5b748e7f4e83306830649b15507f2cf92d9a"
+    },
+    {
+      "source": "docs/phase/P013-T013_EXPORT.py",
+      "target": "docs/archive/phase-013/P013-T013_EXPORT.py",
+      "size_bytes": 1220,
+      "sha256": "5dd69d7aee3ec432bd201718658adc33e7fd97be1400f575ceba8165593db9f9"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/alembic-check.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/alembic-check.log",
+      "size_bytes": 36,
+      "sha256": "43d345b67ace77ab8c4cbf575a3baddf66e8623cf7d1e0b78e602b1d641ecf50"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/alembic-upgrade.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/alembic-upgrade.log",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/build.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/build.log",
+      "size_bytes": 9591,
+      "sha256": "a230402075e54e105bad280a05f0fd1af42a4a45b3a481a07a755a5843b180fb"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/distribution.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/distribution.log",
+      "size_bytes": 1151,
+      "sha256": "75e012086ed5b47ef5f00fd2541cc58aa31a433181ea26c3b6e9e7c0c22289e4"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/documentation.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/documentation.log",
+      "size_bytes": 102,
+      "sha256": "725638f1d695cdb29d764229390020b45579bba574fab4118ab985e671ad3213"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/export-initial-rejected.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/export-initial-rejected.log",
+      "size_bytes": 509,
+      "sha256": "259ee1f19e55b5b89e29e4cfd63dfa598630477921c1505aa4b8715cab79f429"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/export.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/export.log",
+      "size_bytes": 300,
+      "sha256": "501e8675874487de4b2f40c94424db4717c7c1064d5ecced3c1e429d13b1ac4c"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/frontend-check.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/frontend-check.log",
+      "size_bytes": 47,
+      "sha256": "6bffacabb89ac75b8e9d9e65bc1cb58b512d343d7275321b976b774121fcf9cb"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/install-no-node.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/install-no-node.log",
+      "size_bytes": 5242,
+      "sha256": "30375773276f9602f6f30029e6787c2114954107de385b40d18d26324017893a"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/install-replay-no-node.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/install-replay-no-node.log",
+      "size_bytes": 1054,
+      "sha256": "3ffe1582a4f3a52f50596e649a6c8ec32321d0f949ed8447650d84375a6dbf28"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/node-initial-missing-dependencies.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/node-initial-missing-dependencies.log",
+      "size_bytes": 12676,
+      "sha256": "12653eba8b895948833c8d8c27c2cec9832362415fae1402eddce997c3469a1b"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/node.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/node.log",
+      "size_bytes": 12734,
+      "sha256": "8f2844cd8bb5199d3fef98bb4aaf60a9e510dcc8e00963476b109434c592a9ad"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/pytest.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/pytest.log",
+      "size_bytes": 3204,
+      "sha256": "73e4a13409357e08a7103cbc9ebf197dafb8e1efa5b30a4b731199199570c407"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/start-0.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/start-0.log",
+      "size_bytes": 615,
+      "sha256": "e2b0002d17a0fb8cf94cf919baa0d893b8367344c116e9691ea37b30c057d1c2"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/start-1.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/start-1.log",
+      "size_bytes": 615,
+      "sha256": "53b6a6422e4ac45d14008e8cd011cb9dc02c53fc3eb3b72790b946a1542a2871"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/sync.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/sync.log",
+      "size_bytes": 973,
+      "sha256": "21506edd4f3d1dd330be6baf7e7079918fcb25dfd9a196b22d99faf954b67dc4"
+    },
+    {
+      "source": "docs/phase/P013-T013_LOGS/unittest.log",
+      "target": "docs/archive/phase-013/P013-T013_LOGS/unittest.log",
+      "size_bytes": 106,
+      "sha256": "75ff54e727b57e4bd7b88956ed0c92c4b9a416e6f0976707e8fb54aa385ac0bd"
+    },
+    {
+      "source": "docs/phase/P013-T013_MANIFIESTO_PRIVADO.tsv",
+      "target": "docs/archive/phase-013/P013-T013_MANIFIESTO_PRIVADO.tsv",
+      "size_bytes": 143175,
+      "sha256": "f8ced9db8e690d726ab7eb4eb5338faf52de72da40489de7756d2d2a735f29db"
+    },
+    {
+      "source": "docs/phase/P013-T013_MANIFIESTO_PUBLICO.sha256",
+      "target": "docs/archive/phase-013/P013-T013_MANIFIESTO_PUBLICO.sha256",
+      "size_bytes": 46069,
+      "sha256": "ea0f74e9099f1383128ba5e6e2e92ac298447cab54bd7336909d66f0f800c428"
+    },
+    {
+      "source": "docs/phase/P013-T013_PAQUETE.sha256",
+      "target": "docs/archive/phase-013/P013-T013_PAQUETE.sha256",
+      "size_bytes": 1067,
+      "sha256": "0d7cab5e3901985962c39b95cb621d8e2024141f6b3b7d9f6e312be14bae2edb"
+    },
+    {
+      "source": "docs/phase/P013-T013_RESULTS.json",
+      "target": "docs/archive/phase-013/P013-T013_RESULTS.json",
+      "size_bytes": 3361,
+      "sha256": "0de5192cab731437b770209fdaa1833c2e35330bb1f964772d1677528ac5efa1"
+    },
+    {
+      "source": "docs/phase/P013-T014_CHECK.py",
+      "target": "docs/archive/phase-013/P013-T014_CHECK.py",
+      "size_bytes": 8512,
+      "sha256": "89969be3c2f7c432fe85aaee8972394b6d52ed8d3cd0b0fe5da08e835b661920"
+    },
+    {
+      "source": "docs/phase/P013-T014_COMPROBACION.json",
+      "target": "docs/archive/phase-013/P013-T014_COMPROBACION.json",
+      "size_bytes": 3163,
+      "sha256": "954e2e59bdbb914411249782420c2deacefa13ce06067bc12e75332bbe3cf915"
+    },
+    {
+      "source": "docs/phase/P013_APERTURA.md",
+      "target": "docs/archive/phase-013/P013_APERTURA.md",
+      "size_bytes": 2846,
+      "sha256": "ade919112d65c7be12bd052c9d262b77e2831a522863513087e7be8ea837c75e"
+    },
+    {
+      "source": "docs/phase/P013_EXPEDIENTE_APERTURA.md",
+      "target": "docs/archive/phase-013/P013_EXPEDIENTE_APERTURA.md",
+      "size_bytes": 11788,
+      "sha256": "fa9d694f1b45174539cc1217a646fe97fea8ba152cc3733c1156a44b763b0b37"
+    },
+    {
+      "source": "docs/phase/P013_MATRIZ_ACEPTACION.md",
+      "target": "docs/archive/phase-013/P013_MATRIZ_ACEPTACION.md",
+      "size_bytes": 4542,
+      "sha256": "5bccd7ed84dea2d01a68c835f22d192a9bd86425111148b4aea2521102aab1ce"
+    },
+    {
+      "source": "docs/phase/P013_PLAN.md",
+      "target": "docs/archive/phase-013/P013_PLAN.md",
+      "size_bytes": 10166,
+      "sha256": "68d0c5dbc27e4de276578d27976e03964650054d983bb1ffa926dea0c2585787"
+    },
+    {
+      "source": "docs/phase/P013_REVIEW.md",
+      "target": "docs/archive/phase-013/P013_REVIEW.md",
+      "size_bytes": 11229,
+      "sha256": "f8ca9693c65c3d5c9498684308491e569cd2da3725b638db03b1b2a62ae060fa"
+    }
+  ]
+}

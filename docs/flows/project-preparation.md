@@ -145,7 +145,7 @@ flowchart TD
 
 ## Ampliación diseñada en P013-T001
 
-El [contrato P013](../phase/P013-T001_CONTRATO.md) y el [flujo de configuración](configuration-setup.md)
+El [contrato P013](../archive/phase-013/P013-T001_CONTRATO.md) y el [flujo de configuración](configuration-setup.md)
 concretan el recorrido futuro sin composición previa, guardado/activación versionados, preparación y backup.
 **Diseñado, no implementado:** este documento conserva el flujo vigente hasta las entregas T004–T011.
 Commit documental previo al técnico; perfil/recibo confirmado antes de tareas en el carril nuevo; formatos,

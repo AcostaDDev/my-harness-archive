@@ -243,6 +243,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D229](#d229--p013-t012-primer-uso-instalado-y-documentación-pública) | P013-T012: primer uso instalado y documentación pública | P013 |
 | [D230](#d230--p013-t013-candidato-público-y-paquete-aislado-verificados) | P013-T013: candidato público y paquete aislado verificados | P013 |
 | [D231](#d231--p013-t014-dictamen-favorable-y-expediente-de-apertura-actualizado) | P013-T014: dictamen favorable y expediente de apertura actualizado | P013 |
+| [D232](#d232--cierre-documental-de-p013-e-instalación-guiada-archivada) | Cierre documental de P013 e instalación guiada archivada | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6296,7 +6297,7 @@ Estado: cerrada y archivada el 2026-10-26 por la continuación solicitada por el
 ## D213 — Mantenimiento Git desactivado en fixtures de incorporación
 
 Estado: aplicado el 2026-10-26 por petición de corrección y commit del usuario, sin fase nueva.
-[Informe](phase/2026-10-26_CORRECCION_CI_ARCHIVO.md). Precedentes: D105/D110/D112, D125 y D212.
+[Informe](archive/phase-013/2026-10-26_CORRECCION_CI_ARCHIVO.md). Precedentes: D105/D110/D112, D125 y D212.
 
 - El fallo de CI comunicado en `my-harness-archive` compara todo el checkout y `.git` antes/después de rechazar
   Git sin `--no-lazy-fetch`. El único delta es la desaparición de `.git/objects/maintenance.lock`; el método
@@ -6317,7 +6318,7 @@ Estado: aplicado el 2026-10-26 por petición de corrección y commit del usuario
 ## D214 — Candidato público actualizado tras la corrección de CI
 
 Estado: actualización local autorizada y completada el 2026-10-26, sin fase nueva.
-[Suplemento de apertura](phase/2026-10-26_ACTUALIZACION_CANDIDATO.md). Precedentes: D157, D210–D213.
+[Suplemento de apertura](archive/phase-013/2026-10-26_ACTUALIZACION_CANDIDATO.md). Precedentes: D157, D210–D213.
 
 - El usuario pide actualizar `my_harness_dist` tras comprobar que conservaba el helper anterior a D213.
   Se exporta la revisión exacta `08f27bc` con la lista positiva congelada de P012, sin modificar el exportador
@@ -6339,7 +6340,7 @@ Estado: actualización local autorizada y completada el 2026-10-26, sin fase nue
 ## D215 — P013: instalación guiada y configuración desde la UI
 
 Estado: fase abierta y planificada el 2026-10-26 por petición explícita del usuario; implementación pendiente.
-[Plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo planificado](flows/configuration-setup.md).
+[Plan](archive/phase-013/P013_PLAN.md), [tareas](archive/phase-013/NEXT_STEPS.md) y [flujo planificado](flows/configuration-setup.md).
 Precedentes: D049/D051/D078/D095/D118/D150/D156/D157/D161/D174/D194/D212–D214.
 
 - El usuario aprueba las propuestas de simplificación discutidas antes de publicar y pide una fase nueva.
@@ -6374,7 +6375,7 @@ Precedentes: D049/D051/D078/D095/D118/D150/D156/D157/D161/D174/D194/D212–D214.
 ## D216 — P013-T001: instalación aislada y arranque sin configuración
 
 Estado: diseño concretado el 2026-10-26; implementación pendiente T002–T006. Fase: P013.
-[Contrato §2–§3](phase/P013-T001_CONTRATO.md#2-instalación-y-actualización),
+[Contrato §2–§3](archive/phase-013/P013-T001_CONTRATO.md#2-instalación-y-actualización),
 [flujo](flows/configuration-setup.md). Concreta D215 conservando D051/D150/D157.
 
 - Instalación desde clon construye/verifica con locks; desde paquete recibe material de verificación
@@ -6395,8 +6396,8 @@ Estado: diseño concretado el 2026-10-26; implementación pendiente T002–T006.
 ## D217 — P013-T001: archivos versionados y activación de configuración
 
 Estado: diseño concretado el 2026-10-26; implementación pendiente T004–T006/T010–T011. Fase: P013.
-[Contrato §4–§6](phase/P013-T001_CONTRATO.md#4-archivos-formatos-y-autoridad),
-[backup §10](phase/P013-T001_CONTRATO.md#10-backup-y-fallos-de-frontera).
+[Contrato §4–§6](archive/phase-013/P013-T001_CONTRATO.md#4-archivos-formatos-y-autoridad),
+[backup §10](archive/phase-013/P013-T001_CONTRATO.md#10-backup-y-fallos-de-frontera).
 Concreta D215; conserva D049/D078/D118/D174/D194 y formatos históricos.
 
 - Reservar `local-config-9`, `project-config-1` y `configuration-operation-1`. Global sin composición obligatoria;
@@ -6421,7 +6422,7 @@ Concreta D215; conserva D049/D078/D118/D174/D194 y formatos históricos.
 ## D218 — P013-T001: perfil tras contexto y preparación antes de activar
 
 Estado: diseño concretado el 2026-10-26; implementación pendiente T007–T011. Fase: P013.
-[Contrato §7–§9](phase/P013-T001_CONTRATO.md#7-dos-entradas-commits-y-perfil-preparado),
+[Contrato §7–§9](archive/phase-013/P013-T001_CONTRATO.md#7-dos-entradas-commits-y-perfil-preparado),
 [flujo](flows/configuration-setup.md). Concreta D215 y amplía el recorrido actual D095/D119/D161.
 
 - Alta nueva/B con agentes/Git/raíz/idiomas y capacidad documental, sin composición de stack ficticia ni
@@ -6445,7 +6446,7 @@ Estado: diseño concretado el 2026-10-26; implementación pendiente T007–T011.
 
 Estado: implementado el 2026-10-26; validación de orquestación sintética, recorrido instalado pendiente
 T012/T013. Fase: P013. Concreta D216 sin alterar D051/D150.
-[Entrega](phase/P013-T002_INSTALACION.md), [flujo](flows/configuration-setup.md).
+[Entrega](archive/phase-013/P013-T002_INSTALACION.md), [flujo](flows/configuration-setup.md).
 
 - `scripts/install` selecciona clon o paquete local `--dist`, Python/uv locales y destinos/cachés explícitos.
   Offline por defecto, red solo con `--allow-network` y plan visible; no descarga herramientas, modifica
@@ -6474,7 +6475,7 @@ T012/T013. Fase: P013. Concreta D216 sin alterar D051/D150.
 
 Estado: implementado el 2026-10-26; validación sintética de orquestación/señales, recorrido instalado
 pendiente T012/T013. Fase: P013. Concreta D216 conservando D051/D150/D219.
-[Entrega](phase/P013-T003_ARRANQUE.md), [flujo](flows/configuration-setup.md).
+[Entrega](archive/phase-013/P013-T003_ARRANQUE.md), [flujo](flows/configuration-setup.md).
 
 - `scripts/start` resuelve/verifica `current.json`, recibo `installation-1`, paquete y venv. Ejecuta su Python
   con `-I -B`, módulo CLI instalado y cwd en datos, sin uv/Node/Vite/checkout como runtime. Los wrappers se
@@ -6504,7 +6505,7 @@ pendiente T012/T013. Fase: P013. Concreta D216 conservando D051/D150/D219.
 
 Estado: implementada y verificada con archivos/SQLite sintéticos el 2026-10-26; integración API/runtime y
 recibos pendiente T005–T011. Fase: P013. Concreta D217, sin alterar parsers/hashes 1–8, D118 ni snapshots.
-[Entrega](phase/P013-T004_CONFIGURACION.md), [datos](DDBB-DIAGRAM.md#configuración-versionada-p013-t004),
+[Entrega](archive/phase-013/P013-T004_CONFIGURACION.md), [datos](DDBB-DIAGRAM.md#configuración-versionada-p013-t004),
 [flujo](flows/configuration-setup.md).
 
 - Parser de editor separado: global `local-config-9` sin proyectos ni composición obligatoria reutiliza
@@ -6540,7 +6541,7 @@ recibos pendiente T005–T011. Fase: P013. Concreta D217, sin alterar parsers/ha
 
 Estado: implementada y verificada con API/archivos/SQLite y clientes sintéticos el 2026-10-26. Fase: P013.
 Concreta D216/D217/D221 y conserva D040/D150/D174.
-[Entrega y checks](phase/P013-T005_ASISTENTE_API.md), [flujo](flows/configuration-setup.md).
+[Entrega y checks](archive/phase-013/P013-T005_ASISTENTE_API.md), [flujo](flows/configuration-setup.md).
 
 - `serve` selecciona directorios de configuración/estado antes de leer TOML; `scripts/start` transmite los
   del recibo. El preflight conserva esquema/consulta, pero deja el TOML ausente/inválido al asistente protegido.
@@ -6570,7 +6571,7 @@ Concreta D216/D217/D221 y conserva D040/D150/D174.
 ## D223 — P013-T006: asistente y editor global con confirmaciones exactas
 
 Estado: implementada y verificada con UI/HTTP sintéticos el 2026-10-26; QA visual integrada pendiente T012. Fase: P013.
-[Entrega](phase/P013-T006_ASISTENTE_UI.md), [flujo](flows/configuration-setup.md).
+[Entrega](archive/phase-013/P013-T006_ASISTENTE_UI.md), [flujo](flows/configuration-setup.md).
 Concreta D216/D217/D222 sin anticipar importación T011 ni perfiles/asistencia T007–T010.
 
 - `/setup` y `/settings/configuration` comparten editor determinista en/es. Resolver consulta antes de
@@ -6596,7 +6597,7 @@ Concreta D216/D217/D222 sin anticipar importación T011 ni perfiles/asistencia T
 
 Estado: implementada y verificada con agentes falsos y fixtures Go el 2026-10-26. Fase: P013.
 Concreta D218 con las primitivas D221 y autoridad global D222; preparación T008 y alta/UI/activación T009 pendientes.
-[Entrega](phase/P013-T007_PROPUESTA_PERFIL.md), [flujo](flows/configuration-setup.md#propuesta-entregada-en-t007),
+[Entrega](archive/phase-013/P013-T007_PROPUESTA_PERFIL.md), [flujo](flows/configuration-setup.md#propuesta-entregada-en-t007),
 [datos](DDBB-DIAGRAM.md#altas-documentales-y-propuestas-de-perfil-p013-t007).
 
 - `IntakeContext` declara solo capacidades documentales (`project-intake-1`), con raíz/layout/política/idioma
@@ -6632,7 +6633,7 @@ Concreta D218 con las primitivas D221 y autoridad global D222; preparación T008
 
 Estado: implementada y verificada con ejecutores/herramientas falsos el 2026-10-26. Fase: P013.
 Concreta D218/D221/D224; integración documental/alta/activación/UI pendiente T009.
-[Entrega y checks](phase/P013-T008_PREPARACION.md), [flujo](flows/configuration-setup.md#preparación-genérica-entregada-en-t008)
+[Entrega y checks](archive/phase-013/P013-T008_PREPARACION.md), [flujo](flows/configuration-setup.md#preparación-genérica-entregada-en-t008)
 y [datos](DDBB-DIAGRAM.md#preparación-genérica-p013-t008).
 
 - `preparation_plan` opcional en el candidato del revisor: archivos/prefijos concretos, área local ignorada,
@@ -6669,7 +6670,7 @@ y [datos](DDBB-DIAGRAM.md#preparación-genérica-p013-t008).
 
 Estado: implementada y verificada con HTTP/UI, agentes/herramientas falsos y Git/SQLite temporales el 2026-10-26. Fase: P013.
 Concreta D218/D221/D224/D225; edición posterior T010 y compatibilidad/backup T011 pendientes.
-[Entrega](phase/P013-T009_ALTA_UI.md), [flujo](flows/configuration-setup.md#alta-y-activación-entregadas-en-t009),
+[Entrega](archive/phase-013/P013-T009_ALTA_UI.md), [flujo](flows/configuration-setup.md#alta-y-activación-entregadas-en-t009),
 [datos](DDBB-DIAGRAM.md#alta-y-activación-de-perfil-p013-t009).
 
 - Creación v9 acepta hijo sin composición/perfil bajo la autoridad de padre/reserva/identidad/idioma existente.
@@ -6705,7 +6706,7 @@ Concreta D218/D221/D224/D225; edición posterior T010 y compatibilidad/backup T0
 
 Estado: implementada y verificada con API/UI, herramientas y procesos sintéticos el 2026-10-26. Fase: P013.
 Concreta D215/D217/D218/D221–D226; importación/compatibilidad/backup pendientes T011 y QA instalada T012.
-[Entrega](phase/P013-T010_EDICION_ASISTIDA.md), [flujo](flows/configuration-setup.md#edición-y-asistencia-entregadas-en-t010),
+[Entrega](archive/phase-013/P013-T010_EDICION_ASISTIDA.md), [flujo](flows/configuration-setup.md#edición-y-asistencia-entregadas-en-t010),
 [datos](DDBB-DIAGRAM.md#edición-y-asistencia-p013-t010).
 
 - Perfil activo conserva editor manual/formulario/TOML. Preparar edición toma HEAD limpio, hashes de
@@ -6748,7 +6749,7 @@ Concreta D215/D217/D218/D221–D226; importación/compatibilidad/backup pendient
 
 Estado: implementada y verificada con archivos/Git/SQLite, HTTP/UI y ejecutor sintéticos el 2026-10-26. Fase: P013.
 Concreta D217/D221–D227, conservando D040/D049/D118/D150/D174 y formatos/históricos anteriores.
-[Entrega y límites](phase/P013-T011_COMPATIBILIDAD.md), [flujo](flows/configuration-setup.md#compatibilidad-y-backup-entregados-en-t011).
+[Entrega y límites](archive/phase-013/P013-T011_COMPATIBILIDAD.md), [flujo](flows/configuration-setup.md#compatibilidad-y-backup-entregados-en-t011).
 
 - HITL: el usuario confirmó validar/preparar antes de activar perfiles convertidos. «Importar configuración»
   convierte TOML 1–8 del producto; no redefine la incorporación B de repositorios con código y su documentación.
@@ -6773,7 +6774,7 @@ Concreta D217/D221–D227, conservando D040/D049/D118/D150/D174 y formatos/hist�
 ## D229 — P013-T012: primer uso instalado y documentación pública
 
 Estado: implementada y verificada el 2026-10-26; evidencia sintética instalada/Chrome, sin proveedores. Fase: P013.
-[Entrega](phase/P013-T012_PRIMER_USO.md), [matriz](phase/P013_MATRIZ_ACEPTACION.md),
+[Entrega](archive/phase-013/P013-T012_PRIMER_USO.md), [matriz](archive/phase-013/P013_MATRIZ_ACEPTACION.md),
 [flujo](flows/configuration-setup.md#primer-uso-instalado-verificado-en-t012). Concreta D215–D228 sin cambiar diseño.
 
 - Encargo de siguiente tarea/commit y autorización general del usuario se acotan a instalación/red de dependencias,
@@ -6799,8 +6800,8 @@ Estado: implementada y verificada el 2026-10-26; evidencia sintética instalada/
 ## D230 — P013-T013: candidato público y paquete aislado verificados
 
 Estado: completada el 2026-10-27 con suites offline y servicios/agentes sintéticos. Fase: P013.
-[Entrega](phase/P013-T013_CANDIDATO.md), [resultados](phase/P013-T013_RESULTS.json),
-[manifiesto](phase/P013-T013_MANIFIESTO_PUBLICO.sha256) y [conservación](phase/P013-T013_CONSERVACION.json).
+[Entrega](archive/phase-013/P013-T013_CANDIDATO.md), [resultados](archive/phase-013/P013-T013_RESULTS.json),
+[manifiesto](archive/phase-013/P013-T013_MANIFIESTO_PUBLICO.sha256) y [conservación](archive/phase-013/P013-T013_CONSERVACION.json).
 Concreta D178/D215/D229 sin cambiar producto ni el alcance real anterior.
 
 - Encargo de siguiente tarea/commit y autorización general acotados a área nueva, exportación, construcción,
@@ -6826,8 +6827,8 @@ Concreta D178/D215/D229 sin cambiar producto ni el alcance real anterior.
 ## D231 — P013-T014: dictamen favorable y expediente de apertura actualizado
 
 Estado: completada el 2026-10-27 por el encargo de continuar la siguiente tarea y finalizar con commit en inglés.
-Fase: P013. [Revisión](phase/P013_REVIEW.md), [expediente](phase/P013_EXPEDIENTE_APERTURA.md) y
-[contraste estático](phase/P013-T014_COMPROBACION.json). Concreta D215/D229/D230; conserva D157/D178/D181/D211.
+Fase: P013. [Revisión](archive/phase-013/P013_REVIEW.md), [expediente](archive/phase-013/P013_EXPEDIENTE_APERTURA.md) y
+[contraste estático](archive/phase-013/P013-T014_COMPROBACION.json). Concreta D215/D229/D230; conserva D157/D178/D181/D211.
 
 - Dictamen favorable de los ocho criterios en el alcance declarado, sin correcciones obligatorias pendientes
   para cerrar. Habilita T015; P013 sigue abierta y el cierre antes de publicar sigue pendiente. T001 conserva
@@ -6849,3 +6850,31 @@ Fase: P013. [Revisión](phase/P013_REVIEW.md), [expediente](phase/P013_EXPEDIENT
   bases, credenciales, configuración global, proveedores, cuentas/remotos o publicación. Commit local solicitado.
 - Después del cierre manual sigue pendiente autorizar la apertura. Sin sucesora privada asumida; D157 mantiene
   fuente pública principal tras el primer push y modo continuo reservado para v0.2.0 según D156.
+
+## D232 — Cierre documental de P013 e instalación guiada archivada
+
+Estado: cerrada y archivada el 2026-10-27 por el encargo de continuar la siguiente tarea y finalizar con commit
+en inglés, tras D231. Fase: P013. [Resumen](archive/phase-013/SUMMARY.md), [revisión](archive/phase-013/REVIEW.md)
+y [registro de cierre](archive/phase-013/P013_CIERRE.md). Precedentes: D088/D182/D212/D215.
+
+- T015 era la siguiente tarea señalada en STATE/NEXT_STEPS tras el dictamen favorable de T014. Quince tareas
+  (T001 diseño, T002–T015 completadas) y ocho criterios cumplidos en el alcance declarado; sin correcciones
+  obligatorias pendientes. El procedimiento sigue D212 sin elección de diseño abierta: no requiere HITL.
+- STATE/NEXT_STEPS y los 72 archivos versionados de docs/phase se conservan por bytes respecto del commit T014
+  ff5109d, incluidos capturas QA, logs T013 y resultados fallidos/parciales. MANIFEST registra origen/destino,
+  tamaño y SHA-256. Los suplementos 2026-10-26 de D213/D214, sin fase y antecedentes de P013, se archivan
+  también porque el contrato documental vacía docs/phase al cerrar; el manifiesto conserva esa procedencia.
+- SUMMARY/REVIEW/P013_CIERRE y comprobador/resultado nuevos acreditan el cierre; los snapshots mantienen
+  estados («T015 pendiente»), enlaces y comandos en su contexto original. Archivo P000–P012 intacto; decisiones
+  D001–D231 solo cambian enlaces de navegación al archivo. Los scripts archivados derivan su raíz de la ruta:
+  se reproducen desde sus commits de origen, como indica el expediente, o con su ruta original simulada.
+- STATE compacta la base y queda sin fase activa; NEXT_STEPS sin tareas; ROADMAP marca P013 completada.
+  Especificación, arquitectura, diagrama y flujos solo reubican enlaces y frases de estado, sin cambiar contratos,
+  diagramas o comportamiento. README, README.es y docs/public permanecen iguales; candidato
+  `my_harness_dist_p013` (445 archivos, manifiesto ea0f74e9…00c428) y paquete T013 conservados sin regenerar.
+- El expediente P013 queda vigente y sustituye operativamente P012/D214 sin reescribirlos. Siguiente paso del
+  usuario: autorizar la apertura con owner/repo, visibilidad, identidad pública y permisos concretos.
+  Sin sucesora privada; D157 tras el primer push y modo continuo v0.2.0 (D156) se mantienen.
+- Cierre manual sin registrar/ejecutar este repositorio con el harness, servicios, agentes, proveedores o
+  smokes; sin cambios de producto, datos, API, dependencias o configuración global; sin tag, push, CI remota
+  o publicación. Commit local solicitado por el usuario.

@@ -5,8 +5,8 @@ Actualizado: 2026-10-27. Sin bloques gestionados mientras el repositorio no est�
 ## Base acumulada
 
 Lo que existe y funciona, verificado offline con Git, SQLite y procesos temporales, agentes falsos y datos sintéticos
-salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; P001–P012 cerradas. Primera versión
-local completada en el alcance de D151/D153 y preparación pública archivada con expediente sin ejecutar (D181/D182).
+salvo donde se indica. Detalle por fase en `docs/archive/phase-NNN/SUMMARY.md`; P001–P013 cerradas. Primera versión
+local completada en el alcance de D151/D153; apertura pública preparada con expediente P013 sin ejecutar (D231/D232).
 
 - **Núcleo y motor** ([P001](archive/phase-001/SUMMARY.md), [P003](archive/phase-003/SUMMARY.md)): paquete
   `harness_local` con contexto explícito por proyecto, contrato de tarea congelado, planificación determinista o por el
@@ -92,98 +92,38 @@ local completada en el alcance de D151/D153 y preparación pública archivada co
   falsas; pytest 1671 y 29 subtests, unittest 8, Node 95. [Revisión](archive/phase-011/P011_REVIEW.md) y
   [expediente de apertura](archive/phase-011/P011_EXPEDIENTE_APERTURA.md), sin CI remota ni acción ejecutada.
 
-- **Validación real previa a apertura** ([P012](archive/phase-012/SUMMARY.md), D183–D212): trece tareas
-  completadas y siete criterios con dictamen favorable. Pareja Claude 2.1.310/Codex 0.164.0 con cli-14,
-  incorporación B/idempotencia, tarea Python/Django declarada v8 COMMITTED, chat/propuesta QUEUED,
-  backup/restauración con consulta API/UI y TypeScript v2/es hasta tarea y cierre del hijo. Correcciones
-  sintéticas T008–T013 incluidas en la suite final: **1760 pytest y 29 subtests, 8 unittest, 119 Node**,
-  dos opt-in omitidas; tipos/build, Alembic temporal, distribución y documentación correctos (T005).
-  Candidato `0.1.0`: **401 archivos/5.480.755 bytes**, manifiesto `cf191a40…9362a`, wheel `eef56a29…4504ab`;
-  P011 conservada aparte. [Revisión](archive/phase-012/P012_REVIEW.md) y
-  [expediente original](archive/phase-012/P012_EXPEDIENTE_APERTURA.md), sin acciones remotas ejecutadas.
-  Evidencia real acumulada de sus wheels/tramos, fixtures sintéticos/macOS ARM64/Chrome; no acredita una
-  ejecución real nueva del paquete final, otras parejas actuales, creación Django v2 ni producción.
-  Dos REVISION_LIMIT, dos checks rechazados, propuesta QUEUED e identidad histórica `unknown` conservados;
-  la consulta no certifica muerte de escritores ni autoriza reactivar la base. Consumo 19 Claude/4 Codex;
-  consentimientos agotados, sin transferir saldos.
+- **Validación real previa a apertura** ([P012](archive/phase-012/SUMMARY.md), D183–D212): trece tareas y siete
+  criterios favorables. Pareja Claude 2.1.310/Codex 0.164.0 con cli-14: B/idempotencia, tarea Python/Django v8,
+  chat/propuesta QUEUED, backup/consulta API/UI y TypeScript v2/es hasta cierre del hijo; consumo 19 Claude/4 Codex,
+  consentimientos agotados. Fixtures sintéticos/macOS ARM64/Chrome; sin otras parejas, Django v2 ni producción.
+  REVISION_LIMIT, checks rechazados, QUEUED e identidad `unknown` conservados, sin certificar muerte de escritores.
+  Candidatos P012 (`cf191a40…9362a`) y D213/D214 (`5ef17ff3…4d4c55`, fixture Git sin mantenimiento) conservados.
+- **Instalación guiada y configuración** ([P013](archive/phase-013/SUMMARY.md), D215–D232): `scripts/install` por
+  generaciones (clon/paquete, uv/cachés elegibles, offline por defecto) y `scripts/start` fuera del checkout.
+  Configuración global v9/proyecto v1 en TOML privados versionados, journal/CAS y activación SQLite (0026/0027);
+  asistente `/setup` y ajustes sin TOML previo; perfil propio desde contexto o HEAD, preparación genérica con
+  recibo y activación antes de la primera tarea; edición manual/asistida, conversión 1–8 y backup formato 2.
+  Primer uso instalado con Go/CLI falsos y QA Chrome en/es (T012); candidato `my_harness_dist_p013`, **445
+  archivos**, manifiesto `ea0f74e9…00c428`, wheel `2416672d…47076`: **2048 pytest/29 subtests, 8 unittest,
+  155 Node** (T013). Sin proveedores reales, otras plataformas ni CI remota. [Revisión](archive/phase-013/P013_REVIEW.md).
 
-## Mantenimiento posterior al cierre
+## Fase activa
 
-El 2026-10-26 se corrige la fila resumen de P012 en ROADMAP para reflejar su cierre ya documentado y se
-desactiva el mantenimiento automático en el helper Git de los fixtures de incorporación. Resuelve la carrera
-con `maintenance.lock` indicada por el usuario en la CI de `my-harness-archive`, conservando la comparación
-completa de `.git` y sin cambiar el producto ([D213](DECISIONS.md#d213--mantenimiento-git-desactivado-en-fixtures-de-incorporación),
-[informe](phase/2026-10-26_CORRECCION_CI_ARCHIVO.md)). Ese primer arreglo conserva el candidato público y los
-artefactos archivados de P012; este mantenimiento no abre una fase ni publica el candidato.
-Verificación local: 1761 pytest y 29 subtests pasados, 2 opt-in omitidas; 8 unittest, parsers y enlaces
-documentales correctos. Regresión Trace2 roja antes del arreglo y verde después; CI remota pendiente.
+**Sin fase activa ni sucesora definida.** P013 cerrada y archivada documentalmente el 2026-10-27
+([D232](DECISIONS.md#d232--cierre-documental-de-p013-e-instalación-guiada-archivada),
+[resumen](archive/phase-013/SUMMARY.md), [revisión de cierre](archive/phase-013/REVIEW.md),
+[registro](archive/phase-013/P013_CIERRE.md)). Originales congelados con manifiesto respecto de T014;
+los estados parciales de esos snapshots conservan su procedencia.
 
-Por encargo posterior del usuario, `my_harness_dist` incorpora esa corrección desde `08f27bc`: **401 archivos /
-5.481.629 bytes**, manifiesto `5ef17ff3…4d4c55`, con un único archivo de pruebas modificado. Original P012
-conservado en `my_harness_dist_p012_cf191a40`; P011, paquetes y snapshots intactos. El
-[suplemento vigente](phase/2026-10-26_ACTUALIZACION_CANDIDATO.md) actualiza la identidad del árbol para abrirlo
-sin reescribir el expediente archivado (D214). Pruebas en copia aislada; sin Git ni cachés en el candidato.
-Verificación del árbol exportado: 1761 pytest y 29 subtests pasados, 2 opt-in omitidas; 8 unittest correctos.
-Sustitución verificada por rutas, hashes y modos; checksums de los artefactos originales intactos.
+El siguiente paso es la apertura que autorice el usuario sobre el
+[expediente de P013](archive/phase-013/P013_EXPEDIENTE_APERTURA.md): faltan owner/repo, visibilidad, identidad
+pública y permisos concretos. Candidato local `my_harness_dist_p013` y paquete T013 verificados, sin Git;
+ninguna creación remota, push, CI remota, visibilidad pública, tag o Release ejecutados. Expedientes P011/P012 y
+[suplemento D214](archive/phase-013/2026-10-26_ACTUALIZACION_CANDIDATO.md) históricos y sustituidos.
+Después del primer push el repositorio público será la fuente principal (D157); este conserva la historia privada.
+Modo continuo v0.2.0 posterior a la apertura, sin tareas definidas (D156);
+[candidatas sin fase](ROADMAP.md#candidatas-sin-fase-asignada).
 
-## Fase activa — P013 Instalación guiada y configuración desde la UI
-
-**P013 activa; T001 diseñada y T002–T014 completadas (T013/T014 el 2026-10-27).**
-[D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
-[plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo](flows/configuration-setup.md).
-Una tarea pendiente. **Siguiente: P013-T015**, cierre documental manual.
-
-| Entrega | Resultado y procedencia |
-|---|---|
-| [T001](phase/P013-T001_CONTRATO.md), D216–D218 | Contrato previo: instalación aislada, sesión sin TOML, autoridad privada/versionada y activación SQLite/CAS; global con reinicio, proyecto entre tareas. Contexto → propuesta → commit documental → preparación → activación. Diseño y checks documentales. |
-| [T002](phase/P013-T002_INSTALACION.md), D219 | `scripts/install`: clon/paquete autocontenido, Python/uv/rutas/cachés elegibles, offline por defecto y red explícita. Venv/generaciones, recibo installation-1 y current.json atómico; replay/exclusión/actualización conservadora, fallos sin publicación parcial. Pruebas iniciales sintéticas. |
-| [T003](phase/P013-T003_ARRANQUE.md), D220 | `scripts/start` verifica instalación y usa Python instalado fuera del checkout, DB/config/puerto/temporal explícitos. Solo inicializa DB ausente; migración D150 aparte. Locks heredados, señales/salidas y datos conservados. Pruebas iniciales de orquestación/señales. |
-| [T004](phase/P013-T004_CONFIGURACION.md), D221 | Global v9/proyecto v1, preview/diff, CAS, TOML privados inmutables, journal recuperable por bytes. Guardar no activa. Migración aditiva 0026, tres tablas; hashes operativos 1–8 intactos. |
-| [T005](phase/P013-T005_ASISTENTE_API.md), D222 | Asistente API protegido sin configuración/válida/inválida, detección por PATH y preflight D174 explícitos; guardado/activación/cancelación/recuperación. Promoción antes de componer runtime, sin hot reload; trabajo bloqueado sin autoridad. Consulta D040 sin sondas/originales. |
-| [T006](phase/P013-T006_ASISTENTE_UI.md), D223 | `/setup` y `/settings/configuration` comparten formulario/TOML validados en servidor, diff y confirmaciones separadas. Candidato/base/sobre idempotente conservados en pestaña, conflicto sin rebase ni reenvío implícitos. UI/errores en/es y OpenAPI/tipos. |
-| [T007](phase/P013-T007_PROPUESTA_PERFIL.md), D224 | IntakeContext sin runner/stack previo; conversación y propuesta estructurada con herramientas diferidas y evidencia funcional por comando. B inventaría HEAD sin ejecutar fuentes. Adopción CAS solo PROFILE_PROPOSED. Migración 0027: registro composición/perfil nullable, 54 tablas; planning versiona propuestas. |
-| [T008](phase/P013-T008_PREPARACION.md), D225 | project-profile-preparation-1 separado de recetas: selección/plan/configuración/documentos sellados, confirmación exacta, journal/lock/lease/procesos antes de GO, argv/JUnit fresco, commit técnico conciliable y recibo propio. No activa; recuperación requiere escritores detenidos y prefijo acreditado, sin replay automático. |
-| [T009](phase/P013-T009_ALTA_UI.md), D226 | Une creación/B, edición de propuesta, commit documental/P001, guardado privado, preparación y activación independiente con recibo/HEAD/barrera D118. Precompone y congela referencias; reenvíos no duplican efectos. Pruebas API/UI Go con agentes falsos; sin nueva migración. |
-| [T010](phase/P013-T010_EDICION_ASISTIDA.md), D227 | Edición manual/asistida global/local con pareja/contexto activos congelados. Propuesta solo cambia borrador; cambios técnicos requieren documentos/plan/recibo nuevos. Global deriva copias privadas y activa/cancela conjunto con reinicio; recibo reutilizable solo por referencia exacta compatible. ASSIST con journal propio sin run ficticio. |
-| [T011](phase/P013-T011_COMPATIBILIDAD.md), D228 | HITL confirmó preparación nueva para perfiles convertidos antes de activar conjunto/reiniciar sin fuente externa. TOML 1–8/hashes/snapshots/recibos originales intactos. Backup formato 2 con inventario/configuración/intenciones/evidencia; v1 sin configuración nueva legible. Restore de consulta lee bundle sin originales ni agentes. |
-
-Las entregas T002–T011 detallan sus suites sintéticas y límites originales; T011: 2042 pytest/29 subtests,
-153 Node, 8 unittest, tipos/build y Alembic temporal correctos; dos opt-in omitidas. No se reescribe esa evidencia.
-
-[T012](phase/P013-T012_PRIMER_USO.md), [matriz](phase/P013_MATRIZ_ACEPTACION.md),
-[D229](DECISIONS.md#d229--p013-t012-primer-uso-instalado-y-documentación-pública): instalación desde copia de
-clon/caché inicialmente vacía con red de dependencias autorizada, recorrido completado offline tras corregir
-scripts, actualización desde paquete/replay sin Node, rutas con espacios y caché incompleta rechazada.
-Configuración global mediante formulario real en Chrome; reinicio; ambas altas con Go/CLI falsos hasta tarea
-COMMITTED, original B conservado; edición formulario/TOML, backup/restauración de consulta sin originales.
-QA en/es, claro/oscuro, escritorio y móvil con Tab/Enter muestreados, capturas y límites propios. Corrige sufijo
-uv con ruta absoluta, configuración npm duplicada, .gitignore inesperado de uv, verificador desactualizado,
-precheck de puerto en TIME_WAIT y claves React duplicadas al alternar altas. Sin cambiar modelos/API/TOML.
-**2048 pytest y 29 subtests, 155 Node, 8 unittest correctos; dos opt-in omitidas**; build/tipos y documentación
-verificados. El wheel de ensayo y sus hashes son propios; el candidato final tiene su evidencia separada en T013.
-No usa proveedores reales, credenciales, bases P012 ni ejecuta este checkout con el harness. Servicios sintéticos
-parados al terminar; originales/ensayos fallidos conservados, sin modificar configuración global del equipo.
-
-[T013](phase/P013-T013_CANDIDATO.md), [D230](DECISIONS.md#d230--p013-t013-candidato-público-y-paquete-aislado-verificados):
-candidato nuevo `my_harness_dist_p013` desde `984c287`, **445 archivos/6.389.580 bytes**, manifiesto
-`ea0f74e9…00c428`; D214/P011/P012 y paquetes/snapshots intactos. Copia exacta aislada: **2048 pytest y 29 subtests,
-8 unittest y 155 Node correctos**, dos opt-in omitidas; tipos/build, Alembic temporal y documentación correctos.
-Wheel `2416672d…47076`, sdist/pylock/checksums propios; checker instalado sintético hasta commit/consulta,
-instalación/replay y arranque/reinicio sin Node. Corrige falso positivo del scanner privado y orden del guion;
-intentos fallidos conservados, sin cambios de producto ni nueva QA/proveedores reales. Servicios propios parados.
-T013 no sustituye el candidato anterior ni cierra/publica: dictamen/expediente y archivo corresponden a T014/T015.
-
-[T014/revisión](phase/P013_REVIEW.md), [expediente nuevo](phase/P013_EXPEDIENTE_APERTURA.md),
-[D231](DECISIONS.md#d231--p013-t014-dictamen-favorable-y-expediente-de-apertura-actualizado): dictamen favorable
-de los ocho criterios en el alcance declarado, sin correcciones obligatorias pendientes para cerrar.
-Candidato/paquete T013 y originales contrastados por bytes/rutas/modos, fuentes públicas actuales idénticas;
-evidencia Go/QA T012 y uso real histórico separados. Solo checks estáticos/documentales, sin repetir suites
-ni operación. El expediente sustituye operativamente P012/D214, sin cambiar destinos; exige assets completos
-de distribution-1 para una futura Release. **P013 sigue abierta hasta T015**, publicación todavía aplazada.
-
-**Publicación aplazada hasta cerrar P013.** Candidato D214, expedientes/paquetes/snapshots P011/P012 intactos;
-[suplemento](phase/2026-10-26_ACTUALIZACION_CANDIDATO.md) conserva su procedencia. T013 entrega nuevo
-candidato/paquete/manifiestos y T014 dictamen/expediente; pendiente T015 archivo/cierre. No se transfieren consentimientos
-anteriores. D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0,
-fuera de P013. Owner/repo, visibilidad, identidad pública y acciones remotas siguen sin acordarse en esta fase;
-ningún ensayo ni commit local autoriza push, CI remota, tag o publicación.
+Cierre manual separado del READY del producto. Este repositorio sigue sin registrarse ni ejecutarse con el
+harness. Sin cambios de producto, modelos, API, dependencias, instalaciones o configuración global; sin
+nuevos servicios, proveedores o permisos operativos.
