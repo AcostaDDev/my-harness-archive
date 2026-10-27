@@ -244,6 +244,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D230](#d230--p013-t013-candidato-público-y-paquete-aislado-verificados) | P013-T013: candidato público y paquete aislado verificados | P013 |
 | [D231](#d231--p013-t014-dictamen-favorable-y-expediente-de-apertura-actualizado) | P013-T014: dictamen favorable y expediente de apertura actualizado | P013 |
 | [D232](#d232--cierre-documental-de-p013-e-instalación-guiada-archivada) | Cierre documental de P013 e instalación guiada archivada | P013 |
+| [D233](#d233--my_harness_dist-sustituido-por-el-candidato-p013) | my_harness_dist sustituido por el candidato P013 | Sin fase |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6878,3 +6879,19 @@ y [registro de cierre](archive/phase-013/P013_CIERRE.md). Precedentes: D088/D182
 - Cierre manual sin registrar/ejecutar este repositorio con el harness, servicios, agentes, proveedores o
   smokes; sin cambios de producto, datos, API, dependencias o configuración global; sin tag, push, CI remota
   o publicación. Commit local solicitado por el usuario.
+
+## D233 — my_harness_dist sustituido por el candidato P013
+
+Estado: aplicado el 2026-10-27 por petición explícita del usuario, sin fase nueva. Precedentes: D214, D230–D232.
+
+- El usuario pide no conservar el contenido anterior de `my_harness_dist`, vaciarlo y dejar en él el proyecto
+  listo para subir a GitHub. Se inspecciona antes: solo el árbol D214 (401 archivos, sin Git ni extras).
+- Se borra ese contenido sin copia histórica y se copia `my_harness_dist_p013` con modos conservados. Verificado
+  contra el manifiesto T013 y la fuente `984c287`: 445 archivos/6.389.580 bytes, `ea0f74e9…00c428`, rutas,
+  directorios, hashes y modos exactos, inventario idéntico al de `my_harness_dist_p013`, sin Git, cachés ni
+  dependencias; documentación pública del árbol correcta (50 documentos/403 enlaces).
+- El árbol D214 deja de existir físicamente; sigue reproducible desde `08f27bc` con el adaptador y manifiestos
+  archivados en phase-013. El resultado T015 conserva su validez en su fecha; su comprobación del destino D214
+  ya no se puede repetir. `my_harness_dist_p013`, P011/P012 y paquetes no cambian.
+- Sin `git init`, commit raíz, remoto, push, CI, visibilidad, tag ni Release: siguen pendientes de la
+  autorización concreta del expediente P013, con owner/repo e identidad pública por decidir.

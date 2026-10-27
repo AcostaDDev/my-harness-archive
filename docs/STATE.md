@@ -97,7 +97,7 @@ local completada en el alcance de D151/D153; apertura pública preparada con exp
   chat/propuesta QUEUED, backup/consulta API/UI y TypeScript v2/es hasta cierre del hijo; consumo 19 Claude/4 Codex,
   consentimientos agotados. Fixtures sintéticos/macOS ARM64/Chrome; sin otras parejas, Django v2 ni producción.
   REVISION_LIMIT, checks rechazados, QUEUED e identidad `unknown` conservados, sin certificar muerte de escritores.
-  Candidatos P012 (`cf191a40…9362a`) y D213/D214 (`5ef17ff3…4d4c55`, fixture Git sin mantenimiento) conservados.
+  Candidato P012 (`cf191a40…9362a`) conservado; el árbol D213/D214 (`5ef17ff3…4d4c55`) se retira en D233.
 - **Instalación guiada y configuración** ([P013](archive/phase-013/SUMMARY.md), D215–D232): `scripts/install` por
   generaciones (clon/paquete, uv/cachés elegibles, offline por defecto) y `scripts/start` fuera del checkout.
   Configuración global v9/proyecto v1 en TOML privados versionados, journal/CAS y activación SQLite (0026/0027);
@@ -117,7 +117,8 @@ los estados parciales de esos snapshots conservan su procedencia.
 
 El siguiente paso es la apertura que autorice el usuario sobre el
 [expediente de P013](archive/phase-013/P013_EXPEDIENTE_APERTURA.md): faltan owner/repo, visibilidad, identidad
-pública y permisos concretos. Candidato local `my_harness_dist_p013` y paquete T013 verificados, sin Git;
+pública y permisos concretos. Candidato P013 y paquete T013 verificados, sin Git; `my_harness_dist` lo
+contiene desde D233 (copia exacta de `my_harness_dist_p013`, 445 archivos, `ea0f74e9…00c428`, modos verificados);
 ninguna creación remota, push, CI remota, visibilidad pública, tag o Release ejecutados. Expedientes P011/P012 y
 [suplemento D214](archive/phase-013/2026-10-26_ACTUALIZACION_CANDIDATO.md) históricos y sustituidos.
 Después del primer push el repositorio público será la fuente principal (D157); este conserva la historia privada.
