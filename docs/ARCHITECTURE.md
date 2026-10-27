@@ -10,7 +10,7 @@ decisiones vigentes y la información técnica que antes estaba en README y AGEN
 |---|---|
 | Núcleo | Python 3.14.4, biblioteca estándar, paquete `harness-local` 0.1.0 (`uv_build==0.12.19`) |
 | API local | FastAPI 0.143.0, Pydantic 2.14.0, Uvicorn 0.54.0; HTTP para acciones y observación gestionada por cursor |
-| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0026_configuration`) |
+| Persistencia | SQLite con SQLAlchemy 2.1.4 y Alembic 1.20.0 (esquema `0027_profile_proposals`) |
 | UI | React 19.3.0, TypeScript 5.9.3, Vite 8.3.4; `markdown-it` 15.0.2 (`html: false`) y `mermaid` 11.17.2 (`strict`) |
 | Tipos del cliente | `openapi-typescript` 7.13.0 desde el OpenAPI exportado |
 | Herramientas | uv 0.12.19 y `uv.lock`; Node 24.15.0, npm 11.12.1 y `frontend/package-lock.json` |
@@ -69,7 +69,7 @@ llaman a los mismos casos de uso. El supervisor es el único que lanza procesos 
 | `cli.py`, `launcher.py` | `harness-local` (backup, retención, diagnóstico, `check-config`, `metrics-backfill`, `init-db`, `serve`); `--ui-language` por invocación |
 | `storage/preferences.py`, `i18n/` | Preferencias globales de idioma con CAS, captura del visual al admitir cada job y catálogos en/es de mensajes propios (D166); `tr()` emite en el visual de cada emisión: petición HTTP, job o invocación CLI (D171) |
 | `storage/work_language.py`, `services/work_language.py` | Idioma de trabajo inmutable por raíz, par `language-context-1` por job/intento y confirmación explícita ausente → valor (D167) |
-| `migrations/versions/0001…0026` | Esquema Alembic |
+| `migrations/versions/0001…0027` | Esquema Alembic |
 
 `frontend/src`: `router.ts`, `pages/` (Home, Registry, Project, Phases, Task, Run, Docs, Planning, Stats, Settings,
 Preferences), `i18n.ts`, `i18n/{en,es}.json` y `Language.tsx` (catálogos y proveedor del idioma visual, D166),
@@ -489,7 +489,8 @@ no cambia hoy `render_attempt`, adaptadores, variables, snapshots, API o esquema
 
 ## 14. Ampliación planificada — P013
 
-**T001 diseñada y T002–T010 implementadas; compatibilidad/backup pendientes T011.** §6/§9 describen lo implementado.
+**T001 diseñada; T002–T011 implementadas; T012 verifica primer uso/QA sintéticos y T013 el candidato/paquete exactos.
+[T014](phase/P013_REVIEW.md) emite dictamen favorable; cierre T015 pendiente.** §6/§9 describen lo implementado.
 [D216](DECISIONS.md#d216--p013-t001-instalación-aislada-y-arranque-sin-configuración),
 [D217](DECISIONS.md#d217--p013-t001-archivos-versionados-y-activación-de-configuración) y
 [D218](DECISIONS.md#d218--p013-t001-perfil-tras-contexto-y-preparación-antes-de-activar).
@@ -526,7 +527,7 @@ bloquea nuevas operaciones del ámbito hasta importar/descartar por CAS; nunca h
 Parser de editor separado del loader 1–8, formatos históricos y hashes intactos. La verificación de preparación
 por proyecto es obligatoria y no tiene implementación permisiva por defecto; T008/T009 conectan recibos/HEAD
 y recomposición (primitivas de recibo T008 entregadas; activación T009 entregada). T005 conecta arranque/reinicio y puerta de escritura global; perfiles/recibos/importación
-quedan para T009/T011. T011 entrega el bundle formato 2 con contenido versionado, inventario y verificación; formato 1 sin
+se entregan en T009/T011. T011 entrega el bundle formato 2 con contenido versionado, inventario y verificación; formato 1 sin
 configuración nueva sigue consultable.
 
 Global activa al reiniciar tras confirmación, con admisión cerrada en `RESTART_REQUIRED`; proyecto activa

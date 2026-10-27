@@ -242,6 +242,7 @@ tarea se leen solo las decisiones que cita; este índice sirve para buscar prece
 | [D228](#d228--p013-t011-conversión-explícita-y-backup-de-configuración) | P013-T011: conversión explícita y backup de configuración | P013 |
 | [D229](#d229--p013-t012-primer-uso-instalado-y-documentación-pública) | P013-T012: primer uso instalado y documentación pública | P013 |
 | [D230](#d230--p013-t013-candidato-público-y-paquete-aislado-verificados) | P013-T013: candidato público y paquete aislado verificados | P013 |
+| [D231](#d231--p013-t014-dictamen-favorable-y-expediente-de-apertura-actualizado) | P013-T014: dictamen favorable y expediente de apertura actualizado | P013 |
 
 ## D001 — Alcance local y arquitectura base
 
@@ -6821,3 +6822,30 @@ Concreta D178/D215/D229 sin cambiar producto ni el alcance real anterior.
   procedencia propios. No traslada al paquete nuevo resultados reales o QA visual de paquetes anteriores.
 - T013 completada; siguiente T014 para dictamen/expediente, T015 para cierre. P013 sigue abierta y publicación
   aplazada. No CI remota, tag, push, Release ni publicación; v0.2.0 y D157 siguen reservados según lo decidido.
+
+## D231 — P013-T014: dictamen favorable y expediente de apertura actualizado
+
+Estado: completada el 2026-10-27 por el encargo de continuar la siguiente tarea y finalizar con commit en inglés.
+Fase: P013. [Revisión](phase/P013_REVIEW.md), [expediente](phase/P013_EXPEDIENTE_APERTURA.md) y
+[contraste estático](phase/P013-T014_COMPROBACION.json). Concreta D215/D229/D230; conserva D157/D178/D181/D211.
+
+- Dictamen favorable de los ocho criterios en el alcance declarado, sin correcciones obligatorias pendientes
+  para cerrar. Habilita T015; P013 sigue abierta y el cierre antes de publicar sigue pendiente. T001 conserva
+  su carácter de diseño; la implementación/evidencia procede de las entregas posteriores.
+- Se separan pruebas sintéticas de componentes, recorridos Go/QA Chrome de T012 y cualificación exacta de
+  candidato/paquete de T013. Evidencia real P012 conservada con sus paquetes, pareja, consumos y límites;
+  no se reejecutan proveedores ni se transfieren consentimientos. Incidencias y ensayos fallidos intactos.
+- Árbol `my_harness_dist_p013` desde `984c287`: 445 archivos/6.389.580 bytes, manifiesto `ea0f74e9…00c428`;
+  wheel `2416672d…47076`, bundle distribution-1 de 13 archivos. Revisión sobre entrega `a0cab9e`; fuentes
+  públicas actuales, correspondencia, modos/directorios/hashes, miembros/metadatos y originales contrastados.
+  Sin reconstruir, reinstalar, sustituir destinos ni repetir suites válidas.
+- Expediente nuevo sustituye operativamente P012/D214 sin reescribirlos. Owner/repo, identidad Git pública,
+  URL/visibilidad y permisos concretos de acciones remotas siguen pendientes tras T015. Release opcional exige
+  revisar antes sus assets finales completos de distribution-1, conservando scripts/manifiesto/fixture; este
+  expediente no crea un formato de transporte nuevo ni promete hashes candidatos tras cambiar metadatos.
+- Se corrigen resúmenes vigentes y etiquetas de esquema atrasados de especificación/arquitectura, sin cambiar diseño/contratos ni
+  docs públicas. Parsers/enlaces/presupuestos y cuerpos D001–D230 conservados, originales phase/archive intactos.
+  Solo documentación privada y lectura de referencias oficiales GitHub/CLI; sin servicios, builds, smokes,
+  bases, credenciales, configuración global, proveedores, cuentas/remotos o publicación. Commit local solicitado.
+- Después del cierre manual sigue pendiente autorizar la apertura. Sin sucesora privada asumida; D157 mantiene
+  fuente pública principal tras el primer push y modo continuo reservado para v0.2.0 según D156.

@@ -1,7 +1,7 @@
 # P013 — Instalación guiada y configuración desde la UI
 
-**Estado:** fase activa; T001 diseñada y T002–T013 completadas (T013 el 2026-10-27), dos tareas pendientes.
-**Siguiente: P013-T014**, revisión de salida y expediente de apertura actualizado.
+**Estado:** fase activa; T001 diseñada y T002–T014 completadas (T013/T014 el 2026-10-27), una tarea pendiente.
+**Siguiente: P013-T015**, cierre documental manual y publicación pendiente de autorización.
 [Objetivo y criterios](ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui),
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) y
 [plan de fase](phase/P013_PLAN.md).
@@ -284,7 +284,9 @@ originales D214/P011/P012 solo lectura; sustitución del destino según autoriza
 
 ## P013-T014 — Revisión de salida y expediente de apertura actualizado
 
-**Estado:** pendiente. **Depende de:** T013.
+**Estado:** completada (2026-10-27), dictamen favorable en el alcance declarado; cierre pendiente T015.
+[Revisión](phase/P013_REVIEW.md), [expediente](phase/P013_EXPEDIENTE_APERTURA.md), D231.
+**Depende de:** T013.
 **Objetivo:** dictaminar criterios de P013 sobre evidencia y candidato exactos antes de cerrar.
 **Rutas permitidas:** docs vigentes y `docs/phase/`; originales archivados solo lectura.
 **Criterios de aceptación:**

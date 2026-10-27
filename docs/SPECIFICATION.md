@@ -353,7 +353,7 @@ con autorización inicial y parada por error/HITL/límites. No está implementad
 ## 14. Ampliación planificada — P013
 
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui) abre P013 antes de publicar.
-**T001 completa el diseño; T002–T010 implementan instalación/arranque/empaquetado, persistencia, asistente API/UI, perfil, preparación y edición/asistencia; compatibilidad/backup entregados en T011; primer uso/QA verificados en T012 con wheel instalado, herramientas/CLI falsas y Chrome; candidato pendiente T013.**
+**T001 completa el diseño; T002–T011 implementan instalación/arranque/empaquetado, persistencia, asistentes, perfil, preparación, edición y compatibilidad/backup; T012 verifica primer uso/QA sintéticos; T013 cualifica candidato/paquete exactos; T014 emite dictamen favorable. Cierre pendiente T015.**
 Las reglas vigentes de §4/§5/§8 se mantienen hasta sus entregas. [Contrato](phase/P013-T001_CONTRATO.md), [flujo](flows/configuration-setup.md),
 [plan](phase/P013_PLAN.md) y [tareas](NEXT_STEPS.md). D216–D218 concretan:
 
@@ -423,7 +423,7 @@ conjunto para reinicio, con cancelación CAS conjunta. Un borrador propio ajeno 
 Asistencia congela clientes activos, selección, contenido autorizado y ámbito antes de confirmar; revisor lee,
 ejecutor solo inspecciona en área privada. Propuestas y comprobaciones no guardan ni activan; preparar el
 proyecto sigue T008. Reenvío consulta el mismo turno, sin otra invocación. Recuperación de escritor incierto
-exige parada acreditada. Pruebas sintéticas; integración instalada y compatibilidad/backup siguen T011–T012.
+exige parada acreditada. Pruebas sintéticas; compatibilidad/backup e integración instalada acreditados en T011–T012, con sus límites.
 
 README/docs públicas, QA, candidato/paquete y expediente nuevos se entregan en T012–T015. Publicación aplazada
 hasta cerrar P013; su cierre no ejecuta acciones remotas ni renueva permisos P012.
@@ -439,5 +439,7 @@ rechaza mutaciones. Fuentes/registro ambiguos o permisos sin resolver bloquean, 
 
 
 T012 verifica el [primer uso instalado y QA](phase/P013-T012_PRIMER_USO.md) y actualiza README/baseline pública.
-La [matriz](phase/P013_MATRIZ_ACEPTACION.md) conserva alcance y pendientes de candidato/revisión/cierre.
-No amplía evidencia con proveedores ni cambia los contratos de configuración, datos o permisos.
+La [matriz](phase/P013_MATRIZ_ACEPTACION.md) conserva el alcance; [T013](phase/P013-T013_CANDIDATO.md) verifica
+candidato/paquete exactos y [T014](phase/P013_REVIEW.md) emite dictamen favorable y expediente. Cierre T015 pendiente;
+ninguna de esas entregas autoriza publicación, amplía evidencia con proveedores reales o cambia los contratos
+de configuración, datos o permisos.

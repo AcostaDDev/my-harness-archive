@@ -1,7 +1,8 @@
 # P013 — Matriz de aceptación
 
-Actualizada en T013 (2026-10-27). Fuente: ocho criterios de [ROADMAP](../ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui).
-Dictamen de integración sintética y candidato cualificado; revisión/cierre pendientes T014–T015. No es una revisión de salida.
+Actualizada en T014 (2026-10-27). Fuente: ocho criterios de [ROADMAP](../ROADMAP.md#p013--instalación-guiada-y-configuración-desde-la-ui).
+[Revisión de salida favorable](P013_REVIEW.md) en el alcance declarado y [expediente preparado](P013_EXPEDIENTE_APERTURA.md).
+Candidato cualificado; cierre/archivo T015 pendiente, publicación todavía aplazada.
 
 | Criterio | Evidencia | Dictamen y límites |
 |---|---|---|
@@ -12,7 +13,7 @@ Dictamen de integración sintética y candidato cualificado; revisión/cierre pe
 | 5. Preparación acotada, recibo, activación antes de tareas | [T008](P013-T008_PREPARACION.md), [T009](P013-T009_ALTA_UI.md), [resultados T012](P013-T012_RESULTS.json) | Cumplido sintético: intento prematuro 409, Go/ejecutor falsos, JUnit/recibo y activación separados; tarea COMMITTED en ambas altas. No certifica compilador Go ni instalación de dependencias de un stack real. |
 | 6. Edición manual/asistida, impacto, recuperación y contratos congelados | [T010](P013-T010_EDICION_ASISTIDA.md), [T011](P013-T011_COMPATIBILIDAD.md), [T012](P013-T012_PRIMER_USO.md) | Cumplido por suites sintéticas; formulario/TOML y contexto documental de edición comprobados instalados. Asistencia y matriz de conflictos/caídas no se repiten íntegramente en el navegador. |
 | 7. Compatibilidad/backup/consulta, fallos, ambos accesos, en/es/QA | [T011](P013-T011_COMPATIBILIDAD.md), [T012](P013-T012_PRIMER_USO.md#backup-y-consulta), [capturas](P013-T012_QA/es-light-desktop-restored-run.jpg) | Cumplido en el alcance: backup formato 2, restore sin configuración/herramientas/checkouts originales; revisiones TOML/runs legibles, mutación 409 y cero jobs pendientes. Chrome, temas y anchos muestreados; no auditoría completa de accesibilidad. |
-| 8. Guías públicas, candidato/paquete nuevos, revisión/expediente y cierre | README en/es y docs/public actualizados; [checks](P013-T012_CHECK_PUBLIC.py), [candidato T013](P013-T013_CANDIDATO.md) | Parcial: documentación y candidato exacto/paquete nuevos verificados; 2048 pytest/29 subtests, 8 unittest y 155 Node; tipos/build, Alembic, distribución y scripts instalados sin Node correctos. Dictamen/expediente T014 y archivo T015 pendientes. D214/P011/P012 intactos. |
+| 8. Guías públicas, candidato/paquete nuevos, revisión/expediente y cierre | README en/es y docs/public actualizados; [candidato T013](P013-T013_CANDIDATO.md), [revisión T014](P013_REVIEW.md), [expediente](P013_EXPEDIENTE_APERTURA.md) y [contraste](P013-T014_COMPROBACION.json) | Cumplido para dictaminar y pasar a T015: documentación/candidato/paquete exactos verificados; 2048 pytest/29 subtests, 8 unittest y 155 Node, tipos/build/Alembic/distribución correctos. Originales intactos. Cierre/archivo pendiente y obligatorio antes de publicar; fase todavía abierta. |
 
 ## Criterios propios de T012
 

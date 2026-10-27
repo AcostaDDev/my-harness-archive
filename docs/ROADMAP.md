@@ -18,7 +18,7 @@ hitos H0–H6 del backlog original; la definición inicial está en [archive/pha
 | P010 | Consolidación de la primera versión local | completada (2026-10-22) | [phase-010](archive/phase-010/SUMMARY.md) |
 | P011 | Preparación para apertura pública en GitHub | completada (2026-10-24) | [phase-011](archive/phase-011/SUMMARY.md) |
 | P012 | Validación real previa a la apertura pública | completada (2026-10-26) | [phase-012](archive/phase-012/SUMMARY.md) |
-| P013 | Instalación guiada y configuración desde la UI | activa, T001 diseñada/T002–T013 completadas (2026-10-27) | [plan](phase/P013_PLAN.md) |
+| P013 | Instalación guiada y configuración desde la UI | activa, T001 diseñada/T002–T014 completadas (2026-10-27) | [plan](phase/P013_PLAN.md) |
 
 ## P001 — Contratos y prueba de viabilidad
 
@@ -363,7 +363,7 @@ documentación o código, antes de publicar en GitHub.
 credenciales, modificar configuración global del equipo, operar este repositorio con el harness, reactivar
 bases/fixtures/consentimientos anteriores y cualquier acción remota de publicación. Las pruebas operativas
 restringidas por AGENTS requieren su autorización propia; planificar no las ejecuta.
-**Estado:** activa; T001 diseñada (D216–D218) y T002–T013 completadas (D219–D230; T013 el 2026-10-27); dos tareas pendientes.
+**Estado:** activa; T001 diseñada (D216–D218) y T002–T014 completadas (D219–D231; T013/T014 el 2026-10-27); cierre T015 pendiente.
 [Contrato](phase/P013-T001_CONTRATO.md), [instalador](phase/P013-T002_INSTALACION.md) y
 [arranque](phase/P013-T003_ARRANQUE.md), [persistencia](phase/P013-T004_CONFIGURACION.md),
 [API inicial](phase/P013-T005_ASISTENTE_API.md), [asistente UI](phase/P013-T006_ASISTENTE_UI.md) y
@@ -373,7 +373,9 @@ restringidas por AGENTS requieren su autorización propia; planificar no las eje
 [edición/asistencia](phase/P013-T010_EDICION_ASISTIDA.md) y
 [compatibilidad/backup](phase/P013-T011_COMPATIBILIDAD.md) y
 [primer uso/QA/documentación](phase/P013-T012_PRIMER_USO.md) y
-[candidato/paquete exactos](phase/P013-T013_CANDIDATO.md); siguiente P013-T014.
+[candidato/paquete exactos](phase/P013-T013_CANDIDATO.md), [revisión favorable](phase/P013_REVIEW.md) y
+[expediente nuevo](phase/P013_EXPEDIENTE_APERTURA.md); siguiente P013-T015. Ocho criterios con evidencia y
+dictamen en el alcance declarado, sin correcciones obligatorias pendientes para cerrar; fase todavía abierta.
 [Plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y
 [flujo propuesto](flows/configuration-setup.md). Publicación aplazada hasta cerrar esta fase con candidato
 nuevo y dictamen favorable; el cierre no concede autorización para acciones remotas.

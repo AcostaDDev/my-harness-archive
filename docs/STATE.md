@@ -128,10 +128,10 @@ Sustitución verificada por rutas, hashes y modos; checksums de los artefactos o
 
 ## Fase activa — P013 Instalación guiada y configuración desde la UI
 
-**P013 activa; T001 diseñada y T002–T013 completadas (T013 el 2026-10-27).**
+**P013 activa; T001 diseñada y T002–T014 completadas (T013/T014 el 2026-10-27).**
 [D215](DECISIONS.md#d215--p013-instalación-guiada-y-configuración-desde-la-ui),
 [plan](phase/P013_PLAN.md), [tareas](NEXT_STEPS.md) y [flujo](flows/configuration-setup.md).
-Dos tareas pendientes. **Siguiente: P013-T014**, revisión de salida y expediente actualizado.
+Una tarea pendiente. **Siguiente: P013-T015**, cierre documental manual.
 
 | Entrega | Resultado y procedencia |
 |---|---|
@@ -171,11 +171,19 @@ candidato nuevo `my_harness_dist_p013` desde `984c287`, **445 archivos/6.389.580
 Wheel `2416672d…47076`, sdist/pylock/checksums propios; checker instalado sintético hasta commit/consulta,
 instalación/replay y arranque/reinicio sin Node. Corrige falso positivo del scanner privado y orden del guion;
 intentos fallidos conservados, sin cambios de producto ni nueva QA/proveedores reales. Servicios propios parados.
-T013 no sustituye el candidato anterior ni cierra/publica: dictamen/expediente y archivo pendientes T014/T015.
+T013 no sustituye el candidato anterior ni cierra/publica: dictamen/expediente y archivo corresponden a T014/T015.
+
+[T014/revisión](phase/P013_REVIEW.md), [expediente nuevo](phase/P013_EXPEDIENTE_APERTURA.md),
+[D231](DECISIONS.md#d231--p013-t014-dictamen-favorable-y-expediente-de-apertura-actualizado): dictamen favorable
+de los ocho criterios en el alcance declarado, sin correcciones obligatorias pendientes para cerrar.
+Candidato/paquete T013 y originales contrastados por bytes/rutas/modos, fuentes públicas actuales idénticas;
+evidencia Go/QA T012 y uso real histórico separados. Solo checks estáticos/documentales, sin repetir suites
+ni operación. El expediente sustituye operativamente P012/D214, sin cambiar destinos; exige assets completos
+de distribution-1 para una futura Release. **P013 sigue abierta hasta T015**, publicación todavía aplazada.
 
 **Publicación aplazada hasta cerrar P013.** Candidato D214, expedientes/paquetes/snapshots P011/P012 intactos;
 [suplemento](phase/2026-10-26_ACTUALIZACION_CANDIDATO.md) conserva su procedencia. T013 entrega nuevo
-candidato/paquete/manifiestos; pendientes T014 dictamen/expediente y T015 archivo/cierre. No se transfieren consentimientos
+candidato/paquete/manifiestos y T014 dictamen/expediente; pendiente T015 archivo/cierre. No se transfieren consentimientos
 anteriores. D157 conserva la fuente principal pública tras el primer push; modo continuo D156 para v0.2.0,
 fuera de P013. Owner/repo, visibilidad, identidad pública y acciones remotas siguen sin acordarse en esta fase;
 ningún ensayo ni commit local autoriza push, CI remota, tag o publicación.
